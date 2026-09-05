@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "330006742963",
+    "project_id": "civora-app-433214",
+    "storage_bucket": "civora-app-433214.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:330006742963:android:dac9b298a7c1e59479adc6",
+        "android_client_info": {
+          "package_name": "com.civora.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJmsTgqmZcbAmWCOWfeO7Wh2MrsbWC9Vs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

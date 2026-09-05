@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="civora_emerald_primary">#0E7051</color>
+    <color name="civora_emerald_dark">#084834</color>
+    <color name="civora_gold">#C89B3C</color>
+    <color name="civora_surface_light">#F8FAF9</color>
+    <color name="civora_surface_dark">#0F1613</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>

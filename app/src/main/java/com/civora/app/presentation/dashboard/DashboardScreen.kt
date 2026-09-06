@@ -1,59 +1,69 @@
 package com.civora.app.presentation.dashboard
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.Assignment
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material.icons.filled.FlightTakeoff
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.civora.app.core.components.CivoraCard
-import com.civora.app.core.components.CivoraTopBar
-import com.civora.app.core.components.DocumentStatusBadge
-import com.civora.app.core.components.RequestStatusBadge
-import com.civora.app.core.designsystem.CivoraGold
-import com.civora.app.core.designsystem.CivoraGreenDark
-import com.civora.app.core.designsystem.CivoraGreenLight
-import com.civora.app.core.designsystem.CivoraGreenPrimary
-import com.civora.app.core.model.GovernmentService
-import com.civora.app.core.model.ServiceCategory
+import androidx.compose.ui.unit.sp
+import com.civora.app.R
+import com.civora.app.core.designsystem.AbsherCardBg
+import com.civora.app.core.designsystem.AbsherCardBorder
+import com.civora.app.core.designsystem.AbsherDarkSection
+import com.civora.app.core.designsystem.AbsherGreenHeader
+import com.civora.app.core.designsystem.AbsherGreenSection
+import com.civora.app.core.designsystem.AbsherGreenSectionBottom
+import com.civora.app.core.designsystem.AbsherMint
+import com.civora.app.core.designsystem.AbsherMintFAB
+import com.civora.app.core.designsystem.AbsherSearchBg
+import com.civora.app.core.designsystem.AbsherTextMuted
 
 @Composable
 fun DashboardScreen(
@@ -66,323 +76,297 @@ fun DashboardScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(AbsherDarkSection)
     ) {
-        CivoraTopBar(
-            title = "Civora Portal",
-            subtitle = "Smart Public & Citizen Services",
-            unreadNotificationCount = state.user.unreadNotificationsCount,
-            onNotificationsClick = onNavigateToNotifications
-        )
+        Column(modifier = Modifier.fillMaxSize()) {
+            // 1. Top Bar with Absher Emblem, Settings, and Bell
+            AbsherTopBar(
+                onSettingsClick = { onNavigateToRequests() },
+                onNotificationsClick = onNavigateToNotifications
+            )
 
-        val data = state
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 24.dp)
-        ) {
-                // Citizen Header / Identity Banner
+            // Scrollable Home Screen Body
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 120.dp)
+            ) {
+                // 2. Search Bar + "My Digital Documents" Section
                 item {
-                    CitizenIdentityHeader(
-                        fullNameEn = data.user.fullNameEn,
-                        fullNameAr = data.user.fullNameAr,
-                        nationalId = data.user.nationalId,
-                        verificationTier = data.user.verificationLevel.label
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(AbsherDarkSection)
+                            .padding(bottom = 16.dp)
+                    ) {
+                        // Search Box
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(AbsherSearchBg)
+                                .clickable { onNavigateToServices() }
+                                .padding(horizontal = 14.dp, vertical = 12.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Search",
+                                    tint = AbsherMint,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = "Look for a Service",
+                                    color = AbsherTextMuted,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+
+                        // My Digital Documents Header
+                        Text(
+                            text = "My Digital Documents",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+
+                        // Digital Document Card Preview (Saudi Muqeem Resident ID Card)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 2.dp)
+                                .clickable { onNavigateToWallet() }
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.muqeem_card),
+                                contentDescription = "Muqeem Resident Digital ID",
+                                contentScale = ContentScale.FillWidth,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
                 }
 
-                // Digital Document Card Preview (National ID card)
+                // 3. Quick Access Section (Deep Emerald Green Container)
                 item {
-                    val primaryDoc = data.primaryDocument
-                    if (primaryDoc != null) {
-                        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        AbsherGreenSection,
+                                        AbsherGreenSectionBottom
+                                    )
+                                )
+                            )
+                            .padding(horizontal = 16.dp, vertical = 16.dp)
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "Quick Access",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+
+                            // Card 1: My Vehicles
+                            AbsherWideCard(
+                                iconRes = R.drawable.ic_car_front_outline,
+                                title = "My Vehicles",
+                                subtitle = "View details, renew documents,\nreport accidents, and much more",
+                                onClick = onNavigateToServices
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // 2x2 Grid of Quick Access services
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Text(
-                                    text = "Digital Document Wallet",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onBackground
+                                AbsherGridCard(
+                                    title = "Authentication\nServices",
+                                    iconVector = Icons.Default.Fingerprint,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = onNavigateToServices
                                 )
-                                Text(
-                                    text = "View All (${data.user.totalDocuments})",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = CivoraGreenPrimary,
-                                    modifier = Modifier.clickable { onNavigateToWallet() }
+                                AbsherGridCard(
+                                    title = "Absher Travel",
+                                    iconRes = R.drawable.ic_absher_travel,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = onNavigateToServices
                                 )
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
 
-                            CivoraCard(
-                                onClick = onNavigateToWallet,
-                                containerColor = CivoraGreenDark,
-                                cornerRadius = 18.dp
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.Top
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = primaryDoc.title,
-                                            style = MaterialTheme.typography.titleSmall,
-                                            color = Color.White
-                                        )
-                                        Text(
-                                            text = primaryDoc.subtitle,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = CivoraGold
-                                        )
-                                    }
-                                    DocumentStatusBadge(status = primaryDoc.status)
-                                }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.Bottom
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = "ID NUMBER",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = Color.White.copy(alpha = 0.7f)
-                                        )
-                                        Text(
-                                            text = primaryDoc.documentNumber,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            color = Color.White
-                                        )
-                                    }
-                                    Column(horizontalAlignment = Alignment.End) {
-                                        Text(
-                                            text = "EXPIRY",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = Color.White.copy(alpha = 0.7f)
-                                        )
-                                        Text(
-                                            text = primaryDoc.expiryDate,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = Color.White
-                                        )
-                                    }
-                                }
+                                AbsherGridCard(
+                                    title = "Report Minor\nAccident",
+                                    iconRes = R.drawable.ic_minor_accident,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = onNavigateToServices
+                                )
+                                AbsherGridCard(
+                                    title = "Update\nResident Pho...",
+                                    iconRes = R.drawable.ic_update_photo,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = onNavigateToServices
+                                )
                             }
-                        }
-                    }
-                }
 
-                // Quick Actions Section
-                item {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Quick Services",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Text(
-                                text = "All Services",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = CivoraGreenPrimary,
-                                modifier = Modifier.clickable { onNavigateToServices() }
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
 
-                        // Grid of 4 quick services
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            QuickActionTile(
-                                title = "Renew ID",
-                                category = "Civil Affairs",
-                                icon = Icons.Default.Fingerprint,
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    val srv = data.quickActions.find { it.id == "srv_renew_id" }
-                                    if (srv != null) onNavigateToServiceDetail(srv.id)
-                                    else onNavigateToServices()
-                                }
+                            // Card 6: My Weapons
+                            AbsherWideCard(
+                                iconRes = R.drawable.ic_weapon,
+                                title = "My Weapons",
+                                subtitle = "View weapons details, issue and\nview carry permits",
+                                onClick = onNavigateToServices
                             )
-                            QuickActionTile(
-                                title = "Driving License",
-                                category = "Traffic",
-                                icon = Icons.Default.DirectionsCar,
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    val srv = data.quickActions.find { it.id == "srv_renew_license" }
-                                    if (srv != null) onNavigateToServiceDetail(srv.id)
-                                    else onNavigateToServices()
-                                }
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            QuickActionTile(
-                                title = "E-Passport",
-                                category = "Travel",
-                                icon = Icons.Default.FlightTakeoff,
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    val srv = data.quickActions.find { it.id == "srv_issue_passport" }
-                                    if (srv != null) onNavigateToServiceDetail(srv.id)
-                                    else onNavigateToServices()
-                                }
-                            )
-                            QuickActionTile(
-                                title = "Violations",
-                                category = "Traffic",
-                                icon = Icons.Default.Warning,
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    val srv = data.quickActions.find { it.id == "srv_traffic_violations" }
-                                    if (srv != null) onNavigateToServiceDetail(srv.id)
-                                    else onNavigateToServices()
-                                }
-                            )
-                        }
-                    }
-                }
 
-                // Active Requests Section
-                item {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Active Service Requests",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Text(
-                                text = "View All (${data.user.activeRequestsCount})",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = CivoraGreenPrimary,
-                                modifier = Modifier.clickable { onNavigateToRequests() }
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        data.activeRequests.forEach { request ->
-                            CivoraCard(
-                                onClick = onNavigateToRequests,
-                                modifier = Modifier.padding(vertical = 4.dp),
-                                cornerRadius = 14.dp
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = request.serviceTitle,
-                                            style = MaterialTheme.typography.titleSmall,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Text(
-                                            text = "Ref: ${request.referenceNumber} • Expected: ${request.expectedCompletion}",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    RequestStatusBadge(status = request.status)
-                                }
-                            }
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
                     }
                 }
             }
         }
+
+        // 4. Floating Assistant Action Button (Sparkles Chat Bubble)
+        FloatingActionButton(
+            onClick = onNavigateToServices,
+            containerColor = AbsherMintFAB,
+            contentColor = Color(0xFF084834),
+            shape = CircleShape,
+            elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 12.dp)
+                .size(50.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_assistant_chat),
+                contentDescription = "Assistant",
+                tint = Color(0xFF084834),
+                modifier = Modifier.size(26.dp)
+            )
+        }
     }
+}
 
 @Composable
-fun CitizenIdentityHeader(
-    fullNameEn: String,
-    fullNameAr: String,
-    nationalId: String,
-    verificationTier: String
+fun AbsherTopBar(
+    onSettingsClick: () -> Unit,
+    onNotificationsClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        CivoraGreenDark,
-                        CivoraGreenPrimary
-                    )
-                )
-            )
-            .padding(horizontal = 16.dp, vertical = 18.dp)
+            .background(AbsherGreenHeader)
+            .statusBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(54.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.15f))
-                    .border(2.dp, CivoraGold, CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Security,
-                    contentDescription = "Citizen ID",
-                    tint = CivoraGold,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
+            // Left: Absher Emblem
+            Image(
+                painter = painterResource(id = R.drawable.absher_logo_transparent),
+                contentDescription = "Absher Logo",
+                modifier = Modifier.height(46.dp)
+            )
 
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = fullNameEn,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
+            // Right: Settings & Notifications Icons
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = onSettingsClick,
+                    modifier = Modifier.size(38.dp)
+                ) {
                     Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Verified",
-                        tint = CivoraGold,
-                        modifier = Modifier.size(16.dp)
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = "Settings",
+                        tint = Color.White.copy(alpha = 0.9f),
+                        modifier = Modifier.size(22.dp)
                     )
                 }
+                Spacer(modifier = Modifier.width(4.dp))
+                IconButton(
+                    onClick = onNotificationsClick,
+                    modifier = Modifier.size(38.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = "Notifications",
+                        tint = Color.White.copy(alpha = 0.9f),
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AbsherWideCard(
+    iconRes: Int,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = AbsherCardBg),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onClick() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = title,
+                tint = AbsherMint,
+                modifier = Modifier.size(34.dp)
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column {
                 Text(
-                    text = fullNameAr,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.85f)
+                    text = title,
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(3.dp))
                 Text(
-                    text = "National ID: $nationalId • $verificationTier",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = CivoraGold
+                    text = subtitle,
+                    color = AbsherTextMuted,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp
                 )
             }
         }
@@ -390,42 +374,54 @@ fun CitizenIdentityHeader(
 }
 
 @Composable
-fun QuickActionTile(
+fun AbsherGridCard(
     title: String,
-    category: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconRes: Int? = null,
+    iconVector: androidx.compose.ui.graphics.vector.ImageVector? = null,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    CivoraCard(
-        modifier = modifier,
-        cornerRadius = 14.dp,
-        onClick = onClick
+    Card(
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = AbsherCardBg),
+        modifier = modifier
+            .height(115.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onClick() }
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
+        Column(
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(CivoraGreenPrimary.copy(alpha = 0.1f))
+                .fillMaxSize()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                tint = CivoraGreenPrimary,
-                modifier = Modifier.size(22.dp)
+            if (iconRes != null) {
+                Icon(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = title,
+                    tint = AbsherMint,
+                    modifier = Modifier.size(32.dp)
+                )
+            } else if (iconVector != null) {
+                Icon(
+                    imageVector = iconVector,
+                    contentDescription = title,
+                    tint = AbsherMint,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            Text(
+                text = title,
+                color = Color.White,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                lineHeight = 17.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            text = category,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

@@ -62,10 +62,10 @@ fun CivoraTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as? Activity)?.window ?: return@SideEffect
-            window.statusBarColor = (if (darkTheme) CivoraBackgroundDark else CivoraGreenDark).toArgb()
-            window.navigationBarColor = (if (darkTheme) CivoraSurfaceDark else CivoraSurfaceLight).toArgb()
+            window.statusBarColor = AbsherGreenHeader.toArgb()
+            window.navigationBarColor = AbsherNavBg.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
-            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = false
         }
     }
 

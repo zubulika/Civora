@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,6 +20,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.FamilyRestroom
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.HorizontalDivider
@@ -29,9 +34,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.civora.app.core.designsystem.CivoraGreenPrimary
+import com.civora.app.core.designsystem.AbsherMint
+import com.civora.app.core.designsystem.AbsherNavBg
 import com.civora.app.navigation.Screen
 
 sealed class BottomNavItem(
@@ -40,10 +47,10 @@ sealed class BottomNavItem(
     val icon: ImageVector
 ) {
     object Dashboard : BottomNavItem(Screen.Dashboard.route, "Home", Icons.Default.Home)
-    object Services : BottomNavItem(Screen.Services.route, "Services", Icons.Default.Category)
-    object Wallet : BottomNavItem(Screen.Wallet.route, "Digital ID", Icons.Default.AccountBalanceWallet)
-    object Requests : BottomNavItem(Screen.Requests.route, "Requests", Icons.AutoMirrored.Filled.Assignment)
-    object Profile : BottomNavItem(Screen.Profile.route, "Profile", Icons.Default.Person)
+    object Services : BottomNavItem(Screen.Services.route, "Services", Icons.Default.Person)
+    object Family : BottomNavItem(Screen.Wallet.route, "Family", Icons.Default.FamilyRestroom)
+    object Workers : BottomNavItem(Screen.Requests.route, "Workers", Icons.Default.Groups)
+    object Other : BottomNavItem(Screen.Profile.route, "Other", Icons.Default.GridView)
 }
 
 @Composable
@@ -54,39 +61,40 @@ fun CivoraBottomBar(
     val items = listOf(
         BottomNavItem.Dashboard,
         BottomNavItem.Services,
-        BottomNavItem.Wallet,
-        BottomNavItem.Requests,
-        BottomNavItem.Profile
+        BottomNavItem.Family,
+        BottomNavItem.Workers,
+        BottomNavItem.Other
     )
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
+            .background(com.civora.app.core.designsystem.AbsherNavBg)
             .navigationBarsPadding()
     ) {
         HorizontalDivider(
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+            color = Color(0xFF262C29),
             thickness = 1.dp
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 6.dp, horizontal = 8.dp),
+                .padding(vertical = 4.dp, horizontal = 4.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { item ->
                 val isSelected = currentRoute == item.route
-                val iconTint = animateColorAsState(
-                    targetValue = if (isSelected) CivoraGreenPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    label = "iconTint"
-                )
+                val contentColor = if (isSelected) {
+                    com.civora.app.core.designsystem.AbsherMint
+                } else {
+                    Color(0xFF8A9892)
+                }
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(8.dp))
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
@@ -95,31 +103,19 @@ fun CivoraBottomBar(
                                 onNavigate(item.route)
                             }
                         }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = 6.dp, vertical = 4.dp)
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .then(
-                                if (isSelected) {
-                                    Modifier
-                                        .clip(CircleShape)
-                                        .background(CivoraGreenPrimary.copy(alpha = 0.12f))
-                                } else Modifier
-                            )
-                    ) {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.title,
-                            tint = iconTint.value,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.title,
+                        tint = contentColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = item.title,
                         style = MaterialTheme.typography.labelSmall,
-                        color = iconTint.value
+                        color = contentColor
                     )
                 }
             }

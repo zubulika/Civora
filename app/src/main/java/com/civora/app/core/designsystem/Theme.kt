@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
@@ -53,26 +54,35 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun CivoraTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: AppThemeMode = ThemeState.currentThemeMode,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val systemDark = isSystemInDarkTheme()
+    val isDark = when (themeMode) {
+        AppThemeMode.LIGHT -> false
+        AppThemeMode.DARK -> true
+        AppThemeMode.SYSTEM -> systemDark
+    }
+
+    val colorScheme = if (isDark) DarkColorScheme else LightColorScheme
     val view = LocalView.current
 
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as? Activity)?.window ?: return@SideEffect
-            window.statusBarColor = AbsherGreenHeader.toArgb()
-            window.navigationBarColor = AbsherNavBg.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
-            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = false
+            window.statusBarColor = (if (isDark) AbsherGreenHeader else AbsherLightHeroBg).toArgb()
+            window.navigationBarColor = (if (isDark) AbsherNavBg else AbsherLightNavBg).toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isDark
+            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !isDark
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = CivoraTypography,
-        shapes = CivoraShapes,
-        content = content
-    )
+    CompositionLocalProvider(LocalThemeMode provides themeMode) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = CivoraTypography,
+            shapes = CivoraShapes,
+            content = content
+        )
+    }
 }

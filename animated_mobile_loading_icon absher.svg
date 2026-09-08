@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" width="360" height="360">
+<title>Animated loading icon</title>
+<style>
+.bar{fill:#078B57;transform-box:fill-box;transform-origin:center bottom}
+.b1{animation:pulse 1.25s ease-in-out infinite 0s}.b2{animation:pulse 1.25s ease-in-out infinite .1s}
+.b3{animation:pulse 1.25s ease-in-out infinite .2s}.b4{animation:pulse 1.25s ease-in-out infinite .3s}
+.b5{animation:pulse 1.25s ease-in-out infinite .4s}.b6{animation:pulse 1.25s ease-in-out infinite .5s}
+.dot{fill:#078B57;transform-box:fill-box;transform-origin:center;animation:dotPulse 1.25s ease-in-out infinite}
+.d1{animation-delay:.1s}.d2{animation-delay:.3s}.d3{animation-delay:.5s}
+@keyframes pulse{0%,100%{transform:scaleY(1);opacity:1}50%{transform:scaleY(.72);opacity:.72}}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.72);opacity:.62}}
+@media(prefers-reduced-motion:reduce){.bar,.dot{animation:none}}
+</style>
+
+<rect class="bar b1" x="64" y="138" width="30" height="218" rx="10"/>
+<rect class="bar b2" x="103" y="138" width="30" height="170" rx="10"/>
+<rect class="bar b3" x="142" y="138" width="30" height="170" rx="10"/>
+<rect class="bar b4" x="181" y="138" width="30" height="170" rx="10"/>
+<rect class="bar b5" x="220" y="89" width="30" height="219" rx="10"/>
+<rect class="bar b6" x="259" y="78" width="30" height="242" rx="10"/>
+
+<circle class="dot d1" cx="79" cy="113" r="13"/>
+<circle class="dot d2" cx="118" cy="113" r="13"/>
+<circle class="dot d3" cx="157" cy="113" r="13"/>
+<circle class="dot d2" cx="235" cy="332" r="13"/>
+
+<path class="bar b6" d="M259 67C259 53 270 42 284 42H289V67Z"/>
+</svg>

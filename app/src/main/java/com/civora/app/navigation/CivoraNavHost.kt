@@ -19,19 +19,28 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.civora.app.core.components.CivoraBottomBar
 import com.civora.app.core.di.AppContainer
+import com.civora.app.presentation.auth.AbsherLoadingScreen
+import com.civora.app.presentation.auth.AbsherLoginFormScreen
+import com.civora.app.presentation.auth.AbsherOtpScreen
+import com.civora.app.presentation.auth.LoginScreen
 import com.civora.app.presentation.dashboard.DashboardScreen
 import com.civora.app.presentation.dashboard.DashboardViewModel
+import com.civora.app.presentation.family.FamilyScreen
 import com.civora.app.presentation.notifications.NotificationsScreen
 import com.civora.app.presentation.notifications.NotificationsViewModel
+import com.civora.app.presentation.profile.PassportDetailScreen
 import com.civora.app.presentation.profile.ProfileScreen
 import com.civora.app.presentation.profile.ProfileViewModel
+import com.civora.app.presentation.profile.ResidentIdDetailScreen
 import com.civora.app.presentation.requests.RequestsScreen
 import com.civora.app.presentation.requests.RequestsViewModel
 import com.civora.app.presentation.services.ServiceDetailScreen
 import com.civora.app.presentation.services.ServicesScreen
 import com.civora.app.presentation.services.ServicesViewModel
+import com.civora.app.presentation.settings.SettingsScreen
 import com.civora.app.presentation.wallet.WalletScreen
 import com.civora.app.presentation.wallet.WalletViewModel
+import com.civora.app.presentation.workers.WorkersScreen
 
 @Composable
 fun CivoraApp(
@@ -41,13 +50,16 @@ fun CivoraApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Dashboard.route
 
-    // Show bottom bar on primary top-level tabs only
+    // Show bottom bar on primary tabs and detail screens
     val showBottomBar = currentRoute in listOf(
         Screen.Dashboard.route,
         Screen.Services.route,
-        Screen.Wallet.route,
-        Screen.Requests.route,
-        Screen.Profile.route
+        Screen.Family.route,
+        Screen.Workers.route,
+        Screen.Other.route,
+        Screen.Profile.route,
+        Screen.PassportDetail.route,
+        Screen.ResidentIdDetail.route
     )
 
     Scaffold(
@@ -57,12 +69,19 @@ fun CivoraApp(
                 CivoraBottomBar(
                     currentRoute = currentRoute,
                     onNavigate = { route ->
-                        navController.navigate(route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
+                        if (route == Screen.Dashboard.route) {
+                            navController.navigate(Screen.Dashboard.route) {
+                                popUpTo(Screen.Dashboard.route) { inclusive = false }
+                                launchSingleTop = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
+                        } else {
+                            navController.navigate(route) {
+                                popUpTo(Screen.Dashboard.route) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                     }
                 )
@@ -104,7 +123,9 @@ fun CivoraNavHost(
                 },
                 onNavigateToWallet = { navController.navigate(Screen.Wallet.route) },
                 onNavigateToRequests = { navController.navigate(Screen.Requests.route) },
-                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
+                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
             )
         }
 
@@ -121,7 +142,8 @@ fun CivoraNavHost(
                 onNavigateToDetail = { serviceId ->
                     navController.navigate(Screen.ServiceDetail.createRoute(serviceId))
                 },
-                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
+                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
             )
         }
 
@@ -174,17 +196,120 @@ fun CivoraNavHost(
             )
             ProfileScreen(
                 viewModel = viewModel,
-                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
+                onBackClick = {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
+                onNavigateToPassport = { navController.navigate(Screen.PassportDetail.route) },
+                onNavigateToResidentId = { navController.navigate(Screen.ResidentIdDetail.route) }
             )
         }
 
-        // 7. Notifications
+        // 7. Family Tab
+        composable(Screen.Family.route) {
+            FamilyScreen(
+                onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                onNotificationsClick = { navController.navigate(Screen.Notifications.route) }
+            )
+        }
+
+        // 8. Workers Tab
+        composable(Screen.Workers.route) {
+            WorkersScreen(
+                onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                onNotificationsClick = { navController.navigate(Screen.Notifications.route) }
+            )
+        }
+
+        // 9. Notifications
         composable(Screen.Notifications.route) {
             val viewModel: NotificationsViewModel = viewModel(
                 factory = NotificationsViewModel.provideFactory(container.userRepository)
             )
             NotificationsScreen(
                 viewModel = viewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // 10. Settings & Theme Switcher & Logout
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onBackClick = { navController.popBackStack() },
+                onLogoutClick = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // 11. Welcome / Guest Login & Public Services Screen
+        composable(Screen.Login.route) {
+            LoginScreen(
+                onLoginClick = {
+                    navController.navigate(Screen.LoginForm.route)
+                },
+                onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                onNotificationsClick = { navController.navigate(Screen.Notifications.route) }
+            )
+        }
+
+        // 12. Absher Login Form Screen
+        composable(Screen.LoginForm.route) {
+            AbsherLoginFormScreen(
+                onBackClick = { navController.popBackStack() },
+                onLoginSubmit = {
+                    navController.navigate(Screen.Otp.route)
+                }
+            )
+        }
+
+        // 13. Absher Authenticator OTP Screen
+        composable(Screen.Otp.route) {
+            AbsherOtpScreen(
+                onBackClick = { navController.popBackStack() },
+                onOtpVerified = {
+                    navController.navigate(Screen.Loading.route)
+                }
+            )
+        }
+
+        // 14. Absher Loading Animation Screen
+        composable(Screen.Loading.route) {
+            AbsherLoadingScreen(
+                onLoadingFinished = {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // 15. Other Services Tab
+        composable(Screen.Other.route) {
+            com.civora.app.presentation.other.OtherServicesScreen(
+                onNavigateToDetail = { serviceId ->
+                    navController.navigate(Screen.ServiceDetail.createRoute(serviceId))
+                },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
+            )
+        }
+
+        // 16. My Passport Detail
+        composable(Screen.PassportDetail.route) {
+            PassportDetailScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // 17. My Resident ID Detail
+        composable(Screen.ResidentIdDetail.route) {
+            ResidentIdDetailScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

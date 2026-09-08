@@ -39,7 +39,7 @@ val CivoraErrorContainer = Color(0xFFFEE2E2)
 val CivoraInfo = Color(0xFF0369A1)
 val CivoraInfoContainer = Color(0xFFE0F2FE)
 
-// Absher Specific Visual Identity
+// Absher Specific Visual Identity - Dark Theme
 val AbsherGreenHeader = Color(0xFF00673E)
 val AbsherGreenSection = Color(0xFF006744)
 val AbsherGreenSectionBottom = Color(0xFF035438)
@@ -52,4 +52,15 @@ val AbsherMint = Color(0xFF7FE5B4)
 val AbsherMintFAB = Color(0xFF85E3B3)
 val AbsherNavBg = Color(0xFF1E2220)
 val AbsherTextMuted = Color(0xFF98A7A0)
+
+// Absher Specific Visual Identity - Light Theme
+val AbsherLightHeroBg = Color(0xFFE8F3EE)
+val AbsherLightBg = Color(0xFFF6F8F7)
+val AbsherLightCardBg = Color(0xFFFFFFFF)
+val AbsherLightCardBorder = Color(0xFFE0ECE5)
+val AbsherLightTextPrimary = Color(0xFF131D18)
+val AbsherLightTextMuted = Color(0xFF5F7068)
+val AbsherLightNavBg = Color(0xFFFFFFFF)
+val AbsherLightSearchBg = Color(0xFFFFFFFF)
+
 

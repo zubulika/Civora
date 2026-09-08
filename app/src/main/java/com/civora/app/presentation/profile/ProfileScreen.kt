@@ -1,11 +1,13 @@
 package com.civora.app.presentation.profile
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,299 +15,322 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.NotificationsActive
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.civora.app.core.components.CivoraCard
-import com.civora.app.core.components.CivoraTopBar
-import com.civora.app.core.designsystem.CivoraGold
-import com.civora.app.core.designsystem.CivoraGreenDark
-import com.civora.app.core.designsystem.CivoraGreenPrimary
+import androidx.compose.ui.unit.sp
+import com.civora.app.R
+import com.civora.app.core.designsystem.AbsherCardBg
+import com.civora.app.core.designsystem.AbsherCardBorder
+import com.civora.app.core.designsystem.AbsherDarkSection
+import com.civora.app.core.designsystem.AbsherGreenHeader
+import com.civora.app.core.designsystem.AbsherLightBg
+import com.civora.app.core.designsystem.AbsherLightCardBg
+import com.civora.app.core.designsystem.AbsherLightCardBorder
+import com.civora.app.core.designsystem.AbsherLightTextMuted
+import com.civora.app.core.designsystem.AbsherLightTextPrimary
+import com.civora.app.core.designsystem.AbsherMint
+import com.civora.app.core.designsystem.AbsherTextMuted
+import com.civora.app.core.designsystem.AppThemeMode
+import com.civora.app.core.designsystem.ThemeState
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel,
-    onNavigateToNotifications: () -> Unit
+    onNavigateToNotifications: () -> Unit = {},
+    onNavigateToPassport: () -> Unit = {},
+    onNavigateToResidentId: () -> Unit = {},
+    onBackClick: () -> Unit = {}
 ) {
-    val userProfile by viewModel.userProfile.collectAsState()
-    val biometrics by viewModel.biometricsEnabled.collectAsState()
-    val smsAlerts by viewModel.smsAlertsEnabled.collectAsState()
+    val systemDark = isSystemInDarkTheme()
+    val isDark = when (ThemeState.currentThemeMode) {
+        AppThemeMode.LIGHT -> false
+        AppThemeMode.DARK -> true
+        AppThemeMode.SYSTEM -> systemDark
+    }
+
+    val bgColor = if (isDark) AbsherDarkSection else AbsherLightBg
+    val cardBg = if (isDark) AbsherCardBg else AbsherLightCardBg
+    val cardBorder = if (isDark) AbsherCardBorder else AbsherLightCardBorder
+    val textPrimary = if (isDark) Color.White else AbsherLightTextPrimary
+    val textMuted = if (isDark) AbsherTextMuted else AbsherLightTextMuted
+    val iconColor = if (isDark) AbsherMint else AbsherGreenHeader
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(bgColor)
     ) {
-        CivoraTopBar(
-            title = "Citizen Account & Profile",
-            subtitle = "Security & Digital Identity Settings",
-            onNotificationsClick = onNavigateToNotifications
-        )
+        // Top App Bar
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(if (isDark) AbsherDarkSection else AbsherLightBg)
+                .statusBarsPadding()
+                .padding(horizontal = 8.dp, vertical = 6.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = if (isDark) Color.White else AbsherGreenHeader
+                    )
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "My Profile",
+                    color = if (isDark) Color.White else AbsherLightTextPrimary,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Normal
+                )
+            }
+        }
 
-        val user = userProfile
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+        // Profile Cards Content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-                // Identity Summary
-                item {
-                    CivoraCard(
-                        containerColor = CivoraGreenDark,
-                        cornerRadius = 18.dp
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .size(56.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.15f))
-                                    .border(2.dp, CivoraGold, CircleShape)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = "Avatar",
-                                    tint = CivoraGold,
-                                    modifier = Modifier.size(32.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(14.dp))
-                            Column {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = user.fullNameEn,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = Color.White
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = "Verified",
-                                        tint = CivoraGold,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                                Text(
-                                    text = user.fullNameAr,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.White.copy(alpha = 0.8f)
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = user.verificationLevel.label,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = CivoraGold
-                                )
-                            }
-                        }
-                    }
-                }
+            // Row 1: 2-Column Grid (My Passport & My Resident ID)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ProfileSquareCard(
+                    title = "My Passport",
+                    iconRes = R.drawable.ic_passport,
+                    cardBg = cardBg,
+                    cardBorder = cardBorder,
+                    iconColor = iconColor,
+                    textColor = textPrimary,
+                    modifier = Modifier.weight(1f),
+                    onClick = onNavigateToPassport
+                )
+                ProfileSquareCard(
+                    title = "My Resident\nID",
+                    iconRes = R.drawable.ic_visitor_doc,
+                    cardBg = cardBg,
+                    cardBorder = cardBorder,
+                    iconColor = iconColor,
+                    textColor = textPrimary,
+                    modifier = Modifier.weight(1f),
+                    onClick = onNavigateToResidentId
+                )
+            }
 
-                // Official Civil Registry Information
-                item {
-                    CivoraCard(cornerRadius = 16.dp) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Security,
-                                contentDescription = "Security",
-                                tint = CivoraGreenPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Civil Registry Details",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
+            // Card 3: My Visa
+            ProfileWideActionCard(
+                title = "My Visa",
+                iconRes = R.drawable.ic_visa,
+                cardBg = cardBg,
+                cardBorder = cardBorder,
+                iconColor = iconColor,
+                textColor = textPrimary,
+                onClick = {}
+            )
 
-                        ProfileInfoRow(label = "National ID Number", value = user.nationalId)
-                        ProfileInfoRow(label = "Date of Birth", value = user.dateOfBirth)
-                        ProfileInfoRow(label = "Nationality", value = user.nationality)
-                        ProfileInfoRow(label = "Digital Wallet Status", value = "Active & Synchronized")
-                    }
-                }
+            // Card 4: My Driving License
+            ProfileWideActionCard(
+                title = "My Driving License",
+                iconRes = R.drawable.ic_driver_license,
+                cardBg = cardBg,
+                cardBorder = cardBorder,
+                iconColor = iconColor,
+                textColor = textPrimary,
+                onClick = {}
+            )
 
-                // Security & Authentication Settings
-                item {
-                    CivoraCard(cornerRadius = 16.dp) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = "Security",
-                                tint = CivoraGreenPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Security & Biometrics",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Fingerprint,
-                                    contentDescription = "Biometrics",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Column {
-                                    Text(
-                                        text = "Biometric Passkey Login",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = "Fingerprint / Face ID authentication",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                            Switch(
-                                checked = biometrics,
-                                onCheckedChange = viewModel::toggleBiometrics,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = CivoraGreenPrimary
+            // Card 5: My Travel Records (Emerald Banner Card)
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {}
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0xFF00673E),
+                                    Color(0xFF028753)
                                 )
                             )
-                        }
-
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                            thickness = 1.dp
                         )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.NotificationsActive,
-                                    contentDescription = "SMS",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Column {
-                                    Text(
-                                        text = "SMS Transaction OTP",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = "Instant 2FA alert on sensitive requests",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                            Switch(
-                                checked = smsAlerts,
-                                onCheckedChange = viewModel::toggleSmsAlerts,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = CivoraGreenPrimary
-                                )
-                            )
-                        }
-                    }
-                }
-
-                // Concept & Legal Notice
-                item {
-                    CivoraCard(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        cornerRadius = 14.dp
+                        .padding(16.dp)
+                ) {
+                    // "Inside Kingdom" pill badge on top right
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White.copy(alpha = 0.85f))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
-                        Row(verticalAlignment = Alignment.Top) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "Info",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(
-                                    text = "About Civora",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Civora is an original concept public-service platform exploring modern government UI patterns inspired by Absher. Not affiliated with or endorsed by any government entity.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
+                        Text(
+                            text = "Inside Kingdom",
+                            color = Color(0xFF334A40),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    // Content on bottom left
+                    Column(
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    ) {
+                        Text(
+                            text = "My Travel Records",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Find your last trips details",
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontSize = 13.sp
+                        )
                     }
                 }
             }
+
+            // Card 6: Labor Importations
+            ProfileWideActionCard(
+                title = "Labor Importations",
+                iconRes = R.drawable.ic_labor_import,
+                cardBg = cardBg,
+                cardBorder = cardBorder,
+                iconColor = iconColor,
+                textColor = textPrimary,
+                onClick = {}
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
+}
 
 @Composable
-fun ProfileInfoRow(label: String, value: String) {
-    Row(
+fun ProfileSquareCard(
+    title: String,
+    iconRes: Int,
+    cardBg: Color,
+    cardBorder: Color,
+    iconColor: Color,
+    textColor: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        border = BorderStroke(1.dp, cardBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = modifier
+            .height(115.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onClick() }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = title,
+                tint = iconColor,
+                modifier = Modifier.size(34.dp)
+            )
+            Text(
+                text = title,
+                color = textColor,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                lineHeight = 17.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun ProfileWideActionCard(
+    title: String,
+    iconRes: Int,
+    cardBg: Color,
+    cardBorder: Color,
+    iconColor: Color,
+    textColor: Color,
+    onClick: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        border = BorderStroke(1.dp, cardBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .height(68.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onClick() }
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = title,
+                tint = iconColor,
+                modifier = Modifier.size(30.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = title,
+                color = textColor,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Normal
+            )
+        }
     }
 }

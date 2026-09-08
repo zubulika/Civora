@@ -1,0 +1,23 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="28dp"
+    android:height="28dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <!-- Viewfinder 4 corners -->
+  <path
+      android:strokeColor="#00673E"
+      android:strokeWidth="1.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:fillColor="#00000000"
+      android:pathData="M7,4H5a1,1 0,0 0,-1 1v2M17,4h2a1,1 0,0 1,1 1v2M7,20H5a1,1 0,0 1,-1 -1v-2M17,20h2a1,1 0,0 0,1 -1v-2"/>
+  <!-- QR squares inside -->
+  <path
+      android:strokeColor="#00673E"
+      android:strokeWidth="1.5"
+      android:fillColor="#00000000"
+      android:pathData="M7,7h3v3h-3zM14,7h3v3h-3zM7,14h3v3h-3z"/>
+  <path
+      android:fillColor="#00673E"
+      android:pathData="M15,15m-1,0a1,1 0,1 1,2 0a1,1 0,1 1,-2 0"/>
+</vector>

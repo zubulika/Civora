@@ -39,6 +39,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.civora.app.core.designsystem.AbsherMint
 import com.civora.app.core.designsystem.AbsherNavBg
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.civora.app.core.designsystem.AbsherGreenHeader
+import com.civora.app.core.designsystem.AbsherLightCardBorder
+import com.civora.app.core.designsystem.AbsherLightNavBg
+import com.civora.app.core.designsystem.AbsherLightTextMuted
+import com.civora.app.core.designsystem.AppThemeMode
+import com.civora.app.core.designsystem.ThemeState
 import com.civora.app.navigation.Screen
 
 sealed class BottomNavItem(
@@ -48,10 +55,11 @@ sealed class BottomNavItem(
 ) {
     object Dashboard : BottomNavItem(Screen.Dashboard.route, "Home", Icons.Default.Home)
     object Services : BottomNavItem(Screen.Services.route, "Services", Icons.Default.Person)
-    object Family : BottomNavItem(Screen.Wallet.route, "Family", Icons.Default.FamilyRestroom)
-    object Workers : BottomNavItem(Screen.Requests.route, "Workers", Icons.Default.Groups)
-    object Other : BottomNavItem(Screen.Profile.route, "Other", Icons.Default.GridView)
+    object Family : BottomNavItem(Screen.Family.route, "Family", Icons.Default.FamilyRestroom)
+    object Workers : BottomNavItem(Screen.Workers.route, "Workers", Icons.Default.Groups)
+    object Other : BottomNavItem(Screen.Other.route, "Other", Icons.Default.GridView)
 }
+
 
 @Composable
 fun CivoraBottomBar(
@@ -66,14 +74,26 @@ fun CivoraBottomBar(
         BottomNavItem.Other
     )
 
+    val systemDark = isSystemInDarkTheme()
+    val isDark = when (ThemeState.currentThemeMode) {
+        AppThemeMode.LIGHT -> false
+        AppThemeMode.DARK -> true
+        AppThemeMode.SYSTEM -> systemDark
+    }
+
+    val navBg = if (isDark) AbsherNavBg else AbsherLightNavBg
+    val dividerColor = if (isDark) Color(0xFF262C29) else AbsherLightCardBorder
+    val selectedColor = if (isDark) AbsherMint else AbsherGreenHeader
+    val unselectedColor = if (isDark) Color(0xFF8A9892) else AbsherLightTextMuted
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(com.civora.app.core.designsystem.AbsherNavBg)
+            .background(navBg)
             .navigationBarsPadding()
     ) {
         HorizontalDivider(
-            color = Color(0xFF262C29),
+            color = dividerColor,
             thickness = 1.dp
         )
         Row(
@@ -85,11 +105,7 @@ fun CivoraBottomBar(
         ) {
             items.forEach { item ->
                 val isSelected = currentRoute == item.route
-                val contentColor = if (isSelected) {
-                    com.civora.app.core.designsystem.AbsherMint
-                } else {
-                    Color(0xFF8A9892)
-                }
+                val contentColor = if (isSelected) selectedColor else unselectedColor
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,

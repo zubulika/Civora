@@ -1,0 +1,269 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Sidebar from '@/components/layout/Sidebar';
+import TopHeader from '@/components/layout/TopHeader';
+import { fetchCitizens, removeCitizen } from '@/lib/firestoreService';
+import { UserProfile } from '@/types';
+import { 
+  UserPlus, 
+  Search, 
+  Trash2, 
+  Edit3, 
+  ShieldCheck, 
+  Building2, 
+  Calendar,
+  Eye,
+  Filter
+} from 'lucide-react';
+import MuqeemCardPreview from '@/components/cards/MuqeemCardPreview';
+
+export default function UsersDirectoryPage() {
+  const [citizens, setCitizens] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedNationality, setSelectedNationality] = useState('ALL');
+  const [previewCitizen, setPreviewCitizen] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    loadCitizens();
+  }, []);
+
+  async function loadCitizens() {
+    setLoading(true);
+    try {
+      const data = await fetchCitizens();
+      setCitizens(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    if (confirm(`Are you sure you want to remove ${name} from Absher?`)) {
+      await removeCitizen(id);
+      loadCitizens();
+    }
+  };
+
+  // Filter logic
+  const filtered = citizens.filter((c) => {
+    const matchesSearch = 
+      c.nationalId.includes(searchQuery) ||
+      c.fullNameEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.fullNameAr.includes(searchQuery) ||
+      c.sponsorName.includes(searchQuery);
+
+    const matchesNat = selectedNationality === 'ALL' || c.nationality === selectedNationality;
+    return matchesSearch && matchesNat;
+  });
+
+  const nationalities = Array.from(new Set(citizens.map((c) => c.nationality)));
+
+  return (
+    <div className="flex min-h-screen bg-[#f8faf9]">
+      <Sidebar />
+
+      <main className="flex-1 flex flex-col min-w-0">
+        <TopHeader
+          title="Citizens & Residents Directory"
+          subtitle="Provisioned users with verified Saudi digital credentials"
+          onSearch={setSearchQuery}
+        />
+
+        <div className="p-8 space-y-6 max-w-7xl">
+          {/* Controls Bar */}
+          <div className="bg-white p-4 rounded-2xl border border-gray-200/90 shadow-xs flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="relative w-64">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Filter by ID, name, sponsor..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                />
+              </div>
+
+              {/* Nationality dropdown */}
+              <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                <Filter className="w-3.5 h-3.5 text-gray-400" />
+                <select
+                  value={selectedNationality}
+                  onChange={(e) => setSelectedNationality(e.target.value)}
+                  className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                >
+                  <option value="ALL">All Nationalities</option>
+                  {nationalities.map((nat) => (
+                    <option key={nat} value={nat}>{nat}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <Link
+              href="/users/new"
+              className="flex items-center gap-2 bg-[#056839] hover:bg-[#04522d] text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-sm transition-colors"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Issue New ID</span>
+            </Link>
+          </div>
+
+          {/* Directory Table */}
+          <div className="bg-white rounded-2xl border border-gray-200/90 shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50/80 border-b border-gray-200/80 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="py-3.5 px-5">Resident / Citizen</th>
+                    <th className="py-3.5 px-4">Iqama / National ID</th>
+                    <th className="py-3.5 px-4">Profession & Employer</th>
+                    <th className="py-3.5 px-4">Nationality</th>
+                    <th className="py-3.5 px-4">Expiry Date</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-xs">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-gray-400">Loading citizen records...</td>
+                    </tr>
+                  ) : filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-gray-400">No citizens found matching criteria.</td>
+                    </tr>
+                  ) : (
+                    filtered.map((c) => (
+                      <tr key={c.id} className="hover:bg-emerald-50/40 transition-colors">
+                        {/* Name & Photo */}
+                        <td className="py-4 px-5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full border border-gray-200 overflow-hidden bg-gray-100 shrink-0">
+                              <img
+                                src={c.photoUrl || '/avatar_placeholder.png'}
+                                alt={c.fullNameEn}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80';
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <div className="font-bold text-gray-900">{c.fullNameAr}</div>
+                              <div className="text-[11px] font-medium text-gray-500 uppercase">{c.fullNameEn}</div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* National ID */}
+                        <td className="py-4 px-4 font-mono font-bold text-gray-800">
+                          {c.nationalId}
+                        </td>
+
+                        {/* Profession & Sponsor */}
+                        <td className="py-4 px-4">
+                          <div className="font-medium text-gray-900">{c.professionAr}</div>
+                          <div className="text-[11px] text-gray-500 truncate max-w-[200px]">{c.sponsorName}</div>
+                        </td>
+
+                        {/* Nationality */}
+                        <td className="py-4 px-4 font-medium text-gray-700">
+                          {c.nationality}
+                        </td>
+
+                        {/* Expiry Date */}
+                        <td className="py-4 px-4 font-mono text-gray-600">
+                          {c.expiryDateEn}
+                        </td>
+
+                        {/* Verification Status */}
+                        <td className="py-4 px-4">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                            Verified
+                          </span>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-4 px-5 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => setPreviewCitizen(c)}
+                              title="Live Card Preview"
+                              className="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-100/50 rounded-lg transition-colors"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <Link
+                              href={`/users/${c.id}`}
+                              title="Edit Resident Profile"
+                              className="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-100/50 rounded-lg transition-colors"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </Link>
+                            <button
+                              onClick={() => handleDelete(c.id, c.fullNameEn)}
+                              title="Remove Citizen"
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal for Live Card Preview */}
+        {previewCitizen && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl border border-gray-200">
+              <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
+                <div>
+                  <h3 className="font-bold text-gray-900 text-base">Digital Document Verification</h3>
+                  <p className="text-xs text-gray-500">{previewCitizen.fullNameEn} • {previewCitizen.nationalId}</p>
+                </div>
+                <button
+                  onClick={() => setPreviewCitizen(null)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="py-2">
+                <MuqeemCardPreview user={previewCitizen} />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+                <Link
+                  href={`/users/${previewCitizen.id}`}
+                  className="px-5 py-2 bg-emerald-700 text-white text-xs font-semibold rounded-xl hover:bg-emerald-800"
+                >
+                  Edit Information
+                </Link>
+                <button
+                  onClick={() => setPreviewCitizen(null)}
+                  className="px-5 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.civora.app.R
+import com.civora.app.core.components.DynamicMuqeemCard
 import com.civora.app.core.designsystem.AbsherCardBg
 import com.civora.app.core.designsystem.AbsherCardBorder
 import com.civora.app.core.designsystem.AbsherDarkSection
@@ -81,7 +82,8 @@ fun DashboardScreen(
     onNavigateToRequests: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onNavigateToIdViewer: () -> Unit = onNavigateToWallet
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -167,14 +169,14 @@ fun DashboardScreen(
 
                                 Column {
                                     Text(
-                                        text = "MD ABDUL HALIM MEIA",
+                                        text = state.user.fullNameEn,
                                         color = textPrimary,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = "ID No.: 2495685261",
+                                        text = "ID No.: ${state.user.nationalId}",
                                         color = textMuted,
                                         fontSize = 13.sp
                                     )
@@ -191,17 +193,15 @@ fun DashboardScreen(
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
                         )
 
-                        // Digital Document Card Preview (Saudi Muqeem Resident ID Card)
+                        // Digital Document Card Preview (Dynamic Saudi Muqeem Resident ID Card)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 14.dp, vertical = 2.dp)
-                                .clickable { onNavigateToWallet() }
+                                .clickable { onNavigateToIdViewer() }
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.muqeem_card),
-                                contentDescription = "Muqeem Resident Digital ID",
-                                contentScale = ContentScale.FillWidth,
+                            DynamicMuqeemCard(
+                                user = state.user,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }

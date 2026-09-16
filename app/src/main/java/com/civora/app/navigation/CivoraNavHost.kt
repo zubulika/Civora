@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -22,6 +23,7 @@ import com.civora.app.core.di.AppContainer
 import com.civora.app.presentation.auth.AbsherLoadingScreen
 import com.civora.app.presentation.auth.AbsherLoginFormScreen
 import com.civora.app.presentation.auth.AbsherOtpScreen
+import com.civora.app.presentation.auth.AuthViewModel
 import com.civora.app.presentation.auth.LoginScreen
 import com.civora.app.presentation.dashboard.DashboardScreen
 import com.civora.app.presentation.dashboard.DashboardViewModel
@@ -38,6 +40,7 @@ import com.civora.app.presentation.services.ServiceDetailScreen
 import com.civora.app.presentation.services.ServicesScreen
 import com.civora.app.presentation.services.ServicesViewModel
 import com.civora.app.presentation.settings.SettingsScreen
+import com.civora.app.presentation.wallet.DigitalIdViewerScreen
 import com.civora.app.presentation.wallet.WalletScreen
 import com.civora.app.presentation.wallet.WalletViewModel
 import com.civora.app.presentation.workers.WorkersScreen
@@ -106,9 +109,12 @@ fun CivoraNavHost(
     container: AppContainer,
     navController: NavHostController
 ) {
+    val isUserLoggedIn = remember { container.authRepository.isUserLoggedIn }
+    val startDestination = if (isUserLoggedIn) Screen.Dashboard.route else Screen.Login.route
+
     NavHost(
         navController = navController,
-        startDestination = Screen.Dashboard.route
+        startDestination = startDestination
     ) {
         // 1. Dashboard
         composable(Screen.Dashboard.route) {
@@ -125,7 +131,8 @@ fun CivoraNavHost(
                 onNavigateToRequests = { navController.navigate(Screen.Requests.route) },
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
-                onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                onNavigateToIdViewer = { navController.navigate(Screen.DigitalIdViewer.route) }
             )
         }
 
@@ -204,7 +211,14 @@ fun CivoraNavHost(
                 },
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToPassport = { navController.navigate(Screen.PassportDetail.route) },
-                onNavigateToResidentId = { navController.navigate(Screen.ResidentIdDetail.route) }
+                onNavigateToResidentId = { navController.navigate(Screen.DigitalIdViewer.route) },
+                onNavigateToPersonalDetails = { navController.navigate(Screen.ResidentIdDetail.route) },
+                onLogoutClick = {
+                    container.authRepository.signOut()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -240,6 +254,7 @@ fun CivoraNavHost(
             SettingsScreen(
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
+                    container.authRepository.signOut()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -253,6 +268,9 @@ fun CivoraNavHost(
                 onLoginClick = {
                     navController.navigate(Screen.LoginForm.route)
                 },
+                onViewDigitalDocumentsClick = {
+                    navController.navigate(Screen.DigitalIdViewer.route)
+                },
                 onSettingsClick = { navController.navigate(Screen.Settings.route) },
                 onNotificationsClick = { navController.navigate(Screen.Notifications.route) }
             )
@@ -260,11 +278,15 @@ fun CivoraNavHost(
 
         // 12. Absher Login Form Screen
         composable(Screen.LoginForm.route) {
+            val authViewModel: AuthViewModel = viewModel(
+                factory = AuthViewModel.provideFactory(container.authRepository)
+            )
             AbsherLoginFormScreen(
                 onBackClick = { navController.popBackStack() },
                 onLoginSubmit = {
                     navController.navigate(Screen.Otp.route)
-                }
+                },
+                viewModel = authViewModel
             )
         }
 
@@ -283,7 +305,7 @@ fun CivoraNavHost(
             AbsherLoadingScreen(
                 onLoadingFinished = {
                     navController.navigate(Screen.Dashboard.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )
@@ -307,9 +329,21 @@ fun CivoraNavHost(
             )
         }
 
-        // 17. My Resident ID Detail
+        // 17. My Resident ID Detail / Personal Details
         composable(Screen.ResidentIdDetail.route) {
+            val viewModel: ProfileViewModel = viewModel(
+                factory = ProfileViewModel.provideFactory(container.userRepository)
+            )
             ResidentIdDetailScreen(
+                viewModel = viewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // 18. Full-Screen Digital ID Card Viewer with Swipe-up QR Modal
+        composable(Screen.DigitalIdViewer.route) {
+            DigitalIdViewerScreen(
+                userRepository = container.userRepository,
                 onBackClick = { navController.popBackStack() }
             )
         }

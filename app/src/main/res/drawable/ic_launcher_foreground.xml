@@ -3,16 +3,48 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#0E7051"
-        android:pathData="M34,28h40c3.3,0 6,2.7 6,6v40c0,3.3 -2.7,6 -6,6H34c-3.3,0 -6,-2.7 -6,-6V34c0,-3.3 2.7,-6 6,-6z" />
-    <path
-        android:fillColor="#C89B3C"
-        android:pathData="M54,36l16,10v16l-16,10 -16,-10V46z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,42l10,6.25v9.5L54,64l-10,-6.25v-9.5z" />
-    <path
-        android:fillColor="#0E7051"
-        android:pathData="M54,48l4,2.5v4L54,57l-4,-2.5v-4z" />
+    <group
+        android:scaleX="0.16"
+        android:scaleY="0.16"
+        android:translateX="25.76"
+        android:translateY="22.16">
+        <!-- Vertical Branding Bars -->
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M74,138 h10 a10,10 0 0 1 10,10 v198 a10,10 0 0 1 -10,10 h-10 a10,10 0 0 1 -10,-10 v-198 a10,10 0 0 1 10,-10 z" />
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M113,138 h10 a10,10 0 0 1 10,10 v150 a10,10 0 0 1 -10,10 h-10 a10,10 0 0 1 -10,-10 v-150 a10,10 0 0 1 10,-10 z" />
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M152,138 h10 a10,10 0 0 1 10,10 v150 a10,10 0 0 1 -10,10 h-10 a10,10 0 0 1 -10,-10 v-150 a10,10 0 0 1 10,-10 z" />
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M191,138 h10 a10,10 0 0 1 10,10 v150 a10,10 0 0 1 -10,10 h-10 a10,10 0 0 1 -10,-10 v-150 a10,10 0 0 1 10,-10 z" />
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M230,89 h10 a10,10 0 0 1 10,10 v199 a10,10 0 0 1 -10,10 h-10 a10,10 0 0 1 -10,-10 v-199 a10,10 0 0 1 10,-10 z" />
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M269,78 h10 a10,10 0 0 1 10,10 v222 a10,10 0 0 1 -10,10 h-10 a10,10 0 0 1 -10,-10 v-222 a10,10 0 0 1 10,-10 z" />
+
+        <!-- Bar 6 Top Curved Cap -->
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M259,67 C259,53 270,42 284,42 H289 V67 Z" />
+
+        <!-- Accent Dots -->
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M79,100 a13,13 0 1 1 0,26 a13,13 0 1 1 0,-26 z" />
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M118,100 a13,13 0 1 1 0,26 a13,13 0 1 1 0,-26 z" />
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M157,100 a13,13 0 1 1 0,26 a13,13 0 1 1 0,-26 z" />
+        <path
+            android:fillColor="#078B57"
+            android:pathData="M235,319 a13,13 0 1 1 0,26 a13,13 0 1 1 0,-26 z" />
+    </group>
 </vector>

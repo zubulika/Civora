@@ -22,7 +22,7 @@ from pathlib import Path
 APP_PACKAGE = "com.civora.app"
 MAIN_ACTIVITY = ".MainActivity"
 DEFAULT_AVD_NAME = "Pixel_9_Pro_XL"
-DEFAULT_PORT = "5556"
+DEFAULT_PORT = "5554"
 PROJECT_ROOT = Path(__file__).resolve().parent
 APP_MODULE_DIR = PROJECT_ROOT / "app"
 GRADLEW_BAT = PROJECT_ROOT / "gradlew.bat"
@@ -109,7 +109,7 @@ def get_emulator_path(resolved_sdk):
     return shutil.which(exe_name) or "emulator"
 
 
-# --- Device Management ---
+# --- Device Management & Self-Healing ---
 def get_responsive_devices(adb_path, env):
     responsive = []
     try:
@@ -119,7 +119,7 @@ def get_responsive_devices(adb_path, env):
             try:
                 res = subprocess.run(
                     [adb_path, "-s", dev_id, "shell", "echo", "ready"],
-                    stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, timeout=3, env=env
+                    stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, timeout=2, env=env
                 )
                 if res.returncode == 0 and "ready" in res.stdout:
                     responsive.append(dev_id)
@@ -134,45 +134,156 @@ def is_boot_completed(adb_path, dev_id, env):
     try:
         res = subprocess.run(
             [adb_path, "-s", dev_id, "shell", "getprop", "sys.boot_completed"],
-            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, timeout=3, env=env
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, timeout=2, env=env
         )
         return res.stdout.strip() == "1"
-    except Exception:
+    except (subprocess.TimeoutExpired, Exception):
         return False
 
 
+def kill_all_emulator_processes():
+    if sys.platform == "win32":
+        subprocess.run(
+            ["taskkill", "/F", "/IM", "qemu-system-x86_64.exe", "/IM", "emulator.exe"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+    else:
+        subprocess.run(
+            ["pkill", "-9", "-f", "qemu-system|emulator"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+
+
+def restart_adb_server(adb_path, env):
+    subprocess.run([adb_path, "kill-server"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    time.sleep(1)
+    subprocess.run([adb_path, "start-server"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    time.sleep(1)
+
+
+def clean_stale_avd_locks(avd_name, force=False):
+    # If no qemu emulator is running (or force is requested), purge stale .lock files
+    is_running = False
+    if not force and sys.platform == "win32":
+        try:
+            out = subprocess.check_output(["tasklist", "/FI", "IMAGENAME eq qemu-system-x86_64.exe"], text=True, stderr=subprocess.DEVNULL)
+            if "qemu-system-x86_64.exe" in out:
+                is_running = True
+        except Exception:
+            pass
+
+    if not is_running or force:
+        avd_paths = [
+            Path.home() / ".android" / "avd" / f"{avd_name}.avd",
+            Path(os.environ.get("ANDROID_AVD_HOME", "")) / f"{avd_name}.avd"
+        ]
+        for avd_dir in avd_paths:
+            if avd_dir.exists():
+                for lock_file in avd_dir.glob("*.lock"):
+                    try:
+                        if lock_file.is_dir():
+                            shutil.rmtree(lock_file, ignore_errors=True)
+                        else:
+                            lock_file.unlink(missing_ok=True)
+                    except Exception:
+                        pass
+                # Reset corrupted window scale/position if present
+                user_ini = avd_dir / "emulator-user.ini"
+                if user_ini.exists():
+                    try:
+                        content = user_ini.read_text(encoding="utf-8")
+                        if "scale = -1" in content or "scale = 0" in content:
+                            user_ini.unlink(missing_ok=True)
+                    except Exception:
+                        pass
+
+
+def ensure_healthy_emulator_environment(adb_path, avd_name, env):
+    """
+    Self-healing routine:
+    Detects if an emulator process (qemu) is running in the background while ADB has become
+    unresponsive or frozen. If detected, automatically terminates the zombie instance, restarts
+    the ADB server, and clears stale file locks to allow clean startup.
+    """
+    is_qemu_running = False
+    if sys.platform == "win32":
+        try:
+            out = subprocess.check_output(["tasklist", "/FI", "IMAGENAME eq qemu-system-x86_64.exe"], text=True, stderr=subprocess.DEVNULL)
+            if "qemu-system-x86_64.exe" in out:
+                is_qemu_running = True
+        except Exception:
+            pass
+
+    if is_qemu_running:
+        responsive = get_responsive_devices(adb_path, env)
+        has_responsive_emu = any(d.startswith("emulator-") for d in responsive)
+        if not has_responsive_emu:
+            print("[!] Auto-recovery: Detected frozen/unresponsive emulator process in background.")
+            print("[*] Terminating zombie emulator, restarting ADB daemon, and clearing locks...")
+            kill_all_emulator_processes()
+            restart_adb_server(adb_path, env)
+            clean_stale_avd_locks(avd_name, force=True)
+            return
+
+    clean_stale_avd_locks(avd_name)
+
+
 def launch_emulator(emulator_path, avd_name, port=DEFAULT_PORT, env=None):
-    print(f"[*] Launching AVD '{avd_name}' on dedicated port {port}...")
+    clean_stale_avd_locks(avd_name)
+    print(f"[*] Launching Desktop AVD '{avd_name}'...")
     cmd = [
         emulator_path,
         "-avd", avd_name,
-        "-port", port,
         "-netdelay", "none",
         "-netspeed", "full"
     ]
-    subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+    if port:
+        cmd.extend(["-port", str(port)])
+
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        stdin=subprocess.DEVNULL,
+        creationflags=creationflags,
+        env=env
+    )
+    return proc
 
 
-def wait_for_device(adb_path, env, target_port=DEFAULT_PORT, timeout=120):
-    expected_serial = f"emulator-{target_port}"
+def wait_for_emulator(adb_path, env, expected_port=None, proc=None, timeout=120):
     start_time = time.time()
-    print(f"[*] Waiting for device '{expected_serial}' to become responsive and finish boot...")
+    print("[*] Waiting for desktop emulator to finish boot...")
+    expected_serial = f"emulator-{expected_port}" if expected_port else None
 
     while time.time() - start_time < timeout:
-        devices = get_responsive_devices(adb_path, env)
-        if expected_serial in devices:
-            if is_boot_completed(adb_path, expected_serial, env):
-                print(f"[+] Device '{expected_serial}' boot confirmed!")
-                return expected_serial
-        elif devices:
-            # Pick first responsive device if port is different
-            first_dev = devices[0]
-            if is_boot_completed(adb_path, first_dev, env):
-                print(f"[+] Using connected device: {first_dev}")
-                return first_dev
+        if proc and proc.poll() is not None:
+            raise RuntimeError(f"Emulator process crashed or exited prematurely (exit code: {proc.returncode}).")
+
+        try:
+            output = subprocess.check_output([adb_path, "devices"], text=True, stderr=subprocess.DEVNULL, env=env)
+            lines = [line.split()[0] for line in output.strip().split("\n")[1:] if line.strip() and "offline" not in line]
+            emulator_serials = [s for s in lines if s.startswith("emulator-")]
+
+            candidates = [expected_serial] if (expected_serial and expected_serial in emulator_serials) else emulator_serials
+
+            for emu in candidates:
+                if is_boot_completed(adb_path, emu, env):
+                    print(f"\n[+] Desktop emulator '{emu}' boot confirmed and ready!")
+                    return emu
+        except Exception:
+            pass
+
+        elapsed = int(time.time() - start_time)
+        print(f"\r[*] Emulator initializing and booting OS... ({elapsed}s)", end="", flush=True)
         time.sleep(2)
 
-    raise TimeoutError("Timed out waiting for Android device / emulator.")
+    print()
+    raise TimeoutError("Timed out waiting for Android emulator to boot.")
 
 
 # --- Build & Install Pipeline ---
@@ -199,24 +310,46 @@ def run_gradle_build(env, task="assembleDebug"):
     return True
 
 
-def install_and_launch(adb_path, dev_id, apk_path, env):
-    print(f"[*] Installing APK onto {dev_id}...")
+def install_and_launch_single(adb_path, dev_id, apk_path, env):
+    is_emulator = dev_id.startswith("emulator-")
+    device_label = f"Emulator ({dev_id})" if is_emulator else f"Physical Device ({dev_id})"
+    print(f"[*] Installing APK onto {device_label}...")
     install_res = subprocess.run(
         [adb_path, "-s", dev_id, "install", "-r", str(apk_path)],
         capture_output=True, text=True, env=env
     )
     if install_res.returncode != 0:
-        print(f"[!] Streamed install failed: {install_res.stderr}. Attempting fallback...")
+        print(f"[!] Streamed install on {dev_id} failed: {install_res.stderr.strip()}. Attempting fallback...")
         remote_tmp = f"/data/local/tmp/{apk_path.name}"
-        subprocess.run([adb_path, "-s", dev_id, "push", str(apk_path), remote_tmp], env=env)
-        subprocess.run([adb_path, "-s", dev_id, "shell", "pm", "install", "-r", remote_tmp], env=env)
+        subprocess.run([adb_path, "-s", dev_id, "push", str(apk_path), remote_tmp], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run([adb_path, "-s", dev_id, "shell", "pm", "install", "-r", remote_tmp], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    print(f"[*] Launching {APP_PACKAGE}/{MAIN_ACTIVITY}...")
+    print(f"[*] Launching {APP_PACKAGE}/{MAIN_ACTIVITY} on {device_label}...")
     subprocess.run(
         [adb_path, "-s", dev_id, "shell", "am", "start", "-n", f"{APP_PACKAGE}/{MAIN_ACTIVITY}"],
-        env=env
+        env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
-    print("[+] App running on screen.")
+    print(f"[+] App running on {device_label}.")
+
+
+def install_and_launch_all(adb_path, device_list, apk_path, env):
+    from concurrent.futures import ThreadPoolExecutor
+    if not device_list:
+        print("[!] No active devices available for installation.")
+        return
+
+    if len(device_list) == 1:
+        install_and_launch_single(adb_path, device_list[0], apk_path, env)
+        return
+
+    print(f"[*] Deploying simultaneously across {len(device_list)} devices...")
+    with ThreadPoolExecutor(max_workers=len(device_list)) as executor:
+        futures = [
+            executor.submit(install_and_launch_single, adb_path, dev_id, apk_path, env)
+            for dev_id in device_list
+        ]
+        for f in futures:
+            f.result()
 
 
 # --- File Watcher ---
@@ -244,7 +377,7 @@ def compute_source_snapshot(watch_paths):
     return snapshot
 
 
-def start_watch_loop(adb_path, dev_id, env):
+def start_watch_loop(adb_path, target_devices, env, auto_discover=True):
     watch_dirs = [
         APP_MODULE_DIR / "src",
         PROJECT_ROOT / "gradle",
@@ -253,7 +386,11 @@ def start_watch_loop(adb_path, dev_id, env):
         PROJECT_ROOT / "gradle.properties"
     ]
     print("\n" + "=" * 60)
-    print("  [Civora Live Watcher] Watching source files for instant reload...")
+    print(f"  [Civora Multi-Device Live Watcher] Active on {len(target_devices)} device(s)")
+    for dev in target_devices:
+        dev_type = "Desktop Emulator" if dev.startswith("emulator-") else "Physical Smartphone"
+        print(f"    * {dev} ({dev_type})")
+    print("  Watching source files for instant reload across all devices...")
     print("  Press Ctrl+C to terminate.")
     print("=" * 60 + "\n")
 
@@ -270,11 +407,18 @@ def start_watch_loop(adb_path, dev_id, env):
                     print(f"\n[~] File changed: {Path(ch).name}")
                 current_snapshot = new_snapshot
 
-                # Recompile and relaunch
+                # Dynamically refresh active devices if auto-discovery is on
+                active_devices = target_devices
+                if auto_discover:
+                    live_devices = get_responsive_devices(adb_path, env)
+                    if live_devices:
+                        active_devices = live_devices
+
+                # Recompile and relaunch across all active screens
                 if run_gradle_build(env, "assembleDebug"):
                     apk = find_built_apk()
                     if apk:
-                        install_and_launch(adb_path, dev_id, apk, env)
+                        install_and_launch_all(adb_path, active_devices, apk, env)
         except KeyboardInterrupt:
             print("\n[*] Stopping Civora supervisor.")
             break
@@ -282,11 +426,12 @@ def start_watch_loop(adb_path, dev_id, env):
 
 # --- Main CLI ---
 def main():
-    parser = argparse.ArgumentParser(description="Civora Android Development Supervisor")
+    parser = argparse.ArgumentParser(description="Civora Android Development Supervisor (Dual Screen & Multi-Device)")
     parser.add_argument("--build-only", action="store_true", help="Compile debug APK without launching")
     parser.add_argument("--no-watch", action="store_true", help="Build and launch once without file watching")
-    parser.add_argument("--device", type=str, default=None, help="Target specific ADB device ID")
-    parser.add_argument("--avd", type=str, default=DEFAULT_AVD_NAME, help="AVD name to launch if none online")
+    parser.add_argument("--device", type=str, default=None, help="Target specific ADB device ID only")
+    parser.add_argument("--no-emulator", action="store_true", help="Do not auto-launch desktop emulator if physical device is connected")
+    parser.add_argument("--avd", type=str, default=DEFAULT_AVD_NAME, help="AVD name to launch if emulator is needed")
     parser.add_argument("--port", type=str, default=DEFAULT_PORT, help="Dedicated emulator port")
     parser.add_argument("--logs", "-l", action="store_true", help="Stream logcat filtered by package")
     args = parser.parse_args()
@@ -313,30 +458,53 @@ def main():
         print("[+] Build complete. Exiting (--build-only).")
         return
 
-    # Device detection & launch
-    devices = get_responsive_devices(adb_path, env)
-    target_device = args.device
+    # Device detection & multi-target resolution
+    target_devices = []
 
-    if not target_device:
-        if devices:
-            target_device = devices[0]
-            print(f"[*] Found active responsive device: {target_device}")
-        else:
+    if args.device:
+        target_devices = [args.device]
+        print(f"[*] Targeting explicit device: {args.device}")
+    else:
+        # Self-healing: verify background emulator health before checking devices
+        if not args.no_emulator:
+            ensure_healthy_emulator_environment(adb_path, args.avd, env)
+
+        connected = get_responsive_devices(adb_path, env)
+        has_emulator = any(d.startswith("emulator-") for d in connected)
+        has_physical = any(not d.startswith("emulator-") for d in connected)
+
+        # If no emulator is currently running and user hasn't disabled it, launch the desktop emulator
+        if not has_emulator and not args.no_emulator:
+            print("[*] No desktop emulator online. Starting emulator to enable dual-screen workflow...")
             emulator_path = get_emulator_path(resolved_sdk)
-            launch_emulator(emulator_path, args.avd, args.port, env)
-            target_device = wait_for_device(adb_path, env, args.port)
+            emu_proc = launch_emulator(emulator_path, args.avd, args.port, env)
+            wait_for_emulator(adb_path, env, expected_port=args.port, proc=emu_proc)
 
-    # Install & Launch
-    install_and_launch(adb_path, target_device, apk, env)
+        # Re-query all responsive devices (will include both phone and emulator)
+        target_devices = get_responsive_devices(adb_path, env)
+
+    if not target_devices:
+        print("[!] No responsive devices or emulators found.")
+        sys.exit(1)
+
+    print(f"\n[+] Active Deployment Target(s) [{len(target_devices)}]:")
+    for dev in target_devices:
+        label = "Desktop Emulator" if dev.startswith("emulator-") else "Physical Smartphone (USB)"
+        print(f"    - {dev} -> {label}")
+
+    # Install & Launch concurrently across all devices
+    install_and_launch_all(adb_path, target_devices, apk, env)
 
     if args.logs:
-        print(f"[*] Streaming Logcat for package: {APP_PACKAGE}...")
-        subprocess.run([adb_path, "-s", target_device, "logcat", f"{APP_PACKAGE}:V", "*:S"], env=env)
+        log_target = target_devices[0]
+        print(f"[*] Streaming Logcat from {log_target} for package: {APP_PACKAGE}...")
+        subprocess.run([adb_path, "-s", log_target, "logcat", f"{APP_PACKAGE}:V", "*:S"], env=env)
         return
 
     if not args.no_watch:
-        start_watch_loop(adb_path, target_device, env)
+        start_watch_loop(adb_path, target_devices, env, auto_discover=(args.device is None))
 
 
 if __name__ == "__main__":
     main()
+

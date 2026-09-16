@@ -1,5 +1,7 @@
 package com.civora.app.presentation.profile
 
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,21 +20,29 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -62,6 +73,7 @@ import com.civora.app.core.designsystem.LocalThemeMode
 
 @Composable
 fun ResidentIdDetailScreen(
+    viewModel: ProfileViewModel,
     onBackClick: () -> Unit
 ) {
     val themeMode = LocalThemeMode.current
@@ -72,10 +84,41 @@ fun ResidentIdDetailScreen(
         AppThemeMode.SYSTEM -> systemDark
     }
 
+    val context = LocalContext.current
+    val user by viewModel.userProfile.collectAsState()
+
+    var isEditing by remember { mutableStateOf(false) }
+
+    // Section accordion states
     var isPersonalExpanded by remember { mutableStateOf(true) }
     var isSponsorExpanded by remember { mutableStateOf(false) }
     var isInsuranceExpanded by remember { mutableStateOf(false) }
     var isHajjExpanded by remember { mutableStateOf(false) }
+
+    // Editable state holders initialized from user
+    var editName by remember(user) { mutableStateOf<String>(user.fullNameEn) }
+    var editNameAr by remember(user) { mutableStateOf<String>(user.fullNameAr) }
+    var editBirthCity by remember(user) { mutableStateOf<String>(user.birthCity) }
+    var editBirthCountry by remember(user) { mutableStateOf<String>(user.birthCountry) }
+    var editDob by remember(user) { mutableStateOf<String>(user.dateOfBirth) }
+    var editMaritalStatus by remember(user) { mutableStateOf<String>(user.maritalStatus) }
+    var editTransfers by remember(user) { mutableStateOf<String>(user.sponsorshipTransfers) }
+    var editReligion by remember(user) { mutableStateOf<String>(user.religionEn) }
+    var editWorkPermit by remember(user) { mutableStateOf<String>(user.workPermit) }
+    var editBiometrics by remember(user) { mutableStateOf<String>(user.biometricsCollected) }
+    var editTravelStatus by remember(user) { mutableStateOf<String>(user.travelStatus) }
+
+    var editSponsorName by remember(user) { mutableStateOf<String>(user.sponsorNameEn) }
+    var editSponsorId by remember(user) { mutableStateOf<String>(user.sponsorId) }
+    var editEstStatus by remember(user) { mutableStateOf<String>(user.establishmentStatus) }
+
+    var editInsuranceCompany by remember(user) { mutableStateOf<String>(user.insuranceCompany) }
+    var editPolicyNo by remember(user) { mutableStateOf<String>(user.insurancePolicyNo) }
+    var editInsuranceStatus by remember(user) { mutableStateOf<String>(user.insuranceStatus) }
+    var editInsuranceExpiry by remember(user) { mutableStateOf<String>(user.insuranceExpiry) }
+
+    var editHajjEligibility by remember(user) { mutableStateOf<String>(user.hajjEligibility) }
+    var editLastHajjYear by remember(user) { mutableStateOf<String>(user.lastHajjYear) }
 
     val bgColor = if (isDark) AbsherDarkSection else Color(0xFFFBFDFC)
     val cardBg = if (isDark) AbsherCardBg else Color.White
@@ -83,6 +126,34 @@ fun ResidentIdDetailScreen(
     val textPrimary = if (isDark) Color(0xFFE2ECE7) else Color(0xFF212825)
     val textMuted = if (isDark) Color(0xFF8F9E97) else Color(0xFF8C9B93)
     val iconColor = if (isDark) AbsherMint else AbsherGreenHeader
+
+    fun saveChanges() {
+        val updatedUser = user.copy(
+            fullNameEn = editName.trim(),
+            fullNameAr = editNameAr.trim(),
+            birthCity = editBirthCity.trim(),
+            birthCountry = editBirthCountry.trim(),
+            dateOfBirth = editDob.trim(),
+            maritalStatus = editMaritalStatus.trim(),
+            sponsorshipTransfers = editTransfers.trim(),
+            religionEn = editReligion.trim(),
+            workPermit = editWorkPermit.trim(),
+            biometricsCollected = editBiometrics.trim(),
+            travelStatus = editTravelStatus.trim(),
+            sponsorNameEn = editSponsorName.trim(),
+            sponsorId = editSponsorId.trim(),
+            establishmentStatus = editEstStatus.trim(),
+            insuranceCompany = editInsuranceCompany.trim(),
+            insurancePolicyNo = editPolicyNo.trim(),
+            insuranceStatus = editInsuranceStatus.trim(),
+            insuranceExpiry = editInsuranceExpiry.trim(),
+            hajjEligibility = editHajjEligibility.trim(),
+            lastHajjYear = editLastHajjYear.trim()
+        )
+        viewModel.updateProfile(updatedUser)
+        isEditing = false
+        Toast.makeText(context, "Personal details saved successfully", Toast.LENGTH_SHORT).show()
+    }
 
     Column(
         modifier = Modifier
@@ -99,33 +170,60 @@ fun ResidentIdDetailScreen(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = if (isDark) Color.White else AbsherGreenHeader
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = if (isDark) Color.White else AbsherGreenHeader
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "My Personal Details",
+                        color = if (isDark) Color.White else AbsherLightTextPrimary,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Normal
                     )
                 }
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "My Personal Details",
-                    color = if (isDark) Color.White else AbsherLightTextPrimary,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Normal
-                )
+
+                // Official MOI Verified Status Badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(if (isDark) Color(0xFF19382B) else Color(0xFFE8F5E9))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Verified by Ministry of Interior",
+                            tint = if (isDark) AbsherMint else AbsherGreenHeader,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Verified",
+                            color = if (isDark) AbsherMint else AbsherGreenHeader,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
             }
         }
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // 1. Personal Details Card
+            // 1. Personal Details Card (with Avatar and 10 fields)
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = cardBg),
@@ -147,7 +245,7 @@ fun ResidentIdDetailScreen(
                                 contentDescription = "User Avatar",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .size(34.dp)
+                                    .size(36.dp)
                                     .clip(RoundedCornerShape(8.dp))
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -180,16 +278,30 @@ fun ResidentIdDetailScreen(
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            PersonalDetailField("Name", "MD ABDUL HALIM MEIA", textMuted)
-                            PersonalDetailField("Birth City", "-", textMuted)
-                            PersonalDetailField("Birth Country/Region", "Bangladesh", textMuted)
-                            PersonalDetailField("Date of Birth", "03/02/1988", textMuted)
-                            PersonalDetailField("Marital Status", "SINGLE", textMuted)
-                            PersonalDetailField("No. of sponsorship transfers", "2", textMuted)
-                            PersonalDetailField("Religion", "Islam", textMuted)
-                            PersonalDetailField("Work Permit", "-", textMuted)
-                            PersonalDetailField("Biometrics Collected", "Yes", textMuted)
-                            PersonalDetailField("Travel Status", "Outside", textMuted)
+                            if (!isEditing) {
+                                PersonalDetailField("Name", user.fullNameEn, textMuted, textPrimary)
+                                PersonalDetailField("Birth City", user.birthCity, textMuted, textPrimary)
+                                PersonalDetailField("Birth Country/Region", user.birthCountry, textMuted, textPrimary)
+                                PersonalDetailField("Date of Birth", user.dateOfBirth, textMuted, textPrimary)
+                                PersonalDetailField("Marital Status", user.maritalStatus, textMuted, textPrimary)
+                                PersonalDetailField("No. of sponsorship transfers", user.sponsorshipTransfers, textMuted, textPrimary)
+                                PersonalDetailField("Religion", user.religionEn, textMuted, textPrimary)
+                                PersonalDetailField("Work Permit", user.workPermit, textMuted, textPrimary)
+                                PersonalDetailField("Biometrics Collected", user.biometricsCollected, textMuted, textPrimary)
+                                PersonalDetailField("Travel Status", user.travelStatus, textMuted, textPrimary)
+                            } else {
+                                EditFieldInput("Name", editName, { editName = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Name (Arabic)", editNameAr, { editNameAr = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Birth City", editBirthCity, { editBirthCity = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Birth Country/Region", editBirthCountry, { editBirthCountry = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Date of Birth", editDob, { editDob = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Marital Status", editMaritalStatus, { editMaritalStatus = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("No. of sponsorship transfers", editTransfers, { editTransfers = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Religion", editReligion, { editReligion = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Work Permit", editWorkPermit, { editWorkPermit = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Biometrics Collected", editBiometrics, { editBiometrics = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Travel Status", editTravelStatus, { editTravelStatus = it }, textPrimary, textMuted, cardBorder)
+                            }
                         }
                     }
                 }
@@ -247,9 +359,15 @@ fun ResidentIdDetailScreen(
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            PersonalDetailField("Sponsor Name", "AL-MAWASIL TRADING EST.", textMuted)
-                            PersonalDetailField("Sponsor ID", "7034884309", textMuted)
-                            PersonalDetailField("Establishment Status", "Active (Green)", textMuted)
+                            if (!isEditing) {
+                                PersonalDetailField("Sponsor Name", user.sponsorNameEn, textMuted, textPrimary)
+                                PersonalDetailField("Sponsor ID", user.sponsorId, textMuted, textPrimary)
+                                PersonalDetailField("Establishment Status", user.establishmentStatus, textMuted, textPrimary)
+                            } else {
+                                EditFieldInput("Sponsor Name", editSponsorName, { editSponsorName = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Sponsor ID", editSponsorId, { editSponsorId = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Establishment Status", editEstStatus, { editEstStatus = it }, textPrimary, textMuted, cardBorder)
+                            }
                         }
                     }
                 }
@@ -307,10 +425,17 @@ fun ResidentIdDetailScreen(
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            PersonalDetailField("Insurance Company", "Bupa Arabia", textMuted)
-                            PersonalDetailField("Policy Number", "POL-9842144", textMuted)
-                            PersonalDetailField("Policy Status", "Valid & Active", textMuted)
-                            PersonalDetailField("Expiry Date", "14/04/2026", textMuted)
+                            if (!isEditing) {
+                                PersonalDetailField("Insurance Company", user.insuranceCompany, textMuted, textPrimary)
+                                PersonalDetailField("Policy Number", user.insurancePolicyNo, textMuted, textPrimary)
+                                PersonalDetailField("Policy Status", user.insuranceStatus, textMuted, textPrimary)
+                                PersonalDetailField("Expiry Date", user.insuranceExpiry, textMuted, textPrimary)
+                            } else {
+                                EditFieldInput("Insurance Company", editInsuranceCompany, { editInsuranceCompany = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Policy Number", editPolicyNo, { editPolicyNo = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Policy Status", editInsuranceStatus, { editInsuranceStatus = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Expiry Date", editInsuranceExpiry, { editInsuranceExpiry = it }, textPrimary, textMuted, cardBorder)
+                            }
                         }
                     }
                 }
@@ -368,9 +493,48 @@ fun ResidentIdDetailScreen(
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            PersonalDetailField("Hajj Eligibility", "Eligible to Apply", textMuted)
-                            PersonalDetailField("Last Performed Hajj", "None Recorded", textMuted)
+                            if (!isEditing) {
+                                PersonalDetailField("Eligibility Status", user.hajjEligibility, textMuted, textPrimary)
+                                PersonalDetailField("Last Hajj Year", user.lastHajjYear, textMuted, textPrimary)
+                            } else {
+                                EditFieldInput("Eligibility Status", editHajjEligibility, { editHajjEligibility = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Last Hajj Year", editLastHajjYear, { editLastHajjYear = it }, textPrimary, textMuted, cardBorder)
+                            }
                         }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Sticky Bottom Save Bar when editing
+        AnimatedVisibility(visible = isEditing) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(if (isDark) AbsherDarkSection else Color.White)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { isEditing = false },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Cancel", color = textMuted)
+                    }
+
+                    Button(
+                        onClick = { saveChanges() },
+                        modifier = Modifier.weight(1.5f),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AbsherGreenHeader)
+                    ) {
+                        Text("Save All Changes", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -382,21 +546,50 @@ fun ResidentIdDetailScreen(
 private fun PersonalDetailField(
     label: String,
     value: String,
-    textMuted: Color
+    labelColor: Color,
+    valueColor: Color
 ) {
     Column {
         Text(
             text = label,
-            color = textMuted,
-            fontSize = 12.sp,
+            color = labelColor,
+            fontSize = 12.5.sp,
             fontWeight = FontWeight.Normal
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
-            text = value,
-            color = textMuted.copy(alpha = 0.85f),
-            fontSize = 15.sp,
+            text = value.ifBlank { "-" },
+            color = valueColor.copy(alpha = 0.88f),
+            fontSize = 14.5.sp,
             fontWeight = FontWeight.Normal
         )
     }
 }
+
+@Composable
+private fun EditFieldInput(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    textColor: Color,
+    labelColor: Color,
+    borderColor: Color
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label, fontSize = 12.sp) },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = textColor,
+            unfocusedTextColor = textColor,
+            focusedBorderColor = AbsherGreenHeader,
+            unfocusedBorderColor = borderColor,
+            focusedLabelColor = AbsherGreenHeader,
+            unfocusedLabelColor = labelColor
+        )
+    )
+}
+

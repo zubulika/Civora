@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 
 class ProfileViewModel(
-    userRepository: UserRepository
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     val userProfile: StateFlow<UserProfile> = userRepository.userProfile
@@ -22,6 +22,10 @@ class ProfileViewModel(
             started = SharingStarted.Eagerly,
             initialValue = CivoraMockDataSource.currentUser
         )
+
+    fun updateProfile(updated: UserProfile) {
+        userRepository.updateUserProfile(updated)
+    }
 
     private val _biometricsEnabled = MutableStateFlow(true)
     val biometricsEnabled: StateFlow<Boolean> = _biometricsEnabled.asStateFlow()

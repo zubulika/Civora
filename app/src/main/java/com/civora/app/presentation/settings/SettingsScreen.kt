@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -41,11 +43,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.civora.app.core.designsystem.AppLanguage
+import com.civora.app.core.designsystem.LanguageState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,6 +70,16 @@ import com.civora.app.core.designsystem.AbsherLightTextMuted
 import com.civora.app.core.designsystem.AbsherLightTextPrimary
 import com.civora.app.core.designsystem.AbsherMint
 import com.civora.app.core.designsystem.AbsherTextMuted
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import com.civora.app.core.update.AppUpdateInfo
+import com.civora.app.core.update.UpdateDialog
+import com.civora.app.core.update.UpdateManager
+import kotlinx.coroutines.launch
 import com.civora.app.core.designsystem.AppThemeMode
 import com.civora.app.core.designsystem.ThemeState
 
@@ -87,6 +102,11 @@ fun SettingsScreen(
     val textMuted = if (isDark) AbsherTextMuted else AbsherLightTextMuted
 
     var biometricsEnabled by remember { mutableStateOf(true) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var checkingForUpdate by remember { mutableStateOf(false) }
+    var updateInfoToDisplay by remember { mutableStateOf<AppUpdateInfo?>(null) }
 
     Column(
         modifier = Modifier
@@ -276,7 +296,11 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable { showLanguageDialog = true }
+                                .padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -290,55 +314,224 @@ fun SettingsScreen(
                                 Spacer(modifier = Modifier.width(14.dp))
                                 Column {
                                     Text(
-                                        text = "App Language",
+                                        text = "Document & App Language",
                                         color = textPrimary,
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Medium
                                     )
                                     Text(
-                                        text = "English (US)",
+                                        text = if (LanguageState.currentLanguage == AppLanguage.ENGLISH) 
+                                            "English • Resident ID (Template 1)" 
+                                        else 
+                                            "العربية • هوية مقيم (النسخة ٢)",
                                         color = textMuted,
                                         fontSize = 12.sp
                                     )
                                 }
                             }
+                            Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = "Change Language",
+                                tint = textMuted,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                 }
             }
 
-            // 3. App Info
+            // Language Selection Dialog
+            if (showLanguageDialog) {
+                AlertDialog(
+                    onDismissRequest = { showLanguageDialog = false },
+                    title = {
+                        Text(
+                            text = "Select Document & UI Language",
+                            fontWeight = FontWeight.Bold,
+                            color = textPrimary
+                        )
+                    },
+                    text = {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            AppLanguage.entries.forEach { lang ->
+                                val isSelected = LanguageState.currentLanguage == lang
+                                Card(
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = if (isSelected) 
+                                            AbsherMint.copy(alpha = 0.12f) 
+                                        else 
+                                            if (isDark) AbsherDarkSection else Color(0xFFF5F5F5)
+                                    ),
+                                    border = BorderStroke(
+                                        width = if (isSelected) 2.dp else 1.dp,
+                                        color = if (isSelected) AbsherMint else cardBorder
+                                    ),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            LanguageState.setLanguage(lang)
+                                            showLanguageDialog = false
+                                        }
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(14.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Column {
+                                            Text(
+                                                text = "${lang.displayName} (${lang.nativeName})",
+                                                color = textPrimary,
+                                                fontSize = 15.sp,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                            )
+                                            Text(
+                                                text = if (lang == AppLanguage.ENGLISH) 
+                                                    "Official English Resident ID Layout" 
+                                                else 
+                                                    "قالب هوية مقيم الرسمي باللغة العربية",
+                                                color = textMuted,
+                                                fontSize = 12.sp
+                                            )
+                                        }
+                                        if (isSelected) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = "Selected",
+                                                tint = AbsherMint,
+                                                modifier = Modifier.size(22.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showLanguageDialog = false }) {
+                            Text("Done", color = AbsherMint)
+                        }
+                    },
+                    containerColor = cardBg
+                )
+            }
+
+            // 3. App Info & Updates
             Card(
                 shape = RoundedCornerShape(14.dp),
                 colors = CardDefaults.cardColors(containerColor = cardBg),
                 border = BorderStroke(1.dp, cardBorder),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = AbsherMint,
-                        modifier = Modifier.size(24.dp)
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = AbsherMint,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(14.dp))
+                        Column {
+                            Text(
+                                text = "Absher Individual Platform",
+                                color = textPrimary,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Version 3.3.3 • Ministry of Interior",
+                                color = textMuted,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(
+                        color = cardBorder.copy(alpha = 0.5f),
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
-                    Spacer(modifier = Modifier.width(14.dp))
-                    Column {
-                        Text(
-                            text = "Absher Individual Platform",
-                            color = textPrimary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Version 3.3.3 • Ministry of Interior",
-                            color = textMuted,
-                            fontSize = 12.sp
-                        )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
+                            .clickable(enabled = !checkingForUpdate) {
+                                checkingForUpdate = true
+                                coroutineScope.launch {
+                                    val result = UpdateManager(context).checkForUpdate(currentVersion = "3.3.3")
+                                    checkingForUpdate = false
+                                    result.onSuccess { info ->
+                                        if (info.isUpdateAvailable) {
+                                            updateInfoToDisplay = info
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Absher is up to date (v3.3.3)",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }.onFailure { err ->
+                                        Toast.makeText(
+                                            context,
+                                            "Update check: ${err.localizedMessage ?: "No release found"}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.SystemUpdate,
+                                contentDescription = null,
+                                tint = AbsherMint,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Column {
+                                Text(
+                                    text = "Check for Updates",
+                                    color = textPrimary,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = if (checkingForUpdate) "Checking GitHub releases..." else "Scan for official app releases",
+                                    color = textMuted,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+
+                        if (checkingForUpdate) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = AbsherMint
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = "Check for Updates",
+                                tint = textMuted,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -378,6 +571,20 @@ fun SettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        if (updateInfoToDisplay != null) {
+            UpdateDialog(
+                updateInfo = updateInfoToDisplay!!,
+                onConfirmUpdate = {
+                    val info = updateInfoToDisplay!!
+                    updateInfoToDisplay = null
+                    UpdateManager(context).startDownloadAndInstall(info.downloadUrl) {
+                        Toast.makeText(context, "Starting Absher update download...", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onDismiss = { updateInfoToDisplay = null }
+            )
         }
     }
 }

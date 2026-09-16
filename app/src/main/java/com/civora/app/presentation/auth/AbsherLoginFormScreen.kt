@@ -56,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.civora.app.R
 import com.civora.app.core.components.AbsherHeaderBranding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.collectAsState
 import com.civora.app.core.designsystem.AbsherCardBg
 import com.civora.app.core.designsystem.AbsherDarkSection
 import com.civora.app.core.designsystem.AbsherGreenHeader
@@ -65,7 +67,8 @@ import com.civora.app.core.designsystem.LocalThemeMode
 @Composable
 fun AbsherLoginFormScreen(
     onBackClick: () -> Unit,
-    onLoginSubmit: () -> Unit
+    onLoginSubmit: () -> Unit,
+    viewModel: AuthViewModel? = null
 ) {
     val themeMode = LocalThemeMode.current
     val systemDark = isSystemInDarkTheme()
@@ -75,13 +78,14 @@ fun AbsherLoginFormScreen(
         AppThemeMode.SYSTEM -> systemDark
     }
     val focusManager = LocalFocusManager.current
+    val authState = viewModel?.uiState?.collectAsState()?.value
 
-    var username by remember { mutableStateOf("MD ABDUL HALIM") }
-    var password by remember { mutableStateOf("••••••••") }
+    var username by remember { mutableStateOf("1098442190") }
+    var password by remember { mutableStateOf("Civora2026!") }
     var keepMeLoggedIn by remember { mutableStateOf(true) }
 
     // Validation threshold: username not blank and password has at least 4 characters
-    val isFormValid = username.isNotBlank() && password.length >= 4
+    val isFormValid = username.isNotBlank() && password.length >= 4 && (authState?.isLoading != true)
 
     val bgColor = if (isDark) AbsherDarkSection else Color(0xFFFBFDFC)
     val textPrimary = if (isDark) Color(0xFFE2ECE7) else Color(0xFF1E2822)
@@ -231,11 +235,44 @@ fun AbsherLoginFormScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(100.dp))
+        if (authState?.errorMessage != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (isDark) Color(0xFF3B1F22) else Color(0xFFFFEBEE))
+                    .border(
+                        width = 1.dp,
+                        color = if (isDark) Color(0xFFB71C1C) else Color(0xFFFFCDD2),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = authState.errorMessage,
+                    color = if (isDark) Color(0xFFFF8A80) else Color(0xFFC62828),
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        } else {
+            Spacer(modifier = Modifier.height(60.dp))
+        }
 
         // 6. Log In Button (enabled only when meeting criteria)
         Button(
-            onClick = onLoginSubmit,
+            onClick = {
+                focusManager.clearFocus()
+                if (viewModel != null) {
+                    viewModel.login(username, password) {
+                        onLoginSubmit()
+                    }
+                } else {
+                    onLoginSubmit()
+                }
+            },
             enabled = isFormValid,
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
@@ -248,11 +285,25 @@ fun AbsherLoginFormScreen(
                 .fillMaxWidth()
                 .height(48.dp)
         ) {
-            Text(
-                text = "Log In",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
+            if (authState?.isLoading == true) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = "Authenticating...",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            } else {
+                Text(
+                    text = "Log In",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(22.dp))

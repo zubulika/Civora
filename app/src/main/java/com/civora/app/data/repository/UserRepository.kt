@@ -14,6 +14,30 @@ class UserRepository {
     private val _userState = MutableStateFlow(CivoraMockDataSource.currentUser)
     val userProfile: Flow<UserProfile> = _userState.asStateFlow()
 
+    fun updateUserProfile(updated: UserProfile) {
+        _userState.value = updated
+        try {
+            val db = FirebaseFirestore.getInstance()
+            val docId = updated.id.ifEmpty { "usr_992140" }
+            val map = mapOf(
+                "fullNameEn" to updated.fullNameEn,
+                "fullNameAr" to updated.fullNameAr,
+                "nationalId" to updated.nationalId,
+                "dateOfBirth" to updated.dateOfBirth,
+                "nationality" to updated.nationality,
+                "verificationLevel" to updated.verificationLevel.name,
+                "digitalIdActive" to updated.digitalIdActive,
+                "totalDocuments" to updated.totalDocuments,
+                "activeRequestsCount" to updated.activeRequestsCount,
+                "unreadNotificationsCount" to updated.unreadNotificationsCount
+            )
+            db.collection("users").document(docId)
+                .set(map, com.google.firebase.firestore.SetOptions.merge())
+        } catch (_: Exception) {
+            // Fallback in-memory
+        }
+    }
+
     private val _notifications = MutableStateFlow(CivoraMockDataSource.notifications)
     val notifications: Flow<List<NotificationItem>> = _notifications.asStateFlow()
 

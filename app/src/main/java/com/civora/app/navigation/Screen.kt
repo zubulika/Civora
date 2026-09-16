@@ -20,4 +20,5 @@ sealed class Screen(val route: String) {
     object Other : Screen("other")
     object PassportDetail : Screen("passport_detail")
     object ResidentIdDetail : Screen("resident_id_detail")
+    object DigitalIdViewer : Screen("digital_id_viewer")
 }

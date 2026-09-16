@@ -23,8 +23,28 @@ object FirestoreMappers {
                 nationalId = doc.getString("nationalId") ?: "",
                 fullNameEn = doc.getString("fullNameEn") ?: "",
                 fullNameAr = doc.getString("fullNameAr") ?: "",
-                dateOfBirth = doc.getString("dateOfBirth") ?: "",
-                nationality = doc.getString("nationality") ?: "Saudi Arabia",
+                dateOfBirth = doc.getString("dateOfBirth") ?: "1988/02/03",
+                dateOfBirthAr = doc.getString("dateOfBirthAr") ?: "١٩٨٨/٠٢/٠٣",
+                dateOfBirthHijri = doc.getString("dateOfBirthHijri") ?: "1408/10/18",
+                nationality = doc.getString("nationality") ?: "Bangladesh",
+                nationalityAr = doc.getString("nationalityAr") ?: "بنجلاديش",
+                placeOfBirthEn = doc.getString("placeOfBirthEn") ?: "Bangladesh",
+                placeOfBirthAr = doc.getString("placeOfBirthAr") ?: "بنجلاديش",
+                religionEn = doc.getString("religionEn") ?: "Islam",
+                religionAr = doc.getString("religionAr") ?: "الاسلام",
+                professionEn = doc.getString("professionEn") ?: "Laundry Worker",
+                professionAr = doc.getString("professionAr") ?: "عامل غسيل ملابس",
+                sponsorId = doc.getString("sponsorId") ?: "7034884309",
+                sponsorNameEn = doc.getString("sponsorNameEn") ?: "Durrat Najah Laundry",
+                sponsorName = doc.getString("sponsorName") ?: "مؤسسة درر نجاح للملابس",
+                issuePlaceEn = doc.getString("issuePlaceEn") ?: "Elm Information Security",
+                issuePlace = doc.getString("issuePlace") ?: "شركة العلم لامن المعلومات",
+                workPlaceAr = doc.getString("workPlaceAr") ?: "منطقة الرياض",
+                expiryDateEn = doc.getString("expiryDateEn") ?: "2026/10/08",
+                expiryDateAr = doc.getString("expiryDateAr") ?: "٢٠٢٦/١٠/٠٨",
+                versionNumber = doc.getString("versionNumber") ?: "٢",
+                expiryDateDigits = doc.getString("expiryDateDigits") ?: "081026",
+                issueDateDigits = doc.getString("issueDateDigits") ?: "070926",
                 verificationLevel = try {
                     VerificationLevel.valueOf(doc.getString("verificationLevel") ?: "TIER_3_VERIFIED")
                 } catch (e: Exception) {
@@ -33,7 +53,20 @@ object FirestoreMappers {
                 digitalIdActive = doc.getBoolean("digitalIdActive") ?: true,
                 totalDocuments = doc.getLong("totalDocuments")?.toInt() ?: 4,
                 activeRequestsCount = doc.getLong("activeRequestsCount")?.toInt() ?: 0,
-                unreadNotificationsCount = doc.getLong("unreadNotificationsCount")?.toInt() ?: 0
+                unreadNotificationsCount = doc.getLong("unreadNotificationsCount")?.toInt() ?: 0,
+                birthCity = doc.getString("birthCity") ?: "-",
+                maritalStatus = doc.getString("maritalStatus") ?: "SINGLE",
+                sponsorshipTransfers = doc.getString("sponsorshipTransfers") ?: "2",
+                workPermit = doc.getString("workPermit") ?: "-",
+                biometricsCollected = doc.getString("biometricsCollected") ?: "Yes",
+                travelStatus = doc.getString("travelStatus") ?: "Inside Kingdom",
+                establishmentStatus = doc.getString("establishmentStatus") ?: "Active (Green)",
+                insuranceCompany = doc.getString("insuranceCompany") ?: "Bupa Arabia",
+                insurancePolicyNo = doc.getString("insurancePolicyNo") ?: "POL-9842144",
+                insuranceStatus = doc.getString("insuranceStatus") ?: "Valid & Active",
+                insuranceExpiry = doc.getString("insuranceExpiry") ?: "14/04/2026",
+                hajjEligibility = doc.getString("hajjEligibility") ?: "Not Eligible / Not Performed",
+                lastHajjYear = doc.getString("lastHajjYear") ?: "-"
             )
         } catch (e: Exception) {
             null

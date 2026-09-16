@@ -1,6 +1,7 @@
 package com.civora.app.presentation.auth
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -21,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
@@ -39,6 +41,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -71,6 +76,7 @@ data class PublicServiceCardItem(
 @Composable
 fun LoginScreen(
     onLoginClick: () -> Unit,
+    onViewDigitalDocumentsClick: () -> Unit = onLoginClick,
     onSettingsClick: () -> Unit,
     onNotificationsClick: () -> Unit
 ) {
@@ -95,10 +101,10 @@ fun LoginScreen(
         listOf(
             PublicServiceCardItem("Manage Digital Identity", iconVector = Icons.Outlined.Person),
             PublicServiceCardItem("Absher Travel for Visitors", iconRes = R.drawable.ic_absher_travel),
+            PublicServiceCardItem("Authentication Services", iconVector = Icons.Default.Fingerprint),
+            PublicServiceCardItem("View Digital Documents", iconRes = R.drawable.ic_qr_viewfinder),
             PublicServiceCardItem("Civil Affairs Appointments", iconRes = R.drawable.ic_appointment),
             PublicServiceCardItem("Passport Appointments", iconRes = R.drawable.ic_passport),
-            PublicServiceCardItem("Authentication Services", iconRes = R.drawable.ic_authenticator),
-            PublicServiceCardItem("View Digital Documents", iconRes = R.drawable.ic_qr_viewfinder),
             PublicServiceCardItem("Visitor Document Issuance", iconRes = R.drawable.ic_visitor_doc),
             PublicServiceCardItem("Activation Devices Locator", iconRes = R.drawable.ic_activation_device)
         )
@@ -121,6 +127,15 @@ fun LoginScreen(
                 .statusBarsPadding()
                 .padding(bottom = 24.dp)
         ) {
+            // Subtle Absher Brand Barcode Watermark in Top-Left (matches reference design)
+            AbsherWatermarkPattern(
+                color = if (isDark) Color(0xFF1E3A2F).copy(alpha = 0.45f) else Color(0xFF078B57).copy(alpha = 0.10f),
+                modifier = Modifier
+                    .fillMaxWidth(0.55f)
+                    .height(160.dp)
+                    .align(Alignment.TopStart)
+            )
+
             Column(modifier = Modifier.fillMaxWidth()) {
                 // Top Right Action Buttons (Settings & Notifications)
                 Row(
@@ -201,7 +216,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 2. Public Services Vertically Stacked
+        // 2. Public Services Grid (2 Columns)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -232,20 +247,37 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Vertically stacked service cards
+            // 2-Column Grid Layout
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                visibleServices.forEach { item ->
-                    VerticalPublicServiceCard(
-                        item = item,
-                        cardBg = cardBg,
-                        cardBorder = cardBorder,
-                        textPrimary = textPrimary,
-                        textMuted = textMuted,
-                        onClick = onLoginClick
-                    )
+                visibleServices.chunked(2).forEach { rowItems ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        rowItems.forEach { item ->
+                            GridPublicServiceCard(
+                                item = item,
+                                cardBg = cardBg,
+                                cardBorder = cardBorder,
+                                textPrimary = textPrimary,
+                                onClick = {
+                                    if (item.title == "View Digital Documents") {
+                                        onViewDigitalDocumentsClick()
+                                    } else {
+                                        onLoginClick()
+                                    }
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        // If odd number of items in the last row, add an empty placeholder to maintain alignment
+                        if (rowItems.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
                 }
             }
         }
@@ -253,61 +285,84 @@ fun LoginScreen(
 }
 
 @Composable
-private fun VerticalPublicServiceCard(
+private fun GridPublicServiceCard(
     item: PublicServiceCardItem,
     cardBg: Color,
     cardBorder: Color,
     textPrimary: Color,
-    textMuted: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = cardBg),
         border = BorderStroke(1.dp, cardBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(68.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        modifier = modifier
+            .height(128.dp)
             .clickable { onClick() }
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.Start
         ) {
             if (item.iconRes != null) {
                 Icon(
                     painter = painterResource(id = item.iconRes),
                     contentDescription = item.title,
                     tint = AbsherGreenHeader,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(36.dp)
                 )
             } else if (item.iconVector != null) {
                 Icon(
                     imageVector = item.iconVector,
                     contentDescription = item.title,
                     tint = AbsherGreenHeader,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(36.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.width(16.dp))
 
             Text(
                 text = item.title,
                 color = textPrimary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Normal,
-                modifier = Modifier.weight(1f)
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
+        }
+    }
+}
 
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = textMuted,
-                modifier = Modifier.size(20.dp)
+@Composable
+private fun AbsherWatermarkPattern(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val barWidth = 14.dp.toPx()
+        val cornerRadius = CornerRadius(7.dp.toPx(), 7.dp.toPx())
+        // Vertical bars extending downwards from y = -30dp with rounded bottoms
+        val bars = listOf(
+            Pair(12.dp.toPx(), 140.dp.toPx()),
+            Pair(32.dp.toPx(), 90.dp.toPx()),
+            Pair(52.dp.toPx(), 115.dp.toPx()),
+            Pair(72.dp.toPx(), 80.dp.toPx()),
+            Pair(92.dp.toPx(), 135.dp.toPx()),
+            Pair(112.dp.toPx(), 105.dp.toPx()),
+            Pair(132.dp.toPx(), 65.dp.toPx()),
+            Pair(152.dp.toPx(), 95.dp.toPx())
+        )
+        for ((x, h) in bars) {
+            drawRoundRect(
+                color = color,
+                topLeft = Offset(x, -30.dp.toPx()),
+                size = Size(barWidth, h + 30.dp.toPx()),
+                cornerRadius = cornerRadius
             )
         }
     }

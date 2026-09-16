@@ -1,0 +1,671 @@
+package com.civora.app.core.components
+
+import android.graphics.Bitmap
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.civora.app.R
+import com.civora.app.core.designsystem.AppLanguage
+import com.civora.app.core.designsystem.LanguageState
+import com.civora.app.core.model.UserProfile
+import com.civora.app.core.util.OfficialQrGenerator
+
+/**
+ * Extension helper to convert ASCII digits (0-9) to Eastern Arabic numerals (٠-٩).
+ */
+fun String.toEasternArabicDigits(): String {
+    val western = "0123456789"
+    val eastern = "٠١٢٣٤٥٦٧٨٩"
+    val sb = StringBuilder()
+    for (ch in this) {
+        val idx = western.indexOf(ch)
+        if (idx != -1) sb.append(eastern[idx]) else sb.append(ch)
+    }
+    return sb.toString()
+}
+
+/**
+ * Authentic Saudi Resident ID / Muqeem Digital Document Card.
+ * Uses the official Ministry of Interior template background (bg_resident_card.webp)
+ * with 1:1 pixel-perfect alignments for the photo cutout, QR code, 1D barcode,
+ * and dynamic resident fields matching the reference image.
+ */
+@Composable
+fun DynamicMuqeemCard(
+    user: UserProfile,
+    modifier: Modifier = Modifier,
+    language: AppLanguage = LanguageState.currentLanguage
+) {
+    Card(
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFCFBF7)),
+        border = BorderStroke(1.dp, Color(0xFFE2DDD0)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        modifier = modifier.aspectRatio(1.58f) // ISO/IEC 7810 ID-1 standard aspect ratio
+    ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val cardWidth = maxWidth
+            val cardHeight = maxHeight
+
+            // Proportional scaling multiplier based on reference width (360dp)
+            val scale = (cardWidth / 360.dp).coerceIn(0.65f, 2.2f)
+
+            // 1. Authentic Template Background (Guilloche Waves, Watermark, Seals, Calligraphy)
+            Image(
+                painter = painterResource(id = R.drawable.bg_resident_card),
+                contentDescription = "Saudi Resident ID Template Background",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // 2. Version Indicator (aligned immediately to the left of 'رقم النسخة' in top-left)
+            Box(
+                modifier = Modifier
+                    .offset(
+                        x = cardWidth * 0.098f,
+                        y = cardHeight * 0.155f
+                    )
+            ) {
+                Text(
+                    text = if (language == AppLanguage.ENGLISH) "1" else user.versionNumber.toEasternArabicDigits(),
+                    color = Color(0xFF222222),
+                    fontSize = (15f * scale).sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            // 3. Citizen Portrait Photo (Fitted precisely inside template's photo frame cutout)
+            Box(
+                modifier = Modifier
+                    .offset(
+                        x = cardWidth * 0.058f,
+                        y = cardHeight * 0.282f
+                    )
+                    .size(
+                        width = cardWidth * 0.254f,
+                        height = cardHeight * 0.461f
+                    )
+                    .clip(RoundedCornerShape(2.dp * scale))
+                    .background(Color(0xFFE8EEF4))
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.user_avatar),
+                    contentDescription = "Cardholder Photo",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            // 4. Lower Verification Box (White Box with QR Code + 4-Line Arabic Security Disclaimer)
+            val qrPayload = remember(user.nationalId, user.expiryDateDigits) {
+                OfficialQrGenerator.buildPayload(user)
+            }
+            val qrBitmap = remember(qrPayload) {
+                OfficialQrGenerator.generateBitmap(qrPayload, size = 180)
+            }
+
+            Box(
+                modifier = Modifier
+                    .offset(
+                        x = cardWidth * 0.046f,
+                        y = cardHeight * 0.758f
+                    )
+                    .size(
+                        width = cardWidth * 0.266f,
+                        height = cardHeight * 0.165f
+                    )
+                    .background(Color.White, RoundedCornerShape(4.dp * scale))
+                    .border(BorderStroke(0.5.dp, Color(0xFFDCD6C8)), RoundedCornerShape(4.dp * scale))
+                    .padding(horizontal = 3.dp * scale, vertical = 2.dp * scale),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    // QR Code with centered Absher emblem
+                    Box(
+                        modifier = Modifier
+                            .size(cardHeight * 0.142f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (qrBitmap != null) {
+                            Image(
+                                bitmap = qrBitmap.asImageBitmap(),
+                                contentDescription = "Card QR Code",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            // Authentic Centered Absher Emblem over QR Code
+                            Box(
+                                modifier = Modifier
+                                    .size(cardHeight * 0.046f)
+                                    .background(Color.White, RoundedCornerShape(1.dp * scale))
+                                    .padding(0.8.dp * scale),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_absher_qr_emblem),
+                                    contentDescription = "Absher QR Emblem",
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+                    }
+
+                    // 4-Line Arabic Official Disclaimer
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.End,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 1.dp * scale)
+                    ) {
+                        Text(
+                            text = "يجب التحقق",
+                            fontSize = (4.8f * scale).sp,
+                            lineHeight = (5.6f * scale).sp,
+                            color = Color(0xFF111111),
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.End
+                        )
+                        Text(
+                            text = "من الرمز السريع",
+                            fontSize = (4.8f * scale).sp,
+                            lineHeight = (5.6f * scale).sp,
+                            color = Color(0xFF111111),
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.End
+                        )
+                        Text(
+                            text = "قبل اعتماد",
+                            fontSize = (4.8f * scale).sp,
+                            lineHeight = (5.6f * scale).sp,
+                            color = Color(0xFF111111),
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.End
+                        )
+                        Text(
+                            text = "التعامل مع الهوية",
+                            fontSize = (4.8f * scale).sp,
+                            lineHeight = (5.6f * scale).sp,
+                            color = Color(0xFF111111),
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.End
+                        )
+                    }
+                }
+            }
+
+            // 5. 1D Barcode Strip at Bottom-Left (under verification box)
+            Box(
+                modifier = Modifier
+                    .offset(
+                        x = cardWidth * 0.057f,
+                        y = cardHeight * 0.930f
+                    )
+                    .size(
+                        width = cardWidth * 0.254f,
+                        height = cardHeight * 0.058f
+                    )
+                    .background(Color.White)
+                    .padding(vertical = 1.dp * scale)
+            ) {
+                ResidentBarcode()
+            }
+
+            // 6. Dynamic Citizen Data Fields (Aligned across the guilloche security region)
+            Box(
+                modifier = Modifier
+                    .offset(
+                        x = cardWidth * 0.320f,
+                        y = cardHeight * 0.248f
+                    )
+                    .size(
+                        width = cardWidth * 0.635f,
+                        height = cardHeight * 0.745f
+                    )
+            ) {
+                if (language == AppLanguage.ENGLISH) {
+                    EnglishDataLayout(user = user, scale = scale)
+                } else {
+                    ArabicDataLayout(user = user, scale = scale)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Authentic 1D Barcode Component using Canvas rendering.
+ */
+@Composable
+private fun ResidentBarcode(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val pattern = listOf(
+            2, 1, 1, 2, 3, 1, 2, 2, 1, 3, 1, 2, 1, 1, 3, 2,
+            1, 2, 2, 1, 1, 3, 2, 1, 3, 1, 1, 2, 2, 2, 1, 1,
+            2, 3, 1, 2, 1, 2, 2, 1, 3, 1, 2, 2, 1, 1, 2, 3,
+            1, 2, 1, 3, 2, 1, 2, 2, 1, 2, 3, 1, 1, 2, 2, 2
+        )
+        val totalUnits = pattern.sum()
+        val unitWidth = size.width / totalUnits.toFloat()
+
+        var currentX = 0f
+        var isBlack = true
+        for (w in pattern) {
+            val barW = w * unitWidth
+            if (isBlack) {
+                drawRect(
+                    color = Color.Black,
+                    topLeft = Offset(currentX, 0f),
+                    size = Size(barW, size.height)
+                )
+            }
+            currentX += barW
+            isBlack = !isBlack
+        }
+    }
+}
+
+/**
+ * Authentic Arabic Muqeem Data Layout:
+ * Formatted with official RTL (Right-to-Left) direction, bold Arabic name on top,
+ * English uppercase name below, and pixel-aligned data rows matching the reference ID.
+ */
+@Composable
+private fun ArabicDataLayout(user: UserProfile, scale: Float) {
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.Start
+        ) {
+            // Names Header (Arabic on top, English below)
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = user.fullNameAr,
+                    color = Color(0xFF111111),
+                    fontSize = (13.0f * scale).sp,
+                    fontWeight = FontWeight.Black,
+                    textAlign = TextAlign.Start,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(0.5.dp * scale))
+                Text(
+                    text = user.fullNameEn.uppercase(),
+                    color = Color(0xFF1A1A1A),
+                    fontSize = (9.2f * scale).sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (0.35f * scale).sp,
+                    textAlign = TextAlign.Start,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(modifier = Modifier.height(3.0.dp * scale))
+
+            // Row 1: Expiry Date (Left col) | National ID (Right col)
+            TwoColumnArabicRow(
+                rightLabel = "رقم الهوية:",
+                rightValue = user.nationalId.toEasternArabicDigits(),
+                leftLabel = "تاريخ الانتهاء:",
+                leftValue = user.expiryDateAr.ifEmpty { user.expiryDateEn.toEasternArabicDigits() },
+                scale = scale
+            )
+
+            // Row 2: Place of Birth (Left col) | Date of Birth (Right col)
+            TwoColumnArabicRow(
+                rightLabel = "تاريخ الميلاد:",
+                rightValue = user.dateOfBirthAr.ifEmpty { user.dateOfBirth.toEasternArabicDigits() },
+                leftLabel = "مكان الميلاد:",
+                leftValue = user.placeOfBirthAr,
+                scale = scale
+            )
+
+            // Row 3: Religion (Left col) | Nationality (Right col)
+            TwoColumnArabicRow(
+                rightLabel = "الجنسية:",
+                rightValue = user.nationalityAr,
+                leftLabel = "الديانة:",
+                leftValue = user.religionAr,
+                scale = scale
+            )
+
+            // Row 4: Profession / Occupation
+            SingleArabicRow(
+                label = "المهنة:",
+                value = user.professionAr,
+                scale = scale
+            )
+
+            // Row 5: Employer / Sponsor ID
+            SingleArabicRow(
+                label = "هوية صاحب العمل:",
+                value = user.sponsorId.toEasternArabicDigits(),
+                scale = scale
+            )
+
+            // Row 6: Place of Issue
+            SingleArabicRow(
+                label = "مكان الإصدار:",
+                value = user.issuePlace,
+                scale = scale
+            )
+
+            // Row 7: Place of Work
+            SingleArabicRow(
+                label = "مكان العمل:",
+                value = user.workPlaceAr,
+                scale = scale
+            )
+
+            // Row 8: Employer Name (visible along bottom border)
+            if (user.sponsorName.isNotEmpty()) {
+                SingleArabicRow(
+                    label = "اسم صاحب العمل:",
+                    value = user.sponsorName,
+                    scale = scale
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TwoColumnArabicRow(
+    rightLabel: String,
+    rightValue: String,
+    leftLabel: String,
+    leftValue: String,
+    scale: Float,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(12.5.dp * scale),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // In RTL: first child is on the RIGHT (Right Column)
+        Row(
+            modifier = Modifier.weight(1.08f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = rightLabel,
+                color = Color(0xFF666666),
+                fontSize = (6.4f * scale).sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                softWrap = false
+            )
+            Spacer(modifier = Modifier.width(3.dp * scale))
+            Text(
+                text = rightValue,
+                color = Color(0xFF111111),
+                fontSize = (6.6f * scale).sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        Spacer(modifier = Modifier.width(4.dp * scale))
+
+        // In RTL: second child is on the LEFT (Left Column)
+        Row(
+            modifier = Modifier.weight(1.0f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = leftLabel,
+                color = Color(0xFF666666),
+                fontSize = (6.4f * scale).sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                softWrap = false
+            )
+            Spacer(modifier = Modifier.width(3.dp * scale))
+            Text(
+                text = leftValue,
+                color = Color(0xFF111111),
+                fontSize = (6.6f * scale).sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun SingleArabicRow(
+    label: String,
+    value: String,
+    scale: Float,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(12.5.dp * scale),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            color = Color(0xFF666666),
+            fontSize = (6.4f * scale).sp,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            softWrap = false
+        )
+        Spacer(modifier = Modifier.width(3.dp * scale))
+        Text(
+            text = value,
+            color = Color(0xFF111111),
+            fontSize = (6.6f * scale).sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+/**
+ * English Resident ID Data Grid: Names Header + 2-Column Details.
+ */
+@Composable
+private fun EnglishDataLayout(user: UserProfile, scale: Float) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(2.5.dp * scale)
+    ) {
+        // Names Header
+        Column(modifier = Modifier.padding(bottom = 1.dp * scale)) {
+            Text(
+                text = user.fullNameAr,
+                color = Color(0xFF1E1E1E),
+                fontSize = (11f * scale).sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = user.fullNameEn.uppercase(),
+                color = Color(0xFF0A0A0A),
+                fontSize = (11.5f * scale).sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (0.3f * scale).sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        // Two-Column Grid
+        // Row 1: Iqama Number & Expiry Date
+        Row(modifier = Modifier.fillMaxWidth()) {
+            EnglishFieldItem(
+                label = "Iqama Number:",
+                value = user.nationalId,
+                scale = scale,
+                modifier = Modifier.weight(1.2f)
+            )
+            EnglishFieldItem(
+                label = "Expiry Date:",
+                value = user.expiryDateEn,
+                scale = scale,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Row 2: Date of Birth & Place of Birth
+        Row(modifier = Modifier.fillMaxWidth()) {
+            EnglishFieldItem(
+                label = "Date of Birth :",
+                value = user.dateOfBirth,
+                scale = scale,
+                modifier = Modifier.weight(1.2f)
+            )
+            EnglishFieldItem(
+                label = "Place of Birth :",
+                value = user.placeOfBirthEn,
+                scale = scale,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Row 3: Nationality & Religion
+        Row(modifier = Modifier.fillMaxWidth()) {
+            EnglishFieldItem(
+                label = "Nationality:",
+                value = user.nationality,
+                scale = scale,
+                modifier = Modifier.weight(1.2f)
+            )
+            EnglishFieldItem(
+                label = "Religion:",
+                value = user.religionEn,
+                scale = scale,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Row 4: Occupation
+        EnglishFieldItem(
+            label = "Occupation :",
+            value = user.professionEn,
+            scale = scale,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Row 5: Sponsor ID
+        EnglishFieldItem(
+            label = "Sponsor ID:",
+            value = user.sponsorId,
+            scale = scale,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Row 6: Issuing Place
+        EnglishFieldItem(
+            label = "Issuing Place:",
+            value = user.issuePlaceEn,
+            scale = scale,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Row 7: Place of Work
+        EnglishFieldItem(
+            label = "Work Place:",
+            value = "Riyadh Region",
+            scale = scale,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Row 8: Sponsor Name
+        EnglishFieldItem(
+            label = "Sponsor Name:",
+            value = user.sponsorNameEn.ifEmpty { user.sponsorName },
+            scale = scale,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+private fun EnglishFieldItem(
+    label: String,
+    value: String,
+    scale: Float,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            color = Color(0xFF555555),
+            fontSize = (7.8f * scale).sp,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.width(3.dp * scale))
+        Text(
+            text = value,
+            color = Color(0xFF111111),
+            fontSize = (8.2f * scale).sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}

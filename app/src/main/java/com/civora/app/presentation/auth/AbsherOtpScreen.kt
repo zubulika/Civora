@@ -73,7 +73,9 @@ fun AbsherOtpScreen(
         AppThemeMode.SYSTEM -> systemDark
     }
 
-    var otpCode by remember { mutableStateOf("964884") }
+    var otpCode by remember {
+        mutableStateOf(String.format("%06d", (100000..999999).random()))
+    }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 

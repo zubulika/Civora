@@ -12,11 +12,11 @@ enum class AppThemeMode(val title: String, val subtitle: String) {
 }
 
 object ThemeState {
-    var currentThemeMode by mutableStateOf(AppThemeMode.DARK)
+    var currentThemeMode by mutableStateOf(AppThemeMode.LIGHT)
 
     fun setTheme(mode: AppThemeMode) {
         currentThemeMode = mode
     }
 }
 
-val LocalThemeMode = compositionLocalOf { AppThemeMode.DARK }
+val LocalThemeMode = compositionLocalOf { AppThemeMode.LIGHT }

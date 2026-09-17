@@ -319,10 +319,16 @@ def install_and_launch_single(adb_path, dev_id, apk_path, env):
         capture_output=True, text=True, env=env
     )
     if install_res.returncode != 0:
-        print(f"[!] Streamed install on {dev_id} failed: {install_res.stderr.strip()}. Attempting fallback...")
-        remote_tmp = f"/data/local/tmp/{apk_path.name}"
-        subprocess.run([adb_path, "-s", dev_id, "push", str(apk_path), remote_tmp], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run([adb_path, "-s", dev_id, "shell", "pm", "install", "-r", remote_tmp], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        err_msg = install_res.stderr.strip()
+        if "INSTALL_FAILED_UPDATE_INCOMPATIBLE" in err_msg or "signatures do not match" in err_msg or "INSTALL_FAILED_VERSION_DOWNGRADE" in err_msg:
+            print(f"[*] Package conflict detected ({err_msg}). Cleanly replacing app on {device_label}...")
+            subprocess.run([adb_path, "-s", dev_id, "uninstall", APP_PACKAGE], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run([adb_path, "-s", dev_id, "install", str(apk_path)], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else:
+            print(f"[!] Streamed install on {dev_id} failed: {err_msg}. Attempting fallback...")
+            remote_tmp = f"/data/local/tmp/{apk_path.name}"
+            subprocess.run([adb_path, "-s", dev_id, "push", str(apk_path), remote_tmp], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run([adb_path, "-s", dev_id, "shell", "pm", "install", "-r", remote_tmp], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     print(f"[*] Launching {APP_PACKAGE}/{MAIN_ACTIVITY} on {device_label}...")
     subprocess.run(

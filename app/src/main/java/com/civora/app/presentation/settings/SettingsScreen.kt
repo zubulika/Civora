@@ -107,6 +107,13 @@ fun SettingsScreen(
     val coroutineScope = rememberCoroutineScope()
     var checkingForUpdate by remember { mutableStateOf(false) }
     var updateInfoToDisplay by remember { mutableStateOf<AppUpdateInfo?>(null) }
+    val currentVersionName = remember(context) {
+        try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
+        } catch (_: Exception) {
+            "1.0.0"
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -451,7 +458,7 @@ fun SettingsScreen(
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "Version 3.3.3 • Ministry of Interior",
+                                text = "Version $currentVersionName • Ministry of Interior",
                                 color = textMuted,
                                 fontSize = 12.sp
                             )
@@ -470,7 +477,7 @@ fun SettingsScreen(
                             .clickable(enabled = !checkingForUpdate) {
                                 checkingForUpdate = true
                                 coroutineScope.launch {
-                                    val result = UpdateManager(context).checkForUpdate(currentVersion = "3.3.3")
+                                    val result = UpdateManager(context).checkForUpdate(currentVersion = currentVersionName)
                                     checkingForUpdate = false
                                     result.onSuccess { info ->
                                         if (info.isUpdateAvailable) {
@@ -478,7 +485,7 @@ fun SettingsScreen(
                                         } else {
                                             Toast.makeText(
                                                 context,
-                                                "Absher is up to date (v3.3.3)",
+                                                "Absher is up to date (v$currentVersionName)",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }

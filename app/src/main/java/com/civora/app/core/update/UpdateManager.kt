@@ -101,6 +101,73 @@ class UpdateManager(private val context: Context) {
     }
 
     /**
+     * Directly streams and downloads the APK with live byte progress.
+     * Follows GitHub release CDN redirects seamlessly.
+     */
+    suspend fun downloadApkDirect(
+        downloadUrl: String,
+        onProgress: (bytesDownloaded: Long, totalBytes: Long) -> Unit
+    ): Result<File> = withContext(Dispatchers.IO) {
+        try {
+            var currentUrl = downloadUrl
+            var connection: HttpURLConnection? = null
+            var redirectCount = 0
+
+            while (redirectCount < 6) {
+                val url = URL(currentUrl)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    instanceFollowRedirects = false
+                    setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) Civora-Updater")
+                    setRequestProperty("Accept", "*/*")
+                    connectTimeout = 15000
+                    readTimeout = 30000
+                }
+                val code = conn.responseCode
+                if (code == HttpURLConnection.HTTP_MOVED_TEMP || code == HttpURLConnection.HTTP_MOVED_PERM || code == 307 || code == 308) {
+                    val newLoc = conn.getHeaderField("Location")
+                    conn.disconnect()
+                    if (newLoc.isNullOrEmpty()) break
+                    currentUrl = newLoc
+                    redirectCount++
+                } else {
+                    connection = conn
+                    break
+                }
+            }
+
+            val finalConn = connection ?: return@withContext Result.failure(Exception("Failed to connect to download server"))
+            if (finalConn.responseCode != 200) {
+                return@withContext Result.failure(Exception("Server returned HTTP ${finalConn.responseCode}"))
+            }
+
+            val totalBytes = finalConn.contentLengthLong
+            val targetDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: context.cacheDir
+            val targetFile = File(targetDir, "Absher-update.apk")
+            if (targetFile.exists()) {
+                targetFile.delete()
+            }
+
+            finalConn.inputStream.use { input ->
+                targetFile.outputStream().use { output ->
+                    val buffer = ByteArray(16384)
+                    var bytesRead: Int
+                    var totalRead = 0L
+                    while (input.read(buffer).also { bytesRead = it } != -1) {
+                        output.write(buffer, 0, bytesRead)
+                        totalRead += bytesRead
+                        onProgress(totalRead, totalBytes)
+                    }
+                    output.flush()
+                }
+            }
+
+            Result.success(targetFile)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Downloads the APK file using Android's DownloadManager and triggers package installation.
      */
     fun startDownloadAndInstall(downloadUrl: String, onDownloadStarted: () -> Unit = {}) {
@@ -126,7 +193,7 @@ class UpdateManager(private val context: Context) {
                 .setTitle("Absher Update")
                 .setDescription("Downloading latest version...")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationUri(Uri.fromFile(destinationFile))
+                .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, fileName)
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
 

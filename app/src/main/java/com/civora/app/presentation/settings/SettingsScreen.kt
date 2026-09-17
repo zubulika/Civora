@@ -107,6 +107,9 @@ fun SettingsScreen(
     val coroutineScope = rememberCoroutineScope()
     var checkingForUpdate by remember { mutableStateOf(false) }
     var updateInfoToDisplay by remember { mutableStateOf<AppUpdateInfo?>(null) }
+    var isDownloadingUpdate by remember { mutableStateOf(false) }
+    var downloadProgress by remember { mutableStateOf(0f) }
+    var downloadStatusText by remember { mutableStateOf("") }
     val currentVersionName = remember(context) {
         try {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
@@ -583,14 +586,42 @@ fun SettingsScreen(
         if (updateInfoToDisplay != null) {
             UpdateDialog(
                 updateInfo = updateInfoToDisplay!!,
+                isDownloading = isDownloadingUpdate,
+                downloadProgress = downloadProgress,
+                downloadStatusText = downloadStatusText,
                 onConfirmUpdate = {
                     val info = updateInfoToDisplay!!
-                    updateInfoToDisplay = null
-                    UpdateManager(context).startDownloadAndInstall(info.downloadUrl) {
-                        Toast.makeText(context, "Starting Absher update download...", Toast.LENGTH_SHORT).show()
+                    isDownloadingUpdate = true
+                    downloadProgress = 0f
+                    downloadStatusText = "Connecting to release server..."
+                    coroutineScope.launch {
+                        val manager = UpdateManager(context)
+                        val result = manager.downloadApkDirect(info.downloadUrl) { bytesRead, totalBytes ->
+                            if (totalBytes > 0L) {
+                                val progress = (bytesRead.toFloat() / totalBytes.toFloat()).coerceIn(0f, 1f)
+                                downloadProgress = progress
+                                val mbRead = bytesRead / (1024 * 1024f)
+                                val mbTotal = totalBytes / (1024 * 1024f)
+                                downloadStatusText = "Downloading: %.1f MB / %.1f MB".format(mbRead, mbTotal)
+                            } else {
+                                val mbRead = bytesRead / (1024 * 1024f)
+                                downloadStatusText = "Downloading: %.1f MB".format(mbRead)
+                            }
+                        }
+                        isDownloadingUpdate = false
+                        result.onSuccess { downloadedFile ->
+                            updateInfoToDisplay = null
+                            manager.installApk(downloadedFile)
+                        }.onFailure { error ->
+                            Toast.makeText(context, "Download failed: ${error.localizedMessage}", Toast.LENGTH_LONG).show()
+                        }
                     }
                 },
-                onDismiss = { updateInfoToDisplay = null }
+                onDismiss = {
+                    if (!isDownloadingUpdate) {
+                        updateInfoToDisplay = null
+                    }
+                }
             )
         }
     }

@@ -23,6 +23,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,6 +45,9 @@ import com.civora.app.core.designsystem.ThemeState
 @Composable
 fun UpdateDialog(
     updateInfo: AppUpdateInfo,
+    isDownloading: Boolean = false,
+    downloadProgress: Float = 0f,
+    downloadStatusText: String = "",
     onConfirmUpdate: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -60,7 +64,7 @@ fun UpdateDialog(
     val notesBg = if (isDark) AbsherCardBg else Color(0xFFF4F7F5)
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!isDownloading) onDismiss() },
         containerColor = dialogBg,
         shape = RoundedCornerShape(20.dp),
         title = {
@@ -85,7 +89,7 @@ fun UpdateDialog(
                 Spacer(modifier = Modifier.width(14.dp))
                 Column {
                     Text(
-                        text = "New Update Available",
+                        text = if (isDownloading) "Downloading Update" else "New Update Available",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = textPrimary
@@ -101,61 +105,105 @@ fun UpdateDialog(
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "A new version of Absher is ready to install with official improvements and security updates.",
-                    fontSize = 13.5.sp,
-                    color = textMuted,
-                    lineHeight = 19.sp
-                )
+                if (isDownloading) {
+                    Text(
+                        text = "Please keep the app open while the latest version of Absher is downloading.",
+                        fontSize = 13.5.sp,
+                        color = textMuted,
+                        lineHeight = 19.sp
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(110.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(notesBg)
-                        .padding(12.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Column {
+                    LinearProgressIndicator(
+                        progress = { downloadProgress },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp)),
+                        color = AbsherMint,
+                        trackColor = if (isDark) AbsherCardBg else Color(0xFFE0E0E0)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         Text(
-                            text = "Release Notes:",
+                            text = downloadStatusText.ifBlank { "Downloading..." },
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = textPrimary
+                            color = textMuted
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = updateInfo.releaseNotes.ifBlank { "General stability and performance improvements." },
+                            text = "${(downloadProgress * 100).toInt()}%",
                             fontSize = 12.sp,
-                            color = textMuted,
-                            lineHeight = 17.sp
+                            fontWeight = FontWeight.Bold,
+                            color = if (isDark) AbsherMint else AbsherGreenHeader
                         )
+                    }
+                } else {
+                    Text(
+                        text = "A new version of Absher is ready to install with official improvements and security updates.",
+                        fontSize = 13.5.sp,
+                        color = textMuted,
+                        lineHeight = 19.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(110.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(notesBg)
+                            .padding(12.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        Column {
+                            Text(
+                                text = "Release Notes:",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = textPrimary
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = updateInfo.releaseNotes.ifBlank { "General stability and performance improvements." },
+                                fontSize = 12.sp,
+                                color = textMuted,
+                                lineHeight = 17.sp
+                            )
+                        }
                     }
                 }
             }
         },
         confirmButton = {
-            Button(
-                onClick = onConfirmUpdate,
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AbsherGreenHeader)
-            ) {
-                Text(
-                    text = "Download & Install",
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold
-                )
+            if (!isDownloading) {
+                Button(
+                    onClick = onConfirmUpdate,
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = AbsherGreenHeader)
+                ) {
+                    Text(
+                        text = "Download & Install",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(
-                    text = "Later",
-                    color = textMuted
-                )
+            if (!isDownloading) {
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = "Later",
+                        color = textMuted
+                    )
+                }
             }
         }
     )

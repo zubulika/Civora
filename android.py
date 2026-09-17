@@ -383,7 +383,7 @@ def compute_source_snapshot(watch_paths):
     return snapshot
 
 
-def start_watch_loop(adb_path, target_devices, env, auto_discover=True):
+def start_watch_loop(adb_path, target_devices, env, auto_discover=True, target_filter="all"):
     watch_dirs = [
         APP_MODULE_DIR / "src",
         PROJECT_ROOT / "gradle",
@@ -417,6 +417,10 @@ def start_watch_loop(adb_path, target_devices, env, auto_discover=True):
                 active_devices = target_devices
                 if auto_discover:
                     live_devices = get_responsive_devices(adb_path, env)
+                    if target_filter == "emulator":
+                        live_devices = [d for d in live_devices if d.startswith("emulator-")]
+                    elif target_filter == "phone":
+                        live_devices = [d for d in live_devices if not d.startswith("emulator-")]
                     if live_devices:
                         active_devices = live_devices
 
@@ -436,6 +440,9 @@ def main():
     parser.add_argument("--build-only", action="store_true", help="Compile debug APK without launching")
     parser.add_argument("--no-watch", action="store_true", help="Build and launch once without file watching")
     parser.add_argument("--device", type=str, default=None, help="Target specific ADB device ID only")
+    parser.add_argument("--target", choices=["all", "emulator", "phone"], default="all", help="Target: 'all', 'emulator', or 'phone' (default: all)")
+    parser.add_argument("--emulator", "-e", action="store_true", help="Shortcut: target only desktop emulator")
+    parser.add_argument("--phone", "-p", action="store_true", help="Shortcut: target only physical smartphone")
     parser.add_argument("--no-emulator", action="store_true", help="Do not auto-launch desktop emulator if physical device is connected")
     parser.add_argument("--avd", type=str, default=DEFAULT_AVD_NAME, help="AVD name to launch if emulator is needed")
     parser.add_argument("--port", type=str, default=DEFAULT_PORT, help="Dedicated emulator port")
@@ -487,10 +494,19 @@ def main():
             wait_for_emulator(adb_path, env, expected_port=args.port, proc=emu_proc)
 
         # Re-query all responsive devices (will include both phone and emulator)
-        target_devices = get_responsive_devices(adb_path, env)
+        all_responsive = get_responsive_devices(adb_path, env)
+        if args.emulator or args.target == "emulator":
+            target_devices = [d for d in all_responsive if d.startswith("emulator-")]
+            target_filter = "emulator"
+        elif args.phone or args.target == "phone":
+            target_devices = [d for d in all_responsive if not d.startswith("emulator-")]
+            target_filter = "phone"
+        else:
+            target_devices = all_responsive
+            target_filter = "all"
 
     if not target_devices:
-        print("[!] No responsive devices or emulators found.")
+        print("[!] No responsive devices or emulators found matching criteria.")
         sys.exit(1)
 
     print(f"\n[+] Active Deployment Target(s) [{len(target_devices)}]:")
@@ -508,7 +524,7 @@ def main():
         return
 
     if not args.no_watch:
-        start_watch_loop(adb_path, target_devices, env, auto_discover=(args.device is None))
+        start_watch_loop(adb_path, target_devices, env, auto_discover=(args.device is None), target_filter=target_filter)
 
 
 if __name__ == "__main__":

@@ -109,7 +109,7 @@ fun LoginScreen(
 
     val row2Services = remember {
         listOf(
-            PublicServiceCardItem("Absher Action Services", iconRes = R.drawable.ic_absher_action),
+            PublicServiceCardItem("Authentication Services", iconRes = R.drawable.ic_authenticator),
             PublicServiceCardItem("View Digital Documents", iconRes = R.drawable.ic_qr_viewfinder),
             PublicServiceCardItem("Visitor Digital Document", iconRes = R.drawable.ic_visitor_doc),
             PublicServiceCardItem("Absher Activation Devices", iconRes = R.drawable.ic_activation_device)
@@ -320,8 +320,8 @@ private fun PublicServiceCard(
         border = BorderStroke(1.dp, cardBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = modifier
-            .width(98.dp)
-            .height(124.dp)
+            .width(112.dp)
+            .height(112.dp)
             .clickable { onClick() }
     ) {
         Column(
@@ -336,14 +336,14 @@ private fun PublicServiceCard(
                     painter = painterResource(id = item.iconRes),
                     contentDescription = item.title,
                     tint = AbsherGreenHeader,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(30.dp)
                 )
             } else if (item.iconVector != null) {
                 Icon(
                     imageVector = item.iconVector,
                     contentDescription = item.title,
                     tint = AbsherGreenHeader,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(30.dp)
                 )
             }
 
@@ -353,7 +353,7 @@ private fun PublicServiceCard(
                 fontSize = 12.sp,
                 lineHeight = 15.sp,
                 fontWeight = FontWeight.Medium,
-                maxLines = 3,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         }

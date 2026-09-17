@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.civora.app.R
+import com.civora.app.core.components.AbsherCornerPattern
 import com.civora.app.core.components.AbsherHeaderBranding
 import com.civora.app.core.designsystem.AbsherCardBg
 import com.civora.app.core.designsystem.AbsherDarkSection
@@ -88,8 +90,6 @@ fun LoginScreen(
         AppThemeMode.SYSTEM -> systemDark
     }
 
-    var isExpanded by remember { mutableStateOf(false) }
-
     val bgColor = if (isDark) AbsherDarkSection else AbsherLightBg
     val heroBg = if (isDark) Color(0xFF13201A) else AbsherLightHeroBg
     val cardBg = if (isDark) AbsherCardBg else AbsherLightCardBg
@@ -97,20 +97,24 @@ fun LoginScreen(
     val textPrimary = if (isDark) Color(0xFFE2ECE7) else AbsherLightTextPrimary
     val textMuted = if (isDark) Color(0xFF8F9E97) else AbsherLightTextMuted
 
-    val allServices = remember {
+    val row1Services = remember {
         listOf(
-            PublicServiceCardItem("Manage Digital Identity", iconVector = Icons.Outlined.Person),
+            PublicServiceCardItem("Manage Digital Identity", iconRes = R.drawable.ic_manage_identity),
             PublicServiceCardItem("Absher Travel for Visitors", iconRes = R.drawable.ic_absher_travel),
-            PublicServiceCardItem("Authentication Services", iconVector = Icons.Default.Fingerprint),
-            PublicServiceCardItem("View Digital Documents", iconRes = R.drawable.ic_qr_viewfinder),
-            PublicServiceCardItem("Civil Affairs Appointments", iconRes = R.drawable.ic_appointment),
-            PublicServiceCardItem("Passport Appointments", iconRes = R.drawable.ic_passport),
-            PublicServiceCardItem("Visitor Document Issuance", iconRes = R.drawable.ic_visitor_doc),
-            PublicServiceCardItem("Activation Devices Locator", iconRes = R.drawable.ic_activation_device)
+            PublicServiceCardItem("Civil Affairs Appointment", iconRes = R.drawable.ic_appointment),
+            PublicServiceCardItem("Passport Appointments", iconRes = R.drawable.ic_appointment),
+            PublicServiceCardItem("Absher Authenticator", iconRes = R.drawable.ic_absher_authenticator)
         )
     }
 
-    val visibleServices = if (isExpanded) allServices else allServices.take(4)
+    val row2Services = remember {
+        listOf(
+            PublicServiceCardItem("Absher Action Services", iconRes = R.drawable.ic_absher_action),
+            PublicServiceCardItem("View Digital Documents", iconRes = R.drawable.ic_qr_viewfinder),
+            PublicServiceCardItem("Visitor Digital Document", iconRes = R.drawable.ic_visitor_doc),
+            PublicServiceCardItem("Absher Activation Devices", iconRes = R.drawable.ic_activation_device)
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -127,9 +131,9 @@ fun LoginScreen(
                 .statusBarsPadding()
                 .padding(bottom = 24.dp)
         ) {
-            // Subtle Absher Brand Barcode Watermark in Top-Left (matches reference design)
-            AbsherWatermarkPattern(
-                color = if (isDark) Color(0xFF1E3A2F).copy(alpha = 0.45f) else Color(0xFF078B57).copy(alpha = 0.10f),
+            // Authentic Absher Top-Left Corner Guilloche Pattern (matches official design)
+            AbsherCornerPattern(
+                isDark = isDark,
                 modifier = Modifier
                     .fillMaxWidth(0.55f)
                     .height(160.dp)
@@ -216,17 +220,16 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 2. Public Services Grid (2 Columns)
+        // 2. Public Services - 2 Synchronized Horizontal Rows
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
                 .padding(bottom = 36.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 2.dp, vertical = 6.dp),
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -237,45 +240,62 @@ fun LoginScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = if (isExpanded) "Show Less" else "See All",
-                    color = AbsherGreenHeader,
+                    text = "See All",
+                    color = textMuted,
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.clickable { isExpanded = !isExpanded }
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.clickable { onLoginClick() }
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 2-Column Grid Layout
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            val servicesScrollState = rememberScrollState()
+
+            // Synchronized Two-Row Horizontal Scroll Container
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(servicesScrollState)
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                visibleServices.chunked(2).forEach { rowItems ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                val colCount = maxOf(row1Services.size, row2Services.size)
+                for (i in 0 until colCount) {
+                    val topItem = row1Services.getOrNull(i)
+                    val bottomItem = row2Services.getOrNull(i)
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        rowItems.forEach { item ->
-                            GridPublicServiceCard(
-                                item = item,
+                        if (topItem != null) {
+                            PublicServiceCard(
+                                item = topItem,
                                 cardBg = cardBg,
                                 cardBorder = cardBorder,
                                 textPrimary = textPrimary,
                                 onClick = {
-                                    if (item.title == "View Digital Documents") {
+                                    if (topItem.title == "View Digital Documents") {
                                         onViewDigitalDocumentsClick()
                                     } else {
                                         onLoginClick()
                                     }
-                                },
-                                modifier = Modifier.weight(1f)
+                                }
                             )
                         }
-                        // If odd number of items in the last row, add an empty placeholder to maintain alignment
-                        if (rowItems.size == 1) {
-                            Spacer(modifier = Modifier.weight(1f))
+                        if (bottomItem != null) {
+                            PublicServiceCard(
+                                item = bottomItem,
+                                cardBg = cardBg,
+                                cardBorder = cardBorder,
+                                textPrimary = textPrimary,
+                                onClick = {
+                                    if (bottomItem.title == "View Digital Documents") {
+                                        onViewDigitalDocumentsClick()
+                                    } else {
+                                        onLoginClick()
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -284,8 +304,9 @@ fun LoginScreen(
     }
 }
 
+
 @Composable
-private fun GridPublicServiceCard(
+private fun PublicServiceCard(
     item: PublicServiceCardItem,
     cardBg: Color,
     cardBorder: Color,
@@ -294,18 +315,19 @@ private fun GridPublicServiceCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = cardBg),
         border = BorderStroke(1.dp, cardBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = modifier
-            .height(128.dp)
+            .width(98.dp)
+            .height(124.dp)
             .clickable { onClick() }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.Start
         ) {
@@ -314,56 +336,27 @@ private fun GridPublicServiceCard(
                     painter = painterResource(id = item.iconRes),
                     contentDescription = item.title,
                     tint = AbsherGreenHeader,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             } else if (item.iconVector != null) {
                 Icon(
                     imageVector = item.iconVector,
                     contentDescription = item.title,
                     tint = AbsherGreenHeader,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
 
             Text(
                 text = item.title,
                 color = textPrimary,
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
+                fontSize = 12.sp,
+                lineHeight = 15.sp,
                 fontWeight = FontWeight.Medium,
-                maxLines = 2,
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
         }
     }
 }
 
-@Composable
-private fun AbsherWatermarkPattern(
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Canvas(modifier = modifier) {
-        val barWidth = 14.dp.toPx()
-        val cornerRadius = CornerRadius(7.dp.toPx(), 7.dp.toPx())
-        // Vertical bars extending downwards from y = -30dp with rounded bottoms
-        val bars = listOf(
-            Pair(12.dp.toPx(), 140.dp.toPx()),
-            Pair(32.dp.toPx(), 90.dp.toPx()),
-            Pair(52.dp.toPx(), 115.dp.toPx()),
-            Pair(72.dp.toPx(), 80.dp.toPx()),
-            Pair(92.dp.toPx(), 135.dp.toPx()),
-            Pair(112.dp.toPx(), 105.dp.toPx()),
-            Pair(132.dp.toPx(), 65.dp.toPx()),
-            Pair(152.dp.toPx(), 95.dp.toPx())
-        )
-        for ((x, h) in bars) {
-            drawRoundRect(
-                color = color,
-                topLeft = Offset(x, -30.dp.toPx()),
-                size = Size(barWidth, h + 30.dp.toPx()),
-                cornerRadius = cornerRadius
-            )
-        }
-    }
-}

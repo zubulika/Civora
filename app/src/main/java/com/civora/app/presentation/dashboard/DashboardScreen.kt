@@ -247,7 +247,7 @@ fun DashboardScreen(
                             ) {
                                 AbsherGridCard(
                                     title = "Authentication\nServices",
-                                    iconVector = Icons.Default.Fingerprint,
+                                    iconRes = R.drawable.ic_authenticator,
                                     cardBg = quickAccessCardBg,
                                     cardBorder = quickAccessCardBorder,
                                     iconColor = quickAccessIconColor,

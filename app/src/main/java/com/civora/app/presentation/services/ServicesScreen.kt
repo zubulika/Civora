@@ -231,7 +231,7 @@ fun ServicesScreen(
                             Icon(
                                 painter = painterResource(id = service.iconRes),
                                 contentDescription = service.title,
-                                tint = iconColor,
+                                tint = if (service.id == "passport") Color.Unspecified else iconColor,
                                 modifier = Modifier.size(32.dp)
                             )
 

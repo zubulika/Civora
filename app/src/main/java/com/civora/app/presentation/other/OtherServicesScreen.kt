@@ -102,8 +102,8 @@ fun OtherServicesScreen(
         OtherServiceItem("visit_visa", "Manage Visit\nVisa", R.drawable.ic_visa),
         OtherServiceItem("activation", "Absher\nActivation Sit...", R.drawable.ic_activation_device),
         OtherServiceItem("qabul", "Manage Qabul\nRequests", R.drawable.ic_qabul),
-        OtherServiceItem("birth_cert", "Birth\nCertificates S...", R.drawable.ic_register_newborn, isMultiLayer = true),
-        OtherServiceItem("death_cert", "Death\nCertificates S...", R.drawable.ic_driver_license, isMultiLayer = true),
+        OtherServiceItem("birth_cert", "Birth\nCertificates S...", R.drawable.ic_birth_certificates, isMultiLayer = true),
+        OtherServiceItem("death_cert", "Death\nCertificates S...", R.drawable.ic_death_certificates, isMultiLayer = true),
         OtherServiceItem("payments", "Government\nPayments", R.drawable.ic_gov_payments)
     )
 
@@ -365,7 +365,7 @@ private fun ServiceCardItem(
                 Icon(
                     painter = painterResource(id = item.iconRes),
                     contentDescription = item.title,
-                    tint = iconColor,
+                    tint = if (item.id in listOf("ehsan", "furijat")) Color.Unspecified else iconColor,
                     modifier = Modifier.size(30.dp)
                 )
 

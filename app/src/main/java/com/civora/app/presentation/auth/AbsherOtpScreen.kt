@@ -1,12 +1,10 @@
 package com.civora.app.presentation.auth
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -42,17 +39,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.civora.app.R
-import com.civora.app.core.components.AbsherBarcodeLogo
 import com.civora.app.core.components.AbsherHeaderBranding
 import com.civora.app.core.designsystem.AbsherCardBg
 import com.civora.app.core.designsystem.AbsherDarkSection
@@ -73,9 +70,21 @@ fun AbsherOtpScreen(
         AppThemeMode.SYSTEM -> systemDark
     }
 
-    var otpCode by remember { mutableStateOf("") }
+    // Initialize with a fresh random 6-digit code for authentic showoff display
+    val initialCode = remember { (100000..999999).random().toString() }
+    var textFieldValue by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = initialCode,
+                selection = TextRange(initialCode.length)
+            )
+        )
+    }
+    var hasUserEdited by remember { mutableStateOf(false) }
+
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val bgColor = if (isDark) AbsherDarkSection else Color(0xFFFBFDFC)
     val textPrimary = if (isDark) Color(0xFFE2ECE7) else Color(0xFF1E2822)
@@ -83,16 +92,11 @@ fun AbsherOtpScreen(
     val boxBg = if (isDark) AbsherCardBg else Color.White
     val boxBorder = if (isDark) Color(0xFF2E3A33) else Color(0xFFDCE6E1)
 
-    LaunchedEffect(Unit) {
-        // Request focus to show keyboard immediately for entering OTP
-        try {
-            focusRequester.requestFocus()
-        } catch (_: Exception) {}
-    }
-
-    LaunchedEffect(otpCode) {
-        if (otpCode.length == 6) {
+    // Auto-verify once user finishes typing 6 digits
+    LaunchedEffect(textFieldValue.text, hasUserEdited) {
+        if (hasUserEdited && textFieldValue.text.length == 6) {
             focusManager.clearFocus()
+            keyboardController?.hide()
             onOtpVerified()
         }
     }
@@ -160,58 +164,33 @@ fun AbsherOtpScreen(
 
         Spacer(modifier = Modifier.height(42.dp))
 
-        // 3. 6-Digit OTP Boxes
+        // 3. 6-Digit OTP Boxes (Stacked: Visual boxes underneath, real BasicTextField filling full area)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(58.dp)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) {
                     focusRequester.requestFocus()
+                    keyboardController?.show()
                 },
             contentAlignment = Alignment.Center
         ) {
-            // Hidden text field capturing input
-            BasicTextField(
-                value = otpCode,
-                onValueChange = {
-                    if (it.length <= 6 && it.all { char -> char.isDigit() }) {
-                        otpCode = it
-                        if (it.length == 6) {
-                            focusManager.clearFocus()
-                        }
-                    }
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.NumberPassword,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        focusManager.clearFocus()
-                        onOtpVerified()
-                    }
-                ),
-                modifier = Modifier
-                    .size(1.dp)
-                    .focusRequester(focusRequester)
-            )
-
             // Visual 6-Digit Cards
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 for (i in 0 until 6) {
-                    val digit = otpCode.getOrNull(i)?.toString() ?: ""
-                    val isCurrent = i == otpCode.length
+                    val digit = textFieldValue.text.getOrNull(i)?.toString() ?: ""
+                    val isCurrent = i == textFieldValue.text.length.coerceAtMost(5)
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .padding(horizontal = 3.dp)
                             .height(58.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(boxBg)
@@ -219,10 +198,7 @@ fun AbsherOtpScreen(
                                 width = if (isCurrent) 1.8.dp else 1.2.dp,
                                 color = if (isCurrent) AbsherGreenHeader else boxBorder,
                                 shape = RoundedCornerShape(12.dp)
-                            )
-                            .clickable {
-                                focusRequester.requestFocus()
-                            },
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -235,11 +211,54 @@ fun AbsherOtpScreen(
                     }
                 }
             }
+
+            // Real, full-bounds BasicTextField capturing all touches and IME input
+            BasicTextField(
+                value = textFieldValue,
+                onValueChange = { newValue ->
+                    hasUserEdited = true
+                    val prevText = textFieldValue.text
+                    val newText = newValue.text
+
+                    val updatedOtp = if (prevText.length == 6 && newText.length > 6) {
+                        // User started typing over a complete 6-digit code: start fresh with the new digit
+                        val typedChar = newText.filter { it.isDigit() }.lastOrNull()?.toString() ?: ""
+                        typedChar
+                    } else {
+                        // Regular typing or backspacing: filter digits and cap at 6
+                        newText.filter { it.isDigit() }.take(6)
+                    }
+
+                    textFieldValue = TextFieldValue(
+                        text = updatedOtp,
+                        selection = TextRange(updatedOtp.length)
+                    )
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                        onOtpVerified()
+                    }
+                ),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    color = Color.Transparent,
+                    fontSize = 1.sp
+                ),
+                cursorBrush = SolidColor(Color.Transparent),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .focusRequester(focusRequester)
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        // Resend Helper
+        // 4. Resend / Refresh Action
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
@@ -255,41 +274,41 @@ fun AbsherOtpScreen(
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable {
-                    // For development convenience, fills 123456 on explicit request
-                    otpCode = "123456"
+                    val freshCode = (100000..999999).random().toString()
+                    textFieldValue = TextFieldValue(
+                        text = freshCode,
+                        selection = TextRange(freshCode.length)
+                    )
+                    hasUserEdited = false
                 }
             )
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // 4. Primary Proceed Action Button
+        // 5. Primary Action Button
+
         Button(
             onClick = {
-                if (otpCode.length in 4..6) {
-                    focusManager.clearFocus()
-                    onOtpVerified()
-                }
+                focusManager.clearFocus()
+                keyboardController?.hide()
+                onOtpVerified()
             },
-            enabled = otpCode.length in 4..6,
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = AbsherGreenHeader,
-                contentColor = Color.White,
-                disabledContainerColor = if (isDark) Color(0xFF283A31) else Color(0xFFA5C2B4),
-                disabledContentColor = Color.White.copy(alpha = 0.7f)
+                contentColor = Color.White
             ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
         ) {
             Text(
-                text = "Verify & Proceed",
+                text = "Receive Code via SMS",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
             )
         }
 
-        Spacer(modifier = Modifier.height(36.dp))
     }
 }

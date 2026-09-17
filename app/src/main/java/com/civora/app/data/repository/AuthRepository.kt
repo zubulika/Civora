@@ -2,9 +2,13 @@ package com.civora.app.data.repository
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.civora.app.core.model.UserProfile
+import com.civora.app.data.firebase.FirestoreMappers
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -45,9 +49,9 @@ class AuthRepository(
      */
     val isUserLoggedIn: Boolean
         get() {
-            val firebaseLoggedIn = try { auth.currentUser != null } catch (_: Exception) { false }
             val localLoggedIn = prefs?.getBoolean(KEY_IS_LOGGED_IN, false) ?: false
-            return firebaseLoggedIn || localLoggedIn
+            val hasValidIdentifier = !savedUserIdentifier.isNullOrBlank()
+            return localLoggedIn && hasValidIdentifier
         }
 
     val savedUserIdentifier: String?
@@ -59,69 +63,85 @@ class AuthRepository(
             putString(KEY_USER_IDENTIFIER, identifier)
             putString(KEY_USER_UID, uid ?: auth.currentUser?.uid ?: "")
             putLong(KEY_LOGIN_TIMESTAMP, System.currentTimeMillis())
-            apply()
-        }
+        }?.commit()
     }
 
     fun clearLocalSession() {
-        prefs?.edit()?.clear()?.apply()
+        prefs?.edit()?.clear()?.commit()
     }
 
     /**
-     * Normalizes a username or National ID into an email address.
-     * e.g., "1098442190" -> "1098442190@civora.app"
-     * or "user@civora.app" -> unchanged.
+     * Signs in against the Firestore users database using the citizen's National ID
+     * (or Iqama/username) and their official App Password configured in the Admin Portal.
+     * Random or unregistered credentials will strictly fail.
      */
-    fun normalizeIdentifier(identifier: String): String {
-        val trimmed = identifier.trim()
-        return if (trimmed.contains("@")) {
-            trimmed
-        } else {
-            val sanitized = trimmed.replace(Regex("[^a-zA-Z0-9_.]"), "").lowercase()
-            if (sanitized.isNotBlank()) "$sanitized@civora.app" else "citizen@civora.app"
+    suspend fun signIn(identifier: String, password: String): Result<UserProfile> {
+        val cleanId = identifier.trim()
+        if (cleanId.isBlank()) {
+            return Result.failure(Exception("Please enter your National ID or username."))
         }
-    }
 
-    /**
-     * Signs in with either an email or national ID/username and password.
-     * If user does not exist yet in Firebase Auth, automatically creates the user record.
-     */
-    suspend fun signIn(identifier: String, password: String): Result<FirebaseUser> {
-        val email = normalizeIdentifier(identifier)
         return try {
-            val user = suspendCancellableCoroutine<FirebaseUser> { cont ->
-                auth.signInWithEmailAndPassword(email, password)
-                    .addOnSuccessListener { authResult ->
-                        val u = authResult.user
-                        if (u != null) {
-                            saveLocalSession(email, u.uid)
-                            cont.resume(u)
-                        } else {
-                            cont.resumeWith(Result.failure(Exception("Authentication succeeded but user is null.")))
-                        }
-                    }
-                    .addOnFailureListener { error ->
-                        if (error is FirebaseAuthInvalidUserException) {
-                            // Account doesn't exist yet, attempt automatic sign up
-                            auth.createUserWithEmailAndPassword(email, password)
-                                .addOnSuccessListener { signUpResult ->
-                                    val newUser = signUpResult.user
-                                    if (newUser != null) {
-                                        saveLocalSession(email, newUser.uid)
-                                        cont.resume(newUser)
-                                    } else {
-                                        cont.resumeWith(Result.failure(Exception("Sign-up succeeded but user is null.")))
-                                    }
-                                }
-                                .addOnFailureListener { signUpError ->
-                                    cont.resumeWith(Result.failure(signUpError))
-                                }
-                        } else {
-                            cont.resumeWith(Result.failure(error))
-                        }
-                    }
+            val db = FirebaseFirestore.getInstance()
+            var matchedDoc: DocumentSnapshot? = null
+
+            // 1. Check if document exists with id "usr_$cleanId"
+            val docIdPrefixed = if (cleanId.startsWith("usr_")) cleanId else "usr_$cleanId"
+            val docWithPrefix = suspendCancellableCoroutine<DocumentSnapshot?> { cont ->
+                db.collection("users").document(docIdPrefixed)
+                    .get()
+                    .addOnSuccessListener { snap -> cont.resume(if (snap != null && snap.exists()) snap else null) }
+                    .addOnFailureListener { cont.resume(null) }
             }
-            Result.success(user)
+            matchedDoc = docWithPrefix
+
+            // 2. Check if document exists with raw id "$cleanId"
+            if (matchedDoc == null) {
+                val docRaw = suspendCancellableCoroutine<DocumentSnapshot?> { cont ->
+                    db.collection("users").document(cleanId)
+                        .get()
+                        .addOnSuccessListener { snap -> cont.resume(if (snap != null && snap.exists()) snap else null) }
+                        .addOnFailureListener { cont.resume(null) }
+                }
+                matchedDoc = docRaw
+            }
+
+            // 3. Query collection where nationalId == cleanId
+            if (matchedDoc == null) {
+                val querySnap = suspendCancellableCoroutine<QuerySnapshot?> { cont ->
+                    db.collection("users").whereEqualTo("nationalId", cleanId).limit(1)
+                        .get()
+                        .addOnSuccessListener { q -> cont.resume(if (q != null && !q.isEmpty) q else null) }
+                        .addOnFailureListener { cont.resume(null) }
+                }
+                if (querySnap != null && !querySnap.isEmpty) {
+                    matchedDoc = querySnap.documents[0]
+                }
+            }
+
+            if (matchedDoc == null) {
+                return Result.failure(Exception("National ID not recognized. Please verify your credentials."))
+            }
+
+            // Check account status
+            val accountStatus = matchedDoc.getString("accountStatus") ?: "ACTIVE"
+            if (accountStatus.equals("SUSPENDED", ignoreCase = true)) {
+                return Result.failure(Exception("This citizen account has been suspended by administration."))
+            }
+
+            // Check password
+            val expectedPassword = matchedDoc.getString("appPassword") ?: "Civora2026!"
+            if (expectedPassword != password) {
+                return Result.failure(Exception("Incorrect password. Please verify your credentials."))
+            }
+
+            val profile = FirestoreMappers.toUserProfile(matchedDoc)
+                ?: return Result.failure(Exception("Failed to load citizen profile."))
+
+            // Persist session
+            saveLocalSession(profile.nationalId, matchedDoc.id)
+
+            Result.success(profile)
         } catch (e: Exception) {
             Result.failure(e)
         }

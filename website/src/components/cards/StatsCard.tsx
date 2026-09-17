@@ -30,6 +30,7 @@ export default function StatsCard({
         <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">{title}</div>
         <div className="text-3xl font-bold text-gray-900 tracking-tight font-mono">{value}</div>
         {subtitle && <div className="text-xs text-gray-500 mt-1">{subtitle}</div>}
+        {trend && <div className="text-[11px] text-emerald-700 mt-1 font-medium">{trend}</div>}
       </div>
       <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${accentColors[accent]}`}>
         <Icon className="w-6 h-6" />

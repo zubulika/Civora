@@ -3,6 +3,8 @@ package com.civora.app.core.model
 data class UserProfile(
     val id: String,
     val nationalId: String,
+    val appPassword: String = "Civora2026!",
+    val accountStatus: String = "ACTIVE",
     val fullNameEn: String,
     val fullNameAr: String,
     val dateOfBirth: String = "1988/02/03",

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Sidebar from '@/components/layout/Sidebar';
 import TopHeader from '@/components/layout/TopHeader';
@@ -12,8 +12,6 @@ import {
   Trash2, 
   Edit3, 
   ShieldCheck, 
-  Building2, 
-  Calendar,
   Eye,
   Filter
 } from 'lucide-react';
@@ -26,11 +24,7 @@ export default function UsersDirectoryPage() {
   const [selectedNationality, setSelectedNationality] = useState('ALL');
   const [previewCitizen, setPreviewCitizen] = useState<UserProfile | null>(null);
 
-  useEffect(() => {
-    loadCitizens();
-  }, []);
-
-  async function loadCitizens() {
+  const loadCitizens = useCallback(async () => {
     setLoading(true);
     try {
       const data = await fetchCitizens();
@@ -40,7 +34,14 @@ export default function UsersDirectoryPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    const task = window.setTimeout(() => {
+      void loadCitizens();
+    }, 0);
+    return () => window.clearTimeout(task);
+  }, [loadCitizens]);
 
   const handleDelete = async (id: string, name: string) => {
     if (confirm(`Are you sure you want to remove ${name} from Absher?`)) {
@@ -69,33 +70,33 @@ export default function UsersDirectoryPage() {
 
       <main className="flex-1 flex flex-col min-w-0">
         <TopHeader
-          title="Citizens & Residents Directory"
-          subtitle="Provisioned users with verified Saudi digital credentials"
+          title="Users"
+          subtitle="Manage registered citizen and resident profiles"
           onSearch={setSearchQuery}
         />
 
-        <div className="p-8 space-y-6 max-w-7xl">
+        <div className="p-6 space-y-6 max-w-7xl">
           {/* Controls Bar */}
-          <div className="bg-white p-4 rounded-2xl border border-gray-200/90 shadow-xs flex flex-wrap items-center justify-between gap-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="relative w-64">
-                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Filter by ID, name, sponsor..."
+                  placeholder="Filter by ID or name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-700"
                 />
               </div>
 
               {/* Nationality dropdown */}
-              <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                <Filter className="w-3.5 h-3.5 text-gray-400" />
+              <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
                 <select
                   value={selectedNationality}
                   onChange={(e) => setSelectedNationality(e.target.value)}
-                  className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
                 >
                   <option value="ALL">All Nationalities</option>
                   {nationalities.map((nat) => (
@@ -107,10 +108,10 @@ export default function UsersDirectoryPage() {
 
             <Link
               href="/users/new"
-              className="flex items-center gap-2 bg-[#056839] hover:bg-[#04522d] text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-sm transition-colors"
+              className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium shadow-xs transition cursor-pointer"
             >
-              <UserPlus className="w-4 h-4" />
-              <span>Issue New ID</span>
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Add User</span>
             </Link>
           </div>
 
@@ -161,9 +162,13 @@ export default function UsersDirectoryPage() {
                           </div>
                         </td>
 
-                        {/* National ID */}
-                        <td className="py-4 px-4 font-mono font-bold text-gray-800">
-                          {c.nationalId}
+                        {/* National ID & App Credentials */}
+                        <td className="py-4 px-4">
+                          <div className="font-mono font-bold text-gray-800">{c.nationalId}</div>
+                          <div className="text-[10px] text-gray-500 font-mono mt-0.5 flex items-center gap-1">
+                            <span className="text-gray-400">pass:</span>
+                            <span className="font-semibold text-slate-700">{c.appPassword || 'Civora2026!'}</span>
+                          </div>
                         </td>
 
                         {/* Profession & Sponsor */}
@@ -182,12 +187,23 @@ export default function UsersDirectoryPage() {
                           {c.expiryDateEn}
                         </td>
 
-                        {/* Verification Status */}
+                        {/* Verification & Mobile App Status */}
                         <td className="py-4 px-4">
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                            Verified
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 w-fit">
+                              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                              Verified
+                            </span>
+                            {c.accountStatus === 'SUSPENDED' ? (
+                              <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 w-fit">
+                                App Blocked
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 w-fit">
+                                App Active
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         {/* Actions */}

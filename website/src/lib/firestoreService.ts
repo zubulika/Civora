@@ -5,7 +5,7 @@ import {
   getDocs, 
   getDoc, 
   setDoc, 
-  updateDoc, 
+
   deleteDoc, 
   serverTimestamp 
 } from 'firebase/firestore';
@@ -13,7 +13,7 @@ import { UserProfile, DigitalDocument } from '@/types';
 import { INITIAL_USERS, INITIAL_DOCUMENTS } from './mockData';
 
 const LOCAL_STORAGE_USERS_KEY = 'absher_admin_users';
-const LOCAL_STORAGE_DOCS_KEY = 'absher_admin_documents';
+
 
 // Helper to get local fallback state
 function getLocalUsers(): UserProfile[] {
@@ -73,6 +73,8 @@ export async function fetchCitizens(): Promise<UserProfile[]> {
           issueDateDigits: data.issueDateDigits || '070926',
           photoUrl: data.photoUrl || '',
           verificationLevel: data.verificationLevel || 'TIER_3_VERIFIED',
+          appPassword: data.appPassword || 'Civora2026!',
+          accountStatus: data.accountStatus || 'ACTIVE',
           digitalIdActive: data.digitalIdActive !== false,
           totalDocuments: data.totalDocuments || 4,
           activeRequestsCount: data.activeRequestsCount || 0,
@@ -98,7 +100,7 @@ export async function fetchCitizenById(id: string): Promise<UserProfile | null> 
     const userRef = doc(db, 'users', id);
     const snap = await getDoc(userRef);
     if (snap.exists()) {
-      return { id: snap.id, ...(snap.data() as any) };
+      return { id: snap.id, ...(snap.data() as Partial<UserProfile>) } as UserProfile;
     }
   } catch (err) {
     console.warn('Firestore getDoc failed; checking local cache:', err);
@@ -109,8 +111,10 @@ export async function fetchCitizenById(id: string): Promise<UserProfile | null> 
 }
 
 export async function saveCitizen(citizen: UserProfile): Promise<UserProfile> {
-  const citizenWithTimestamp = {
+  const citizenWithTimestamp: UserProfile = {
     ...citizen,
+    appPassword: citizen.appPassword || 'Civora2026!',
+    accountStatus: citizen.accountStatus || 'ACTIVE',
     updatedAt: new Date().toISOString().split('T')[0],
     createdAt: citizen.createdAt || new Date().toISOString().split('T')[0]
   };
@@ -153,5 +157,18 @@ export async function removeCitizen(id: string): Promise<void> {
 }
 
 export async function fetchDocuments(): Promise<DigitalDocument[]> {
+  try {
+    const documentsCol = collection(db, 'documents');
+    const snapshot = await getDocs(documentsCol);
+    if (!snapshot.empty) {
+      return snapshot.docs.map((document) => ({
+        id: document.id,
+        ...(document.data() as Omit<DigitalDocument, 'id'>),
+      }));
+    }
+  } catch (err) {
+    console.warn('Firestore documents fetch failed; using local records:', err);
+  }
+
   return INITIAL_DOCUMENTS;
 }

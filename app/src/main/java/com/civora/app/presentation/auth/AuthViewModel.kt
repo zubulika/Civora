@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.civora.app.data.repository.AuthRepository
-import com.google.firebase.auth.FirebaseAuthException
+import com.civora.app.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +19,8 @@ data class AuthUiState(
 )
 
 class AuthViewModel(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -43,7 +44,7 @@ class AuthViewModel(
 
     fun login(identifier: String, password: String, onSuccess: () -> Unit) {
         if (identifier.isBlank()) {
-            _uiState.value = _uiState.value.copy(errorMessage = "Please enter your National ID or Email.")
+            _uiState.value = _uiState.value.copy(errorMessage = "Please enter your National ID or username.")
             return
         }
         if (password.length < 4) {
@@ -55,41 +56,20 @@ class AuthViewModel(
 
         viewModelScope.launch {
             val result = authRepository.signIn(identifier, password)
-            result.onSuccess { user ->
+            result.onSuccess { profile ->
+                userRepository?.setCurrentUser(profile)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isAuthenticated = true,
-                    identifier = user.email ?: identifier,
+                    identifier = profile.nationalId,
                     errorMessage = null
                 )
                 onSuccess()
             }.onFailure { error ->
-                // Provide clear message if auth configuration is pending in Firebase Console
-                val message = when {
-                    error is FirebaseAuthException && error.errorCode == "ERROR_CONFIGURATION_NOT_FOUND" ->
-                        "Firebase Auth requires enabling Email/Password in Firebase Console. Continuing in demo mode..."
-                    error.message?.contains("CONFIGURATION_NOT_FOUND", ignoreCase = true) == true ->
-                        "Firebase Auth requires enabling Email/Password in Firebase Console. Continuing in demo mode..."
-                    else -> error.localizedMessage ?: "Authentication failed. Please check your credentials."
-                }
-
-                // If configuration is pending on Firebase Spark tier, we gracefully allow demo access
-                val canFallback = error.message?.contains("CONFIGURATION_NOT_FOUND", ignoreCase = true) == true
-
-                if (canFallback) {
-                    authRepository.saveLocalSession(identifier)
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        isDemoFallback = true,
-                        errorMessage = null
-                    )
-                    onSuccess()
-                } else {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = message
-                    )
-                }
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = error.localizedMessage ?: "Invalid credentials. Please verify your National ID and password."
+                )
             }
         }
     }
@@ -101,11 +81,11 @@ class AuthViewModel(
             result.onSuccess {
                 _uiState.value = _uiState.value.copy(isLoading = false, isAuthenticated = true)
                 onSuccess()
-            }.onFailure {
-                // Graceful fallback for demo exploration
-                authRepository.saveLocalSession("guest_citizen")
-                _uiState.value = _uiState.value.copy(isLoading = false, isDemoFallback = true)
-                onSuccess()
+            }.onFailure { error ->
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = error.localizedMessage ?: "Guest login is currently unavailable."
+                )
             }
         }
     }
@@ -120,11 +100,14 @@ class AuthViewModel(
     }
 
     companion object {
-        fun provideFactory(authRepository: AuthRepository): ViewModelProvider.Factory =
+        fun provideFactory(
+            authRepository: AuthRepository,
+            userRepository: UserRepository? = null
+        ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return AuthViewModel(authRepository) as T
+                    return AuthViewModel(authRepository, userRepository) as T
                 }
             }
     }

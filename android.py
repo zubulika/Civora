@@ -19,8 +19,8 @@ import time
 from pathlib import Path
 
 # --- Configuration & Constants ---
-APP_PACKAGE = "com.civora.app"
-MAIN_ACTIVITY = ".MainActivity"
+APP_PACKAGE = "com.civora.app.debug"
+MAIN_ACTIVITY = "com.civora.app.MainActivity"
 DEFAULT_AVD_NAME = "Pixel_9_Pro_XL"
 DEFAULT_PORT = "5554"
 PROJECT_ROOT = Path(__file__).resolve().parent

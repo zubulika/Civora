@@ -10,19 +10,77 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 
-class UserRepository {
+class UserRepository(
+    private val initialIdentifier: String? = null
+) {
     private val _userState = MutableStateFlow(CivoraMockDataSource.currentUser)
     val userProfile: Flow<UserProfile> = _userState.asStateFlow()
+    private var activeDocListener: com.google.firebase.firestore.ListenerRegistration? = null
+
+    fun setCurrentUser(profile: UserProfile) {
+        _userState.value = profile
+        listenToUserDocument(profile.id.ifEmpty { "usr_${profile.nationalId}" })
+    }
+
+    fun loadUserByIdentifier(identifier: String) {
+        val clean = identifier.trim()
+        if (clean.isBlank()) return
+
+        try {
+            val db = FirebaseFirestore.getInstance()
+            val docId = if (clean.startsWith("usr_")) clean else "usr_$clean"
+            db.collection("users").document(docId).get()
+                .addOnSuccessListener { snap ->
+                    if (snap != null && snap.exists()) {
+                        FirestoreMappers.toUserProfile(snap)?.let {
+                            _userState.value = it
+                            listenToUserDocument(snap.id)
+                        }
+                    } else {
+                        db.collection("users").whereEqualTo("nationalId", clean).limit(1).get()
+                            .addOnSuccessListener { qSnap ->
+                                if (qSnap != null && !qSnap.isEmpty) {
+                                    val doc = qSnap.documents[0]
+                                    FirestoreMappers.toUserProfile(doc)?.let {
+                                        _userState.value = it
+                                        listenToUserDocument(doc.id)
+                                    }
+                                }
+                            }
+                    }
+                }
+        } catch (_: Exception) {
+            // Graceful offline fallback
+        }
+    }
+
+    private fun listenToUserDocument(docId: String) {
+        try {
+            activeDocListener?.remove()
+            val db = FirebaseFirestore.getInstance()
+            activeDocListener = db.collection("users").document(docId)
+                .addSnapshotListener { snapshot, error ->
+                    if (error == null && snapshot != null && snapshot.exists()) {
+                        val profile = FirestoreMappers.toUserProfile(snapshot)
+                        if (profile != null) {
+                            _userState.value = profile
+                        }
+                    }
+                }
+        } catch (_: Exception) {}
+    }
 
     fun updateUserProfile(updated: UserProfile) {
         _userState.value = updated
         try {
             val db = FirebaseFirestore.getInstance()
-            val docId = updated.id.ifEmpty { "usr_992140" }
+            val docId = updated.id.ifEmpty { "usr_${updated.nationalId}" }
             val map = mapOf(
                 "fullNameEn" to updated.fullNameEn,
                 "fullNameAr" to updated.fullNameAr,
                 "nationalId" to updated.nationalId,
+                "appPassword" to updated.appPassword,
+                "accountStatus" to updated.accountStatus,
                 "dateOfBirth" to updated.dateOfBirth,
                 "nationality" to updated.nationality,
                 "verificationLevel" to updated.verificationLevel.name,
@@ -42,22 +100,16 @@ class UserRepository {
     val notifications: Flow<List<NotificationItem>> = _notifications.asStateFlow()
 
     init {
-        listenToUserAndNotifications()
+        if (!initialIdentifier.isNullOrBlank()) {
+            loadUserByIdentifier(initialIdentifier)
+        } else {
+            listenToUserAndNotifications()
+        }
     }
 
     private fun listenToUserAndNotifications() {
         try {
             val db = FirebaseFirestore.getInstance()
-            // Listen to User document
-            db.collection("users").document("usr_992140")
-                .addSnapshotListener { snapshot, error ->
-                    if (error == null && snapshot != null && snapshot.exists()) {
-                        val profile = FirestoreMappers.toUserProfile(snapshot)
-                        if (profile != null) {
-                            _userState.value = profile
-                        }
-                    }
-                }
 
             // Listen to notifications collection
             db.collection("notifications")

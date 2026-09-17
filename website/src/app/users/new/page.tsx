@@ -54,8 +54,8 @@ export default function NewCitizenPage() {
 
       <main className="flex-1 flex flex-col min-w-0">
         <TopHeader
-          title="Issue Digital Identity & Residence Permit"
-          subtitle="Ministry of Interior • Direct Cloud Provisioning"
+          title="Add User"
+          subtitle="Create a user profile and issue their digital ID card"
         />
 
         <div className="p-8 space-y-6 max-w-7xl">
@@ -106,7 +106,7 @@ export default function NewCitizenPage() {
                 <MuqeemCardPreview user={livePreviewData} />
 
                 <div className="mt-4 p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-[11px] text-emerald-900 leading-relaxed">
-                  <strong>Notice:</strong> Once issued, this digital document will immediately sync to Firebase Firestore collection <code className="font-mono text-[10px] bg-emerald-100 px-1 py-0.5 rounded">users/{livePreviewData.nationalId}</code> and become viewable on the citizen's mobile device upon login.
+                  <strong>Notice:</strong> Once issued, this digital document will immediately sync to Firebase Firestore collection <code className="font-mono text-[10px] bg-emerald-100 px-1 py-0.5 rounded">users/{livePreviewData.nationalId}</code> and become viewable on the citizen&apos;s mobile device upon login.
                 </div>
               </div>
             </div>

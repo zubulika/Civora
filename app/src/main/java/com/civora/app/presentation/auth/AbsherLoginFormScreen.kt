@@ -25,6 +25,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -44,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -78,10 +80,11 @@ fun AbsherLoginFormScreen(
         AppThemeMode.SYSTEM -> systemDark
     }
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     val authState = viewModel?.uiState?.collectAsState()?.value
 
-    var username by remember { mutableStateOf("1098442190") }
-    var password by remember { mutableStateOf("Civora2026!") }
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var keepMeLoggedIn by remember { mutableStateOf(true) }
 
     // Validation threshold: username not blank and password has at least 4 characters
@@ -150,7 +153,7 @@ fun AbsherLoginFormScreen(
         // 3. Username / ID Number Field
         AbsherFormField(
             label = "Username or ID Number",
-            placeholder = "Enter Username or ID Number",
+            placeholder = "Enter 10-digit National ID / Iqama",
             value = username,
             onValueChange = { username = it },
             inputBg = inputBg,
@@ -184,7 +187,11 @@ fun AbsherLoginFormScreen(
                 onDone = {
                     if (isFormValid) {
                         focusManager.clearFocus()
-                        onLoginSubmit()
+                        if (viewModel != null) {
+                            viewModel.login(username, password) {
+                                onLoginSubmit()
+                            }
+                        }
                     }
                 }
             )
@@ -312,7 +319,13 @@ fun AbsherLoginFormScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onLoginSubmit() },
+                .clickable {
+                    Toast.makeText(
+                        context,
+                        "Please contact your Absher portal administrator to reset your password.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(

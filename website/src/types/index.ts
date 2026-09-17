@@ -8,6 +8,8 @@ export type DocumentStatus = 'ACTIVE' | 'EXPIRED' | 'SUSPENDED' | 'RENEWAL_PENDI
 export interface UserProfile {
   id: string; // e.g. usr_992140 or nationalId
   nationalId: string; // 10-digit Saudi Iqama/National ID
+  appPassword?: string; // Mobile app login password
+  accountStatus?: 'ACTIVE' | 'SUSPENDED'; // Mobile app login authorization status
   fullNameEn: string;
   fullNameAr: string;
   dateOfBirth: string; // Gregorian YYYY/MM/DD

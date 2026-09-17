@@ -4,6 +4,8 @@ export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'usr_992140',
     nationalId: '2495685261',
+    appPassword: 'Civora2026!',
+    accountStatus: 'ACTIVE',
     fullNameEn: 'MD ABDUL HALIM MEIA',
     fullNameAr: 'مد عبد ال حليم مياه',
     dateOfBirth: '1988/02/03',
@@ -40,6 +42,8 @@ export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'usr_109844',
     nationalId: '1098442190',
+    appPassword: 'Civora2026!',
+    accountStatus: 'ACTIVE',
     fullNameEn: 'TARIQ ABDULAZIZ AL-MANSOOR',
     fullNameAr: 'طارق عبدالعزيز المنصور',
     dateOfBirth: '1992/05/14',
@@ -76,6 +80,8 @@ export const INITIAL_USERS: UserProfile[] = [
   {
     id: 'usr_239104',
     nationalId: '2391049921',
+    appPassword: 'Civora2026!',
+    accountStatus: 'ACTIVE',
     fullNameEn: 'FATIMA NOOR AHMED',
     fullNameAr: 'فاطمة نور أحمد',
     dateOfBirth: '1995/11/22',

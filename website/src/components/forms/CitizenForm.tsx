@@ -6,13 +6,15 @@ import {
   User, 
   Briefcase, 
   FileText, 
-  Calendar, 
+
   ShieldCheck, 
   Save, 
-  Image as ImageIcon,
-  Sparkles,
-  Building,
-  Upload
+
+  Upload,
+  KeyRound,
+  Eye,
+  EyeOff,
+  RefreshCw
 } from 'lucide-react';
 
 interface CitizenFormProps {
@@ -49,8 +51,10 @@ export default function CitizenForm({
   isSubmitting = false 
 }: CitizenFormProps) {
   const [formData, setFormData] = useState<UserProfile>({
-    id: initialData?.id || `usr_${Date.now()}`,
+    id: initialData?.id || 'usr_new',
     nationalId: initialData?.nationalId || '',
+    appPassword: initialData?.appPassword || 'Civora2026!',
+    accountStatus: initialData?.accountStatus || 'ACTIVE',
     fullNameEn: initialData?.fullNameEn || '',
     fullNameAr: initialData?.fullNameAr || '',
     dateOfBirth: initialData?.dateOfBirth || '1990/01/01',
@@ -83,10 +87,24 @@ export default function CitizenForm({
     unreadNotificationsCount: initialData?.unreadNotificationsCount || 0
   });
 
-  const handleChange = (field: keyof UserProfile, value: any) => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const generateRandomPassword = () => {
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    const newPass = `Absher#${randomNum}!`;
+    handleChange('appPassword', newPass);
+  };
+
+  const handleChange = (field: keyof UserProfile, value: UserProfile[keyof UserProfile]) => {
     const updated = { ...formData, [field]: value };
     setFormData(updated);
-    if (onChange) onChange(updated);
+    onChange?.(updated);
+  };
+
+  const handleChanges = (changes: Partial<UserProfile>) => {
+    const updated = { ...formData, ...changes };
+    setFormData(updated);
+    onChange?.(updated);
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,8 +149,10 @@ export default function CitizenForm({
               type="text"
               required
               maxLength={10}
+              pattern="\\d{10}"
+              inputMode="numeric"
               value={formData.nationalId}
-              onChange={(e) => handleChange('nationalId', e.target.value)}
+              onChange={(e) => handleChange('nationalId', e.target.value.replace(/\D/g, ''))}
               placeholder="e.g. 2495685261"
               className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs font-mono font-bold tracking-wider text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
             />
@@ -218,11 +238,11 @@ export default function CitizenForm({
                 <button
                   key={p.en}
                   type="button"
-                  onClick={() => {
-                    handleChange('nationality', p.en);
-                    handleChange('nationalityAr', p.ar);
-                    handleChange('placeOfBirthAr', p.ar);
-                  }}
+                  onClick={() => handleChanges({
+                    nationality: p.en,
+                    nationalityAr: p.ar,
+                    placeOfBirthAr: p.ar,
+                  })}
                   className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 hover:bg-emerald-100 hover:text-emerald-800 text-gray-600 transition-colors"
                 >
                   {p.en}
@@ -252,6 +272,101 @@ export default function CitizenForm({
                 className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-mono"
               />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile App Login Credentials */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-200/90 shadow-xs">
+        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-gray-100">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+            <KeyRound className="w-4 h-4" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-gray-900 text-sm">Mobile App Login Credentials</h3>
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                formData.accountStatus === 'SUSPENDED'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              }`}>
+                {formData.accountStatus === 'SUSPENDED' ? 'Access Suspended' : 'Mobile Access Active'}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500">Credentials required for the citizen to log into the mobile app</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Mobile Login Username / National ID */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Login Username (National ID)
+            </label>
+            <div className="px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono font-bold text-gray-900 flex items-center justify-between">
+              <span>{formData.nationalId || '—'}</span>
+              <span className="text-[10px] text-gray-400 font-sans font-normal">Login ID</span>
+            </div>
+            <p className="text-[11px] text-gray-500 mt-1">
+              Auto-synced with National ID above.
+            </p>
+          </div>
+
+          {/* Mobile Password */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-gray-700">
+                Mobile App Password *
+              </label>
+              <button
+                type="button"
+                onClick={generateRandomPassword}
+                className="text-[11px] text-emerald-700 hover:text-emerald-800 font-medium flex items-center gap-1 cursor-pointer"
+              >
+                <RefreshCw className="w-3 h-3" />
+                <span>Generate</span>
+              </button>
+            </div>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={4}
+                value={formData.appPassword || ''}
+                onChange={(e) => handleChange('appPassword', e.target.value)}
+                placeholder="Civora2026!"
+                className="w-full pl-3.5 pr-10 py-2 border border-gray-300 rounded-xl text-xs font-mono text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="text-[11px] text-gray-500 mt-1">
+              Citizen enters this password on the mobile app.
+            </p>
+          </div>
+
+          {/* Account Status */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Account Login Permission
+            </label>
+            <select
+              value={formData.accountStatus || 'ACTIVE'}
+              onChange={(e) => handleChange('accountStatus', e.target.value as 'ACTIVE' | 'SUSPENDED')}
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs font-medium text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+            >
+              <option value="ACTIVE">ACTIVE (Permit Mobile Login)</option>
+              <option value="SUSPENDED">SUSPENDED (Block Mobile Login)</option>
+            </select>
+            <p className="text-[11px] text-gray-500 mt-1">
+              Control mobile login authorization.
+            </p>
           </div>
         </div>
       </div>
@@ -297,10 +412,10 @@ export default function CitizenForm({
                 <button
                   key={p.en}
                   type="button"
-                  onClick={() => {
-                    handleChange('professionEn', p.en);
-                    handleChange('professionAr', p.ar);
-                  }}
+                  onClick={() => handleChanges({
+                    professionEn: p.en,
+                    professionAr: p.ar,
+                  })}
                   className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 hover:bg-emerald-100 hover:text-emerald-800 text-gray-600 transition-colors"
                 >
                   {p.en}
@@ -430,10 +545,10 @@ export default function CitizenForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex items-center gap-2 bg-[#056839] hover:bg-[#04522d] text-white px-7 py-3 rounded-xl text-sm font-bold shadow-lg shadow-emerald-950/20 hover:shadow-emerald-950/30 transition-all disabled:opacity-50 cursor-pointer"
+          className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-50 cursor-pointer"
         >
           <Save className="w-4 h-4" />
-          <span>{isSubmitting ? 'Syncing to Absher Cloud...' : 'Issue Document & Save Citizen'}</span>
+          <span>{isSubmitting ? 'Saving...' : 'Save User'}</span>
         </button>
       </div>
     </form>

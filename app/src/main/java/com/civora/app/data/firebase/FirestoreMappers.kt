@@ -21,6 +21,8 @@ object FirestoreMappers {
             UserProfile(
                 id = doc.getString("id") ?: doc.id,
                 nationalId = doc.getString("nationalId") ?: "",
+                appPassword = doc.getString("appPassword") ?: "Civora2026!",
+                accountStatus = doc.getString("accountStatus") ?: "ACTIVE",
                 fullNameEn = doc.getString("fullNameEn") ?: "",
                 fullNameAr = doc.getString("fullNameAr") ?: "",
                 dateOfBirth = doc.getString("dateOfBirth") ?: "1988/02/03",

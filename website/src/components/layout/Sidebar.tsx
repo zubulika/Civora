@@ -7,60 +7,38 @@ import {
   LayoutDashboard, 
   Users, 
   UserPlus, 
-  FileCheck2, 
-  ShieldCheck, 
-  ExternalLink,
+  FileText, 
   LogOut,
-  Building2
+  Shield
 } from 'lucide-react';
+import { useAdminAuth } from '@/context/AuthContext';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/users', label: 'Citizens & Residents', icon: Users },
-  { href: '/users/new', label: 'Issue Digital ID', icon: UserPlus },
-  { href: '/documents', label: 'Issued Documents', icon: FileCheck2 },
+  { href: '/users', label: 'Users', icon: Users },
+  { href: '/users/new', label: 'Add User', icon: UserPlus },
+  { href: '/documents', label: 'Documents', icon: FileText },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { admin, logout } = useAdminAuth();
 
   return (
-    <aside className="w-64 bg-[#0a2c21] text-white flex flex-col border-r border-[#144233] h-screen sticky top-0 shrink-0">
-      {/* Brand Header */}
-      <div className="p-6 border-b border-[#144233]">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00a651] to-[#056839] flex items-center justify-center shadow-lg shadow-emerald-950/40">
-            <Building2 className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <div className="font-bold text-lg tracking-wide flex items-center gap-1.5">
-              <span>Absher</span>
-              <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
-                Admin
-              </span>
-            </div>
-            <p className="text-xs text-emerald-200/60 font-mono">Operations Portal</p>
-          </div>
+    <aside className="w-60 bg-white text-slate-800 flex flex-col border-r border-slate-200 h-screen sticky top-0 shrink-0">
+      {/* Brand */}
+      <div className="h-16 px-5 flex items-center gap-3 border-b border-slate-100">
+        <div className="w-8 h-8 rounded-lg bg-emerald-700 text-white flex items-center justify-center shrink-0">
+          <Shield className="w-4 h-4" />
         </div>
-      </div>
-
-      {/* Cloud Status Pill */}
-      <div className="mx-4 mt-4 p-3 rounded-lg bg-[#0e372a] border border-[#164d3b] flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span className="text-xs font-medium text-emerald-200">Firebase Firestore</span>
+        <div className="leading-tight">
+          <span className="font-semibold text-sm text-slate-900 block">Absher Admin</span>
+          <span className="text-[11px] text-slate-400">Identity Portal</span>
         </div>
-        <span className="text-[11px] text-emerald-400/80 font-mono">civora-app</span>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400/50 px-3 pb-2">
-          Management
-        </div>
+      <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -68,39 +46,42 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 ${
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition ${
                 isActive
-                  ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md shadow-emerald-950/50'
-                  : 'text-emerald-100/70 hover:bg-[#113f30] hover:text-white'
+                  ? 'bg-emerald-50 text-emerald-800 font-semibold'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-emerald-400/80'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-700' : 'text-slate-400'}`} />
               <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Admin Profile Footer */}
-      <div className="p-4 border-t border-[#144233] bg-[#07241b]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-emerald-800/80 border border-emerald-600/50 flex items-center justify-center font-bold text-xs text-emerald-200">
-              MOI
+      {/* Footer Profile */}
+      <div className="p-3 border-t border-slate-100 flex items-center justify-between">
+        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+          <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-semibold text-xs shrink-0">
+            {admin?.fullName ? admin.fullName.charAt(0) : 'A'}
+          </div>
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-slate-900 truncate">
+              {admin?.fullName || 'Admin'}
             </div>
-            <div className="overflow-hidden">
-              <div className="text-xs font-semibold truncate">Director General</div>
-              <div className="text-[11px] text-emerald-400/60 truncate">Civil & Muqeem Affairs</div>
+            <div className="text-[11px] text-slate-400 truncate">
+              {admin?.email || 'admin@absher.moi.gov.sa'}
             </div>
           </div>
-          <Link
-            href="/login"
-            title="Switch Session / Log Out"
-            className="text-emerald-400/60 hover:text-red-400 p-1.5 rounded-lg hover:bg-emerald-950/40 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-          </Link>
         </div>
+        <button
+          type="button"
+          onClick={logout}
+          title="Sign out"
+          className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition cursor-pointer shrink-0"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </aside>
   );

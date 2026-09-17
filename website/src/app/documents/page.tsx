@@ -11,10 +11,7 @@ import {
   ShieldCheck, 
   QrCode, 
   ExternalLink,
-  Calendar,
-  CheckCircle2,
-  Building2,
-  Search
+  Building2
 } from 'lucide-react';
 import MuqeemCardPreview from '@/components/cards/MuqeemCardPreview';
 
@@ -52,8 +49,8 @@ export default function DocumentsPage() {
 
       <main className="flex-1 flex flex-col min-w-0">
         <TopHeader
-          title="Issued Digital Documents"
-          subtitle="Cryptographically verified government documents active on citizen devices"
+          title="Documents"
+          subtitle="All digital documents issued to users"
           onSearch={setSearchQuery}
         />
 
@@ -92,7 +89,19 @@ export default function DocumentsPage() {
 
           {/* Documents Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {citizens.map((citizen) => (
+            {loading ? (
+              <div className="md:col-span-2 lg:col-span-3 bg-white rounded-2xl border border-gray-200/90 p-12 text-center text-xs text-gray-400">
+                Loading digital documents...
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="md:col-span-2 lg:col-span-3 bg-white rounded-2xl border border-gray-200/90 p-12 text-center text-xs text-gray-400">
+                No digital documents match your search.
+              </div>
+            ) : filtered.map((document) => {
+              const citizen = citizens.find((user) => user.id === document.userId || user.nationalId === document.documentNumber);
+              if (!citizen) return null;
+
+              return (
               <div 
                 key={citizen.id}
                 className="bg-white rounded-2xl border border-gray-200/90 shadow-xs p-6 hover:shadow-md transition-shadow flex flex-col justify-between"
@@ -156,7 +165,8 @@ export default function DocumentsPage() {
                   </Link>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

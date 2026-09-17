@@ -85,18 +85,18 @@ export default function EditCitizenPage() {
 
       <main className="flex-1 flex flex-col min-w-0">
         <TopHeader
-          title={`Edit Resident: ${citizen.fullNameEn}`}
-          subtitle={`National ID / Iqama: ${citizen.nationalId}`}
+          title={`Edit User: ${citizen.fullNameEn}`}
+          subtitle={`ID: ${citizen.nationalId}`}
         />
 
-        <div className="p-8 space-y-6 max-w-7xl">
+        <div className="p-6 space-y-6 max-w-7xl">
           <div className="flex items-center justify-between">
             <Link
               href="/users"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-emerald-700 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Citizen Directory</span>
+              <span>Back to Users</span>
             </Link>
 
             {successMessage && (

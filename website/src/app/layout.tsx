@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: "Official administrative management portal for Absher digital identities and residence permits",
 };
 
+import { AuthProvider } from "@/context/AuthContext";
+import AuthGuard from "@/components/layout/AuthGuard";
+
 export default function RootLayout({
   children,
 }: {
@@ -27,7 +30,11 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthProvider>
+          <AuthGuard>{children}</AuthGuard>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

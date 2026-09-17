@@ -15,9 +15,9 @@ import {
   ExternalLink, 
   ArrowRight,
   UserPlus,
-  Eye,
+
   CheckCircle2,
-  Clock
+
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -48,74 +48,69 @@ export default function DashboardPage() {
 
       <main className="flex-1 flex flex-col min-w-0">
         <TopHeader 
-          title="Executive Operations Dashboard" 
-          subtitle="Ministry of Interior • Absher Civil & Resident Document Authority"
+          title="Dashboard" 
+          subtitle="Overview of users and digital documents"
         />
 
-        <div className="p-8 space-y-8 max-w-7xl">
+        <div className="p-6 space-y-6 max-w-7xl">
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatsCard
-              title="Registered Citizens"
+              title="Total Users"
               value={loading ? '...' : citizens.length}
-              subtitle="Provisioned through Admin"
+              subtitle="Registered profiles"
               icon={Users}
               accent="emerald"
             />
             <StatsCard
               title="Digital Documents"
               value={loading ? '...' : citizens.length * 3}
-              subtitle="Muqeem, Licenses, Passports"
+              subtitle="Muqeem cards issued"
               icon={FileCheck2}
               accent="blue"
             />
             <StatsCard
-              title="Verified Rate"
+              title="Active IDs"
               value="100%"
-              subtitle="All profiles locked & signed"
+              subtitle="Valid & verified"
               icon={ShieldCheck}
               accent="emerald"
             />
             <StatsCard
-              title="Cloud Database"
-              value="Active"
-              subtitle="Firestore: civora-app-433214"
+              title="Database"
+              value="Connected"
+              subtitle="Synced with mobile app"
               icon={CheckCircle2}
               accent="amber"
             />
           </div>
 
-          {/* Quick Banner & Live Preview */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left 7 Cols: Quick Actions & Recent Citizens */}
+          {/* Quick Action & Live Preview */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left 7 Cols: Quick Actions & Recent Users */}
             <div className="lg:col-span-7 space-y-6">
-              {/* Promotion / Quick Issue Banner */}
-              <div className="bg-gradient-to-r from-[#0c3d2e] to-[#056839] rounded-2xl p-6 text-white shadow-lg shadow-emerald-950/20 relative overflow-hidden">
-                <div className="relative z-10 max-w-lg">
-                  <span className="text-emerald-300 font-semibold text-xs tracking-wider uppercase mb-1 block">
-                    Administrative Action
-                  </span>
-                  <h2 className="text-xl font-bold mb-2">Issue New Saudi Resident Identity</h2>
-                  <p className="text-xs text-emerald-100/80 mb-5 leading-relaxed">
-                    Create a new citizen account with bilingual Arabic/English credentials. The digital document will instantly appear in the citizen's mobile app.
-                  </p>
-                  <Link
-                    href="/users/new"
-                    className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50 text-[#056839] px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>Open ID Issuance Form</span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Link>
-                </div>
+              {/* Quick Add User Banner */}
+              <div className="bg-emerald-800 rounded-xl p-6 text-white shadow-xs">
+                <h2 className="text-lg font-semibold mb-1.5">Create User & Issue Digital ID</h2>
+                <p className="text-xs text-emerald-100/90 mb-4 max-w-md leading-relaxed">
+                  Add personal information and issue a digital resident ID card. The card will immediately sync to the user&apos;s mobile app.
+                </p>
+                <Link
+                  href="/users/new"
+                  className="inline-flex items-center gap-1.5 bg-white hover:bg-emerald-50 text-emerald-900 px-4 py-2 rounded-lg text-xs font-semibold transition cursor-pointer"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Add User</span>
+                  <ArrowRight className="w-3 h-3 ml-0.5" />
+                </Link>
               </div>
 
-              {/* Citizen Directory Snippet */}
-              <div className="bg-white rounded-2xl border border-gray-200/90 shadow-xs overflow-hidden">
-                <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              {/* User Directory Snippet */}
+              <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                   <div>
-                    <h3 className="font-bold text-gray-900 text-sm">Recently Managed Citizens</h3>
-                    <p className="text-xs text-gray-500">Click any row to inspect digital document</p>
+                    <h3 className="font-semibold text-slate-900 text-sm">Recent Users</h3>
+                    <p className="text-xs text-slate-500">Click a user to preview their digital card</p>
                   </div>
                   <Link
                     href="/users"
@@ -187,7 +182,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
                   <div>
                     <h3 className="font-bold text-gray-900 text-sm">Live Mobile App Digital Card</h3>
-                    <p className="text-xs text-gray-500">Exact rendering as shown on resident's phone</p>
+                    <p className="text-xs text-gray-500">Exact rendering as shown on resident&apos;s phone</p>
                   </div>
                   {selectedCitizen && (
                     <Link

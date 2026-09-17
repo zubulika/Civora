@@ -73,9 +73,7 @@ fun AbsherOtpScreen(
         AppThemeMode.SYSTEM -> systemDark
     }
 
-    var otpCode by remember {
-        mutableStateOf(String.format("%06d", (100000..999999).random()))
-    }
+    var otpCode by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
@@ -85,9 +83,17 @@ fun AbsherOtpScreen(
     val boxBg = if (isDark) AbsherCardBg else Color.White
     val boxBorder = if (isDark) Color(0xFF2E3A33) else Color(0xFFDCE6E1)
 
+    LaunchedEffect(Unit) {
+        // Request focus to show keyboard immediately for entering OTP
+        try {
+            focusRequester.requestFocus()
+        } catch (_: Exception) {}
+    }
+
     LaunchedEffect(otpCode) {
         if (otpCode.length == 6) {
-            // Can auto-verify on 6 digits
+            focusManager.clearFocus()
+            onOtpVerified()
         }
     }
 
@@ -231,22 +237,54 @@ fun AbsherOtpScreen(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Resend Helper
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Didn't receive code? ",
+                color = textMuted,
+                fontSize = 13.sp
+            )
+            Text(
+                text = "Resend SMS",
+                color = AbsherGreenHeader,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clickable {
+                    // For development convenience, fills 123456 on explicit request
+                    otpCode = "123456"
+                }
+            )
+        }
+
         Spacer(modifier = Modifier.weight(1f))
 
-        // 4. Primary Proceed / SMS Action Button
+        // 4. Primary Proceed Action Button
         Button(
-            onClick = onOtpVerified,
+            onClick = {
+                if (otpCode.length in 4..6) {
+                    focusManager.clearFocus()
+                    onOtpVerified()
+                }
+            },
+            enabled = otpCode.length in 4..6,
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = AbsherGreenHeader,
-                contentColor = Color.White
+                contentColor = Color.White,
+                disabledContainerColor = if (isDark) Color(0xFF283A31) else Color(0xFFA5C2B4),
+                disabledContentColor = Color.White.copy(alpha = 0.7f)
             ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
         ) {
             Text(
-                text = "Receive Code via SMS",
+                text = "Verify & Proceed",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
             )

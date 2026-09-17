@@ -1,14 +1,21 @@
 package com.civora.app.navigation
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -20,6 +27,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.civora.app.core.components.CivoraBottomBar
 import com.civora.app.core.di.AppContainer
+import com.civora.app.core.update.AppUpdateInfo
+import com.civora.app.core.update.UpdateDialog
+import com.civora.app.core.update.UpdateManager
+import kotlinx.coroutines.launch
 import com.civora.app.presentation.auth.AbsherLoadingScreen
 import com.civora.app.presentation.auth.AbsherLoginFormScreen
 import com.civora.app.presentation.auth.AbsherOtpScreen
@@ -50,6 +61,30 @@ fun CivoraApp(
     container: AppContainer,
     navController: NavHostController = rememberNavController()
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var autoUpdateInfo by remember { mutableStateOf<AppUpdateInfo?>(null) }
+    var isDownloadingAutoUpdate by remember { mutableStateOf(false) }
+    var autoDownloadProgress by remember { mutableFloatStateOf(0f) }
+    var autoDownloadStatusText by remember { mutableStateOf("") }
+
+    // Automatic update check on every app launch
+    LaunchedEffect(Unit) {
+        try {
+            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            val currentVersion = pInfo.versionName ?: "1.0.0"
+            val result = UpdateManager(context).checkForUpdate(currentVersion)
+            if (result.isSuccess) {
+                val info = result.getOrNull()
+                if (info != null && info.isUpdateAvailable) {
+                    autoUpdateInfo = info
+                }
+            }
+        } catch (_: Exception) {
+            // Silently ignore if offline or rate-limited on launch
+        }
+    }
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Dashboard.route
 
@@ -102,6 +137,48 @@ fun CivoraApp(
             )
         }
     }
+
+    if (autoUpdateInfo != null) {
+        UpdateDialog(
+            updateInfo = autoUpdateInfo!!,
+            isDownloading = isDownloadingAutoUpdate,
+            downloadProgress = autoDownloadProgress,
+            downloadStatusText = autoDownloadStatusText,
+            onConfirmUpdate = {
+                val info = autoUpdateInfo ?: return@UpdateDialog
+                isDownloadingAutoUpdate = true
+                autoDownloadProgress = 0f
+                autoDownloadStatusText = "Connecting to release server..."
+                coroutineScope.launch {
+                    val manager = UpdateManager(context)
+                    val result = manager.downloadApkDirect(info.downloadUrl) { bytesRead, totalBytes ->
+                        if (totalBytes > 0L) {
+                            val progress = (bytesRead.toFloat() / totalBytes.toFloat()).coerceIn(0f, 1f)
+                            autoDownloadProgress = progress
+                            val mbRead = bytesRead / (1024 * 1024f)
+                            val mbTotal = totalBytes / (1024 * 1024f)
+                            autoDownloadStatusText = "Downloading: %.1f MB / %.1f MB".format(mbRead, mbTotal)
+                        } else {
+                            val mbRead = bytesRead / (1024 * 1024f)
+                            autoDownloadStatusText = "Downloading: %.1f MB".format(mbRead)
+                        }
+                    }
+                    isDownloadingAutoUpdate = false
+                    result.onSuccess { downloadedFile ->
+                        autoUpdateInfo = null
+                        manager.installApk(downloadedFile)
+                    }.onFailure { error ->
+                        Toast.makeText(context, "Download failed: ${error.localizedMessage}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            },
+            onDismiss = {
+                if (!isDownloadingAutoUpdate) {
+                    autoUpdateInfo = null
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -111,6 +188,15 @@ fun CivoraNavHost(
 ) {
     val isUserLoggedIn = remember { container.authRepository.isUserLoggedIn }
     val startDestination = if (isUserLoggedIn) Screen.Dashboard.route else Screen.Login.route
+
+    LaunchedEffect(isUserLoggedIn) {
+        if (isUserLoggedIn) {
+            val activeId = container.authRepository.savedUserIdentifier
+            if (!activeId.isNullOrBlank()) {
+                container.userRepository.loadUserByIdentifier(activeId)
+            }
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -279,7 +365,7 @@ fun CivoraNavHost(
         // 12. Absher Login Form Screen
         composable(Screen.LoginForm.route) {
             val authViewModel: AuthViewModel = viewModel(
-                factory = AuthViewModel.provideFactory(container.authRepository)
+                factory = AuthViewModel.provideFactory(container.authRepository, container.userRepository)
             )
             AbsherLoginFormScreen(
                 onBackClick = { navController.popBackStack() },
@@ -304,8 +390,16 @@ fun CivoraNavHost(
         composable(Screen.Loading.route) {
             AbsherLoadingScreen(
                 onLoadingFinished = {
-                    navController.navigate(Screen.Dashboard.route) {
-                        popUpTo(0) { inclusive = true }
+                    val activeId = container.authRepository.savedUserIdentifier
+                    if (!activeId.isNullOrBlank()) {
+                        container.userRepository.loadUserByIdentifier(activeId)
+                        navController.navigate(Screen.Dashboard.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 }
             )

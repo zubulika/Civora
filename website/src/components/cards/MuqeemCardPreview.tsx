@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { UserProfile } from '@/types';
-import { QrCode, RefreshCw, ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
+import { QrCode, RefreshCw, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 interface MuqeemCardPreviewProps {
   user: Partial<UserProfile>;
@@ -18,14 +18,14 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
   const nationalId = user.nationalId || '2495685261';
   const dob = user.dateOfBirth || '1988/02/03';
   const nationalityAr = user.nationalityAr || 'بنجلاديش';
-  const nationalityEn = user.nationality || 'Bangladesh';
-  const placeOfBirthAr = user.placeOfBirthAr || user.nationalityAr || 'بنجلاديش';
-  const religionAr = user.religionAr || 'الاسلام';
+
+
+
   const professionAr = user.professionAr || 'عامل غسيل ملابس';
   const sponsorId = user.sponsorId || '7034884309';
   const sponsorName = user.sponsorName || 'مؤسسة درر نجاح للملابس';
   const issuePlace = user.issuePlace || 'شركة العلم لامن المعلومات';
-  const workPlaceAr = user.workPlaceAr || 'منطقة الرياض';
+
   const expiryDateEn = user.expiryDateEn || '2026/10/08';
   const versionNumber = user.versionNumber || '٢';
   const photoUrl = user.photoUrl || '/avatar_placeholder.png';

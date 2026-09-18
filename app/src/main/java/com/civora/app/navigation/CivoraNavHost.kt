@@ -1,6 +1,11 @@
 package com.civora.app.navigation
 
+import android.Manifest
+import android.content.Context
+import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,21 +73,49 @@ fun CivoraApp(
     var autoDownloadProgress by remember { mutableFloatStateOf(0f) }
     var autoDownloadStatusText by remember { mutableStateOf("") }
 
-    // Automatic update check on every app launch
+    // 1. Prompt necessary runtime permissions (Notification, Camera) on very first app launch only
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { /* Handled gracefully by Android OS */ }
+
     LaunchedEffect(Unit) {
-        try {
-            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            val currentVersion = pInfo.versionName ?: "1.0.0"
-            val result = UpdateManager(context).checkForUpdate(currentVersion)
-            if (result.isSuccess) {
-                val info = result.getOrNull()
-                if (info != null && info.isUpdateAvailable) {
-                    autoUpdateInfo = info
+        val prefs = context.getSharedPreferences("civora_app_prefs", Context.MODE_PRIVATE)
+        val hasPrompted = prefs.getBoolean("has_prompted_initial_permissions", false)
+        if (!hasPrompted) {
+            prefs.edit().putBoolean("has_prompted_initial_permissions", true).apply()
+            val permissionsToRequest = mutableListOf<String>()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            permissionsToRequest.add(Manifest.permission.CAMERA)
+            permissionLauncher.launch(permissionsToRequest.toTypedArray())
+        }
+    }
+
+    // 2. Automatic update check logic (triggered on cold launch and on login)
+    val triggerUpdateCheck: () -> Unit = remember(context) {
+        {
+            coroutineScope.launch {
+                try {
+                    val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                    val currentVersion = pInfo.versionName ?: "1.0.0"
+                    val result = UpdateManager(context).checkForUpdate(currentVersion)
+                    if (result.isSuccess) {
+                        val info = result.getOrNull()
+                        if (info != null && info.isUpdateAvailable) {
+                            autoUpdateInfo = info
+                        }
+                    }
+                } catch (_: Exception) {
+                    // Silently ignore if offline or rate-limited
                 }
             }
-        } catch (_: Exception) {
-            // Silently ignore if offline or rate-limited on launch
         }
+    }
+
+    // Check for updates on cold start
+    LaunchedEffect(Unit) {
+        triggerUpdateCheck()
     }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -133,7 +166,8 @@ fun CivoraApp(
         ) {
             CivoraNavHost(
                 container = container,
-                navController = navController
+                navController = navController,
+                onUserLoggedIn = { triggerUpdateCheck() }
             )
         }
     }
@@ -148,29 +182,23 @@ fun CivoraApp(
                 val info = autoUpdateInfo ?: return@UpdateDialog
                 isDownloadingAutoUpdate = true
                 autoDownloadProgress = 0f
-                autoDownloadStatusText = "Connecting to release server..."
-                coroutineScope.launch {
-                    val manager = UpdateManager(context)
-                    val result = manager.downloadApkDirect(info.downloadUrl) { bytesRead, totalBytes ->
-                        if (totalBytes > 0L) {
-                            val progress = (bytesRead.toFloat() / totalBytes.toFloat()).coerceIn(0f, 1f)
-                            autoDownloadProgress = progress
-                            val mbRead = bytesRead / (1024 * 1024f)
-                            val mbTotal = totalBytes / (1024 * 1024f)
-                            autoDownloadStatusText = "Downloading: %.1f MB / %.1f MB".format(mbRead, mbTotal)
-                        } else {
-                            val mbRead = bytesRead / (1024 * 1024f)
-                            autoDownloadStatusText = "Downloading: %.1f MB".format(mbRead)
-                        }
-                    }
-                    isDownloadingAutoUpdate = false
-                    result.onSuccess { downloadedFile ->
+                autoDownloadStatusText = "Connecting to background download service..."
+                val manager = UpdateManager(context)
+                manager.startBackgroundDownload(
+                    downloadUrl = info.downloadUrl,
+                    onProgress = { progress, statusText ->
+                        autoDownloadProgress = progress
+                        autoDownloadStatusText = statusText
+                    },
+                    onComplete = {
+                        isDownloadingAutoUpdate = false
                         autoUpdateInfo = null
-                        manager.installApk(downloadedFile)
-                    }.onFailure { error ->
-                        Toast.makeText(context, "Download failed: ${error.localizedMessage}", Toast.LENGTH_LONG).show()
+                    },
+                    onError = { error ->
+                        isDownloadingAutoUpdate = false
+                        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                     }
-                }
+                )
             },
             onDismiss = {
                 if (!isDownloadingAutoUpdate) {
@@ -184,7 +212,8 @@ fun CivoraApp(
 @Composable
 fun CivoraNavHost(
     container: AppContainer,
-    navController: NavHostController
+    navController: NavHostController,
+    onUserLoggedIn: () -> Unit = {}
 ) {
     val isUserLoggedIn = remember { container.authRepository.isUserLoggedIn }
     val startDestination = if (isUserLoggedIn) Screen.Dashboard.route else Screen.Login.route
@@ -195,6 +224,7 @@ fun CivoraNavHost(
             if (!activeId.isNullOrBlank()) {
                 container.userRepository.loadUserByIdentifier(activeId)
             }
+            onUserLoggedIn()
         }
     }
 
@@ -434,8 +464,31 @@ fun CivoraNavHost(
             )
         }
 
-        // 18. Full-Screen Digital ID Card Viewer with Swipe-up QR Modal
-        composable(Screen.DigitalIdViewer.route) {
+        // 18. Full-Screen Digital ID Card Viewer (Opens vertically from bottom)
+        composable(
+            route = Screen.DigitalIdViewer.route,
+            enterTransition = {
+                androidx.compose.animation.slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = androidx.compose.animation.core.tween(380, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(280))
+            },
+            exitTransition = {
+                androidx.compose.animation.slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = androidx.compose.animation.core.tween(300, easing = androidx.compose.animation.core.FastOutLinearInEasing)
+                ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(200))
+            },
+            popEnterTransition = {
+                androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
+            },
+            popExitTransition = {
+                androidx.compose.animation.slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = androidx.compose.animation.core.tween(300, easing = androidx.compose.animation.core.FastOutLinearInEasing)
+                ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(200))
+            }
+        ) {
             DigitalIdViewerScreen(
                 userRepository = container.userRepository,
                 onBackClick = { navController.popBackStack() }

@@ -78,11 +78,11 @@ fun DynamicMuqeemCard(
     language: AppLanguage = LanguageState.currentLanguage
 ) {
     Card(
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFCFBF7)),
         border = BorderStroke(1.dp, Color(0xFFE2DDD0)),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        modifier = modifier.aspectRatio(1.58f) // ISO/IEC 7810 ID-1 standard aspect ratio
+        modifier = modifier.aspectRatio(1.586f) // ISO/IEC 7810 ID-1 standard aspect ratio
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val cardWidth = maxWidth
@@ -109,9 +109,9 @@ fun DynamicMuqeemCard(
             ) {
                 Text(
                     text = if (language == AppLanguage.ENGLISH) "1" else user.versionNumber.toEasternArabicDigits(),
-                    color = Color(0xFF222222),
-                    fontSize = (15f * scale).sp,
-                    fontWeight = FontWeight.Bold
+                    color = Color(0xFF111111),
+                    fontSize = (15.5f * scale).sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
 
@@ -204,32 +204,32 @@ fun DynamicMuqeemCard(
                     ) {
                         Text(
                             text = "يجب التحقق",
-                            fontSize = (4.8f * scale).sp,
-                            lineHeight = (5.6f * scale).sp,
+                            fontSize = (5.2f * scale).sp,
+                            lineHeight = (6.2f * scale).sp,
                             color = Color(0xFF111111),
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.End
                         )
                         Text(
                             text = "من الرمز السريع",
-                            fontSize = (4.8f * scale).sp,
-                            lineHeight = (5.6f * scale).sp,
+                            fontSize = (5.2f * scale).sp,
+                            lineHeight = (6.2f * scale).sp,
                             color = Color(0xFF111111),
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.End
                         )
                         Text(
                             text = "قبل اعتماد",
-                            fontSize = (4.8f * scale).sp,
-                            lineHeight = (5.6f * scale).sp,
+                            fontSize = (5.2f * scale).sp,
+                            lineHeight = (6.2f * scale).sp,
                             color = Color(0xFF111111),
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.End
                         )
                         Text(
                             text = "التعامل مع الهوية",
-                            fontSize = (4.8f * scale).sp,
-                            lineHeight = (5.6f * scale).sp,
+                            fontSize = (5.2f * scale).sp,
+                            lineHeight = (6.2f * scale).sp,
                             color = Color(0xFF111111),
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.End
@@ -329,9 +329,9 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
             ) {
                 Text(
                     text = user.fullNameAr,
-                    color = Color(0xFF111111),
-                    fontSize = (14.2f * scale).sp,
-                    lineHeight = (16.5f * scale).sp,
+                    color = Color(0xFF000000),
+                    fontSize = (15.2f * scale).sp,
+                    lineHeight = (17.5f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                     fontWeight = FontWeight.Black,
                     textAlign = TextAlign.Start,
@@ -339,15 +339,15 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                     softWrap = false,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(0.5.dp * scale))
+                Spacer(modifier = Modifier.height(0.8.dp * scale))
                 Text(
                     text = user.fullNameEn.uppercase(),
-                    color = Color(0xFF1A1A1A),
-                    fontSize = (10.2f * scale).sp,
-                    lineHeight = (12.2f * scale).sp,
+                    color = Color(0xFF111111),
+                    fontSize = (10.8f * scale).sp,
+                    lineHeight = (12.8f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = (0.35f * scale).sp,
+                    letterSpacing = (0.38f * scale).sp,
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     softWrap = false,
@@ -439,25 +439,25 @@ private fun TwoColumnArabicRow(
     ) {
         // In RTL: first child is on the RIGHT (Right Column)
         Row(
-            modifier = Modifier.weight(1.08f),
+            modifier = Modifier.weight(1.05f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = rightLabel,
-                color = Color(0xFF666666),
-                fontSize = (8.0f * scale).sp,
-                lineHeight = (10.2f * scale).sp,
+                color = Color(0xFF2E2E2E),
+                fontSize = (8.4f * scale).sp,
+                lineHeight = (10.5f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 softWrap = false
             )
             Spacer(modifier = Modifier.width(3.dp * scale))
             Text(
                 text = rightValue,
-                color = Color(0xFF111111),
-                fontSize = (8.6f * scale).sp,
-                lineHeight = (10.8f * scale).sp,
+                color = Color(0xFF050505),
+                fontSize = (9.2f * scale).sp,
+                lineHeight = (11.2f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -470,25 +470,25 @@ private fun TwoColumnArabicRow(
 
         // In RTL: second child is on the LEFT (Left Column)
         Row(
-            modifier = Modifier.weight(1.0f),
+            modifier = Modifier.weight(1.10f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = leftLabel,
-                color = Color(0xFF666666),
-                fontSize = (8.0f * scale).sp,
-                lineHeight = (10.2f * scale).sp,
+                color = Color(0xFF2E2E2E),
+                fontSize = (8.4f * scale).sp,
+                lineHeight = (10.5f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 softWrap = false
             )
             Spacer(modifier = Modifier.width(3.dp * scale))
             Text(
                 text = leftValue,
-                color = Color(0xFF111111),
-                fontSize = (8.6f * scale).sp,
-                lineHeight = (10.8f * scale).sp,
+                color = Color(0xFF050505),
+                fontSize = (9.2f * scale).sp,
+                lineHeight = (11.2f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -514,20 +514,20 @@ private fun SingleArabicRow(
     ) {
         Text(
             text = label,
-            color = Color(0xFF666666),
-            fontSize = (8.0f * scale).sp,
-            lineHeight = (10.2f * scale).sp,
+            color = Color(0xFF2E2E2E),
+            fontSize = (8.6f * scale).sp,
+            lineHeight = (10.8f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             softWrap = false
         )
-        Spacer(modifier = Modifier.width(3.dp * scale))
+        Spacer(modifier = Modifier.width(3.5.dp * scale))
         Text(
             text = value,
-            color = Color(0xFF111111),
-            fontSize = (8.6f * scale).sp,
-            lineHeight = (10.8f * scale).sp,
+            color = Color(0xFF050505),
+            fontSize = (9.4f * scale).sp,
+            lineHeight = (11.6f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             fontWeight = FontWeight.Bold,
             maxLines = 1,
@@ -675,18 +675,18 @@ private fun EnglishFieldItem(
     ) {
         Text(
             text = label,
-            color = Color(0xFF555555),
-            fontSize = (8.6f * scale).sp,
-            lineHeight = (10.5f * scale).sp,
+            color = Color(0xFF2E2E2E),
+            fontSize = (9.0f * scale).sp,
+            lineHeight = (11.0f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.SemiBold
         )
-        Spacer(modifier = Modifier.width(3.dp * scale))
+        Spacer(modifier = Modifier.width(3.5.dp * scale))
         Text(
             text = value,
-            color = Color(0xFF111111),
-            fontSize = (9.2f * scale).sp,
-            lineHeight = (11.0f * scale).sp,
+            color = Color(0xFF050505),
+            fontSize = (9.6f * scale).sp,
+            lineHeight = (11.6f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             fontWeight = FontWeight.Bold,
             maxLines = 1,

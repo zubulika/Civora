@@ -107,7 +107,7 @@ fun UpdateDialog(
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (isDownloading) {
                     Text(
-                        text = "Please keep the app open while the latest version of Absher is downloading.",
+                        text = "Downloading via background service. You can safely minimize the app or monitor progress in the notification bar.",
                         fontSize = 13.5.sp,
                         color = textMuted,
                         lineHeight = 19.sp

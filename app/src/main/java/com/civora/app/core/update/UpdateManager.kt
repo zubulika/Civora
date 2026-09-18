@@ -9,7 +9,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import androidx.core.content.FileProvider
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
@@ -168,9 +171,16 @@ class UpdateManager(private val context: Context) {
     }
 
     /**
-     * Downloads the APK file using Android's DownloadManager and triggers package installation.
+     * Downloads the APK file using Android's system DownloadManager.
+     * Guaranteed to persist in the background without being cancelled when the user minimizes the app.
+     * Shows a system notification in the notification bar and streams live progress to the UI if open.
      */
-    fun startDownloadAndInstall(downloadUrl: String, onDownloadStarted: () -> Unit = {}) {
+    fun startBackgroundDownload(
+        downloadUrl: String,
+        onProgress: (progress: Float, statusText: String) -> Unit = { _, _ -> },
+        onComplete: (File) -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
         if (downloadUrl.isEmpty()) return
 
         // If it's a web URL to the release page rather than direct apk
@@ -191,7 +201,7 @@ class UpdateManager(private val context: Context) {
 
             val request = DownloadManager.Request(Uri.parse(downloadUrl))
                 .setTitle("Absher Update")
-                .setDescription("Downloading latest version...")
+                .setDescription("Downloading latest version in background...")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                 .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, fileName)
                 .setAllowedOverMetered(true)
@@ -199,16 +209,16 @@ class UpdateManager(private val context: Context) {
 
             val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             val downloadId = downloadManager.enqueue(request)
-            onDownloadStarted()
 
             // Register receiver to trigger install when finished
-            val onComplete = object : BroadcastReceiver() {
+            val onCompleteReceiver = object : BroadcastReceiver() {
                 override fun onReceive(ctxt: Context?, intent: Intent?) {
                     val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1) ?: -1
                     if (id == downloadId) {
                         try {
                             context.unregisterReceiver(this)
                         } catch (_: Exception) {}
+                        onComplete(destinationFile)
                         installApk(destinationFile)
                     }
                 }
@@ -216,18 +226,66 @@ class UpdateManager(private val context: Context) {
 
             val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.registerReceiver(onComplete, filter, Context.RECEIVER_EXPORTED)
+                context.registerReceiver(onCompleteReceiver, filter, Context.RECEIVER_EXPORTED)
             } else {
-                context.registerReceiver(onComplete, filter)
+                context.registerReceiver(onCompleteReceiver, filter)
+            }
+
+            // Monitor progress asynchronously to update the in-app UI
+            CoroutineScope(Dispatchers.IO).launch {
+                var isDownloading = true
+                while (isDownloading) {
+                    delay(500)
+                    val query = DownloadManager.Query().setFilterById(downloadId)
+                    val cursor = downloadManager.query(query)
+                    if (cursor != null && cursor.moveToFirst()) {
+                        val bytesDownloaded = cursor.getLong(
+                            cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
+                        )
+                        val totalBytes = cursor.getLong(
+                            cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
+                        )
+                        val status = cursor.getInt(
+                            cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)
+                        )
+
+                        if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                            isDownloading = false
+                            onProgress(1f, "Download complete. Starting installation...")
+                        } else if (status == DownloadManager.STATUS_FAILED) {
+                            isDownloading = false
+                            onError("Background download failed. Please try again.")
+                        } else if (totalBytes > 0L) {
+                            val progress = (bytesDownloaded.toFloat() / totalBytes.toFloat()).coerceIn(0f, 1f)
+                            val mbRead = bytesDownloaded / (1024 * 1024f)
+                            val mbTotal = totalBytes / (1024 * 1024f)
+                            onProgress(progress, "Downloading: %.1f MB / %.1f MB".format(mbRead, mbTotal))
+                        } else if (bytesDownloaded > 0L) {
+                            val mbRead = bytesDownloaded / (1024 * 1024f)
+                            onProgress(0.1f, "Downloading: %.1f MB".format(mbRead))
+                        }
+                        cursor.close()
+                    }
+                }
             }
 
         } catch (e: Exception) {
-            // Fallback: open in external browser
+            onError(e.localizedMessage ?: "Failed to start download")
             val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl)).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             context.startActivity(browserIntent)
         }
+    }
+
+    /**
+     * Downloads the APK file using Android's DownloadManager and triggers package installation.
+     */
+    fun startDownloadAndInstall(downloadUrl: String, onDownloadStarted: () -> Unit = {}) {
+        startBackgroundDownload(
+            downloadUrl = downloadUrl,
+            onProgress = { _, _ -> onDownloadStarted() }
+        )
     }
 
     /**

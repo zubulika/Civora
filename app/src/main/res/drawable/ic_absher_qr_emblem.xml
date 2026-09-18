@@ -1,0 +1,63 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="360dp"
+    android:height="360dp"
+    android:viewportWidth="360"
+    android:viewportHeight="360">
+
+    <!-- Authentic Absher Emblem - 1:1 exact vector paths from animated_mobile_loading_icon absher.svg -->
+    <!-- Bar 1 (Leftmost long bar) -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M74,138 h10 a10,10 0 0,1 10,10 v198 a10,10 0 0,1 -10,10 h-10 a10,10 0 0,1 -10,-10 v-198 a10,10 0 0,1 10,-10 Z" />
+
+    <!-- Bar 2 -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M113,138 h10 a10,10 0 0,1 10,10 v150 a10,10 0 0,1 -10,10 h-10 a10,10 0 0,1 -10,-10 v-150 a10,10 0 0,1 10,-10 Z" />
+
+    <!-- Bar 3 -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M152,138 h10 a10,10 0 0,1 10,10 v150 a10,10 0 0,1 -10,10 h-10 a10,10 0 0,1 -10,-10 v-150 a10,10 0 0,1 10,-10 Z" />
+
+    <!-- Bar 4 -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M191,138 h10 a10,10 0 0,1 10,10 v150 a10,10 0 0,1 -10,10 h-10 a10,10 0 0,1 -10,-10 v-150 a10,10 0 0,1 10,-10 Z" />
+
+    <!-- Bar 5 -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M230,89 h10 a10,10 0 0,1 10,10 v199 a10,10 0 0,1 -10,10 h-10 a10,10 0 0,1 -10,-10 v-199 a10,10 0 0,1 10,-10 Z" />
+
+    <!-- Bar 6 Top Crest -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M259,67 C259,53 270,42 284,42 H289 V67 Z" />
+
+    <!-- Bar 6 -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M269,78 h10 a10,10 0 0,1 10,10 v222 a10,10 0 0,1 -10,10 h-10 a10,10 0 0,1 -10,-10 v-222 a10,10 0 0,1 10,-10 Z" />
+
+    <!-- Dot 1 -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M66,113 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0 Z" />
+
+    <!-- Dot 2 -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M105,113 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0 Z" />
+
+    <!-- Dot 3 -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M144,113 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0 Z" />
+
+    <!-- Dot 4 (Bottom under Bar 5) -->
+    <path
+        android:fillColor="#078B57"
+        android:pathData="M222,332 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0 Z" />
+
+</vector>

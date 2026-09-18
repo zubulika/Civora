@@ -242,7 +242,7 @@ def launch_emulator(emulator_path, avd_name, port=DEFAULT_PORT, env=None):
 
     creationflags = 0
     if sys.platform == "win32":
-        creationflags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+        creationflags = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
 
     proc = subprocess.Popen(
         cmd,

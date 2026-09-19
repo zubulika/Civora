@@ -78,6 +78,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import com.civora.app.core.update.AppUpdateInfo
 import com.civora.app.core.update.UpdateDialog
+import com.civora.app.BuildConfig
 import com.civora.app.core.update.UpdateManager
 import kotlinx.coroutines.launch
 import com.civora.app.core.designsystem.AppThemeMode
@@ -112,9 +113,9 @@ fun SettingsScreen(
     var downloadStatusText by remember { mutableStateOf("") }
     val currentVersionName = remember(context) {
         try {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
+            BuildConfig.APP_VERSION_NAME
         } catch (_: Exception) {
-            "1.0.0"
+            BuildConfig.APP_VERSION_NAME
         }
     }
 
@@ -478,26 +479,34 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
                             .clickable(enabled = !checkingForUpdate) {
-                                checkingForUpdate = true
-                                coroutineScope.launch {
-                                    val result = UpdateManager(context).checkForUpdate(currentVersion = currentVersionName)
-                                    checkingForUpdate = false
-                                    result.onSuccess { info ->
-                                        if (info.isUpdateAvailable) {
-                                            updateInfoToDisplay = info
-                                        } else {
+                                if (BuildConfig.DEBUG) {
+                                    Toast.makeText(
+                                        context,
+                                        "Release updates are disabled in development builds",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    checkingForUpdate = true
+                                    coroutineScope.launch {
+                                        val result = UpdateManager(context).checkForUpdate(currentVersion = currentVersionName)
+                                        checkingForUpdate = false
+                                        result.onSuccess { info ->
+                                            if (info.isUpdateAvailable) {
+                                                updateInfoToDisplay = info
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Absher is up to date (v$currentVersionName)",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }.onFailure { err ->
                                             Toast.makeText(
                                                 context,
-                                                "Absher is up to date (v$currentVersionName)",
+                                                "Update check: ${err.localizedMessage ?: "No release found"}",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
-                                    }.onFailure { err ->
-                                        Toast.makeText(
-                                            context,
-                                            "Update check: ${err.localizedMessage ?: "No release found"}",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                     }
                                 }
                             }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import com.civora.app.R
 import com.civora.app.core.components.UserAvatarImage
 import com.civora.app.core.components.DynamicMuqeemCard
+import com.civora.app.core.components.AbsherCornerPattern
 import com.civora.app.core.designsystem.AbsherCardBg
 import com.civora.app.core.designsystem.AbsherCardBorder
 import com.civora.app.core.designsystem.AbsherDarkSection
@@ -104,7 +106,7 @@ fun DashboardScreen(
     val quickAccessBg = if (isDark) {
         Brush.verticalGradient(listOf(AbsherGreenSection, AbsherGreenSectionBottom))
     } else {
-        Brush.verticalGradient(listOf(AbsherLightBg, AbsherLightBg))
+        Brush.verticalGradient(listOf(Color(0xFFE4F2EF), Color(0xFFF7FBFA)))
     }
     val quickAccessHeaderColor = if (isDark) Color.White else AbsherLightTextPrimary
     val quickAccessCardBg = if (isDark) AbsherCardBg else AbsherLightCardBg
@@ -217,6 +219,20 @@ fun DashboardScreen(
                             .background(quickAccessBg)
                             .padding(horizontal = 16.dp, vertical = 16.dp)
                     ) {
+                        AbsherCornerPattern(
+                            isDark = isDark,
+                            modifier = Modifier
+                                .fillMaxWidth(0.55f)
+                                .height(160.dp)
+                                .align(Alignment.TopStart)
+                        )
+                        if (!isDark) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color(0xFFD9EEE9).copy(alpha = 0.32f))
+                            )
+                        }
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 text = "Quick Access",
@@ -285,7 +301,7 @@ fun DashboardScreen(
                                     onClick = onNavigateToServices
                                 )
                                 AbsherGridCard(
-                                    title = "Update\nResident Pho...",
+                                    title = "Update\nResident Photo",
                                     iconRes = R.drawable.ic_update_photo,
                                     cardBg = quickAccessCardBg,
                                     cardBorder = quickAccessCardBorder,
@@ -427,9 +443,10 @@ fun AbsherWideCard(
         colors = CardDefaults.cardColors(containerColor = cardBg),
         border = BorderStroke(1.dp, cardBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onClick() }
@@ -437,14 +454,14 @@ fun AbsherWideCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = 18.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(id = iconRes),
                 contentDescription = title,
                 tint = iconColor,
-                modifier = Modifier.size(34.dp)
+                modifier = Modifier.size(48.dp)
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -453,7 +470,7 @@ fun AbsherWideCard(
                 Text(
                     text = title,
                     color = textPrimary,
-                    fontSize = 15.sp,
+                    fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(3.dp))
@@ -486,7 +503,7 @@ fun AbsherGridCard(
         border = BorderStroke(1.dp, cardBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
-            .height(115.dp)
+            .aspectRatio(1f)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -495,7 +512,7 @@ fun AbsherGridCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(14.dp),
+                .padding(horizontal = 18.dp, vertical = 18.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             if (iconRes != null) {
@@ -503,25 +520,25 @@ fun AbsherGridCard(
                     painter = painterResource(id = iconRes),
                     contentDescription = title,
                     tint = iconColor,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(54.dp)
                 )
             } else if (iconVector != null) {
                 Icon(
                     imageVector = iconVector,
                     contentDescription = title,
                     tint = iconColor,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(54.dp)
                 )
             }
 
             Text(
                 text = title,
                 color = textPrimary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                lineHeight = 17.sp,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                lineHeight = 20.sp,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Clip
             )
         }
     }

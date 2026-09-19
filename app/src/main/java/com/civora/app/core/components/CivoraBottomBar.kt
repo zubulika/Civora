@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -51,7 +52,9 @@ sealed class BottomNavItem(
 ) {
     // The EPS does not contain a home glyph, so retain the platform icon only for Home.
     object Dashboard : BottomNavItem(Screen.Dashboard.route, "Home", iconVector = Icons.Default.Home)
-    object Services : BottomNavItem(Screen.Services.route, "Services", R.drawable.ic_manage_identity)
+    // Services uses the filled person glyph from the reference navigation,
+    // rather than the thin resident-identity outline.
+    object Services : BottomNavItem(Screen.Services.route, "Services", iconVector = Icons.Default.Person)
     object Family : BottomNavItem(Screen.Family.route, "Family", R.drawable.ic_family_solid)
     object Workers : BottomNavItem(Screen.Workers.route, "Workers", R.drawable.ic_workers_solid)
     object Other : BottomNavItem(Screen.Other.route, "Other", R.drawable.ic_other_grid)

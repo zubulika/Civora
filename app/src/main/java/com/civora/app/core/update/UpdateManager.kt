@@ -18,6 +18,7 @@ import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import com.civora.app.BuildConfig
 
 data class AppUpdateInfo(
     val latestVersion: String,
@@ -38,7 +39,7 @@ class UpdateManager(private val context: Context) {
      * Queries GitHub Releases API for the latest published release.
      * Compares tag_name with the currently running app version.
      */
-    suspend fun checkForUpdate(currentVersion: String = "1.0.0"): Result<AppUpdateInfo> = withContext(Dispatchers.IO) {
+    suspend fun checkForUpdate(currentVersion: String = BuildConfig.APP_VERSION_NAME): Result<AppUpdateInfo> = withContext(Dispatchers.IO) {
         try {
             val url = URL(RELEASES_API_URL)
             val connection = (url.openConnection() as HttpURLConnection).apply {

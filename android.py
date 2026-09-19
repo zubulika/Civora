@@ -268,7 +268,8 @@ def wait_for_emulator(adb_path, env, expected_port=None, proc=None, timeout=240)
     print("[*] Waiting for desktop emulator to finish boot...")
     expected_serial = f"emulator-{expected_port}" if expected_port else None
 
-    offline_reconnect_attempted = False
+    offline_reconnect_attempts = 0
+    last_offline_recovery = 0.0
     while time.time() - start_time < timeout:
         try:
             output = subprocess.check_output([adb_path, "devices"], text=True, stderr=subprocess.DEVNULL, env=env)
@@ -277,11 +278,18 @@ def wait_for_emulator(adb_path, env, expected_port=None, proc=None, timeout=240)
 
             # ADB can retain an offline transport after a previous emulator
             # process was killed. Reconnect it once while the new process boots.
-            if any("offline" in line for line in output.splitlines()) and not offline_reconnect_attempted:
-                print("\n[*] ADB reports the emulator offline; requesting transport reconnect...")
-                subprocess.run([adb_path, "reconnect", "offline"], env=env,
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                offline_reconnect_attempted = True
+            elapsed = time.time() - start_time
+            is_offline = any("offline" in line for line in output.splitlines())
+            if is_offline and elapsed - last_offline_recovery >= 20 and offline_reconnect_attempts < 3:
+                offline_reconnect_attempts += 1
+                last_offline_recovery = elapsed
+                if offline_reconnect_attempts == 1:
+                    print("\n[*] ADB reports the emulator offline; requesting transport reconnect...")
+                    subprocess.run([adb_path, "reconnect", "offline"], env=env,
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                else:
+                    print(f"\n[*] Restarting ADB after offline boot transport (attempt {offline_reconnect_attempts}/3)...")
+                    restart_adb_server(adb_path, env)
 
             candidates = [expected_serial] if (expected_serial and expected_serial in emulator_serials) else emulator_serials
 
@@ -403,7 +411,8 @@ def start_watch_loop(adb_path, target_devices, env, auto_discover=True, target_f
         PROJECT_ROOT / "gradle",
         PROJECT_ROOT / "build.gradle.kts",
         PROJECT_ROOT / "settings.gradle.kts",
-        PROJECT_ROOT / "gradle.properties"
+        PROJECT_ROOT / "gradle.properties",
+        PROJECT_ROOT / "version.properties"
     ]
     print("\n" + "=" * 60)
     print(f"  [Civora Multi-Device Live Watcher] Active on {len(target_devices)} device(s)")

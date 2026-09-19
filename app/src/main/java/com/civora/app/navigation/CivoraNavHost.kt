@@ -30,6 +30,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.civora.app.BuildConfig
 import com.civora.app.core.components.CivoraBottomBar
 import com.civora.app.core.di.AppContainer
 import com.civora.app.core.update.AppUpdateInfo
@@ -95,19 +96,20 @@ fun CivoraApp(
     // 2. Automatic update check logic (triggered on cold launch and on login)
     val triggerUpdateCheck: () -> Unit = remember(context) {
         {
-            coroutineScope.launch {
-                try {
-                    val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-                    val currentVersion = pInfo.versionName ?: "1.0.0"
-                    val result = UpdateManager(context).checkForUpdate(currentVersion)
-                    if (result.isSuccess) {
-                        val info = result.getOrNull()
-                        if (info != null && info.isUpdateAvailable) {
-                            autoUpdateInfo = info
+            if (!BuildConfig.DEBUG) {
+                coroutineScope.launch {
+                    try {
+                        val currentVersion = BuildConfig.APP_VERSION_NAME
+                        val result = UpdateManager(context).checkForUpdate(currentVersion)
+                        if (result.isSuccess) {
+                            val info = result.getOrNull()
+                            if (info != null && info.isUpdateAvailable) {
+                                autoUpdateInfo = info
+                            }
                         }
+                    } catch (_: Exception) {
+                        // Silently ignore if offline or rate-limited
                     }
-                } catch (_: Exception) {
-                    // Silently ignore if offline or rate-limited
                 }
             }
         }

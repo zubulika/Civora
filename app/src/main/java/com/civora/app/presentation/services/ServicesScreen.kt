@@ -232,16 +232,16 @@ fun ServicesScreen(
                                 painter = painterResource(id = service.iconRes),
                                 contentDescription = service.title,
                                 tint = if (service.id == "passport") Color.Unspecified else iconColor,
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(42.dp)
                             )
 
                             // Title
                             Text(
                                 text = service.title,
                                 color = textPrimary,
-                                fontSize = 14.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Normal,
-                                lineHeight = 18.sp,
+                                lineHeight = 19.sp,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )

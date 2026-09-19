@@ -1,9 +1,19 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
 }
+
+val appVersionProperties = Properties().apply {
+    rootProject.file("version.properties").inputStream().use(::load)
+}
+val appVersionName = appVersionProperties.getProperty("versionName")
+    ?: error("version.properties must define versionName")
+val appVersionCode = appVersionProperties.getProperty("versionCode")?.toIntOrNull()
+    ?: error("version.properties must define an integer versionCode")
 
 android {
     namespace = "com.civora.app"
@@ -13,8 +23,8 @@ android {
         applicationId = "com.civora.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.0.5"
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -58,6 +68,12 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+
+    defaultConfig {
+        buildConfigField("String", "APP_VERSION_NAME", "\"$appVersionName\"")
+        buildConfigField("String", "APP_RELEASE_TAG", "\"v$appVersionName\"")
     }
 
     packaging {

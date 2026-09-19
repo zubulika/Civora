@@ -223,7 +223,9 @@ fun DashboardScreen(
                             isDark = isDark,
                             modifier = Modifier
                                 .fillMaxWidth(0.55f)
-                                .height(160.dp)
+                                // Keep the login pattern inside the Quick Access
+                                // header strip; it must not continue behind cards.
+                                .height(78.dp)
                                 .align(Alignment.TopStart)
                         )
                         if (!isDark) {

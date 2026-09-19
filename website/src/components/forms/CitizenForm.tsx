@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { UserProfile } from '@/types';
+import { compressAvatarImage } from '@/lib/imageCompressor';
 import { 
   User, 
   Briefcase, 
@@ -88,6 +89,14 @@ export default function CitizenForm({
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [compressingPhoto, setCompressingPhoto] = useState(false);
+  const [photoSizeKb, setPhotoSizeKb] = useState<number | null>(() => {
+    if (formData.photoUrl && formData.photoUrl.startsWith('data:image')) {
+      const b64 = formData.photoUrl.split(',')[1] || '';
+      return Math.round((b64.length * 3) / 4 / 1024);
+    }
+    return null;
+  });
 
   const generateRandomPassword = () => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
@@ -107,16 +116,19 @@ export default function CitizenForm({
     onChange?.(updated);
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          handleChange('photoUrl', reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        setCompressingPhoto(true);
+        const result = await compressAvatarImage(file);
+        handleChange('photoUrl', result.dataUrl);
+        setPhotoSizeKb(result.sizeKb);
+      } catch (err) {
+        console.error('Failed to compress avatar image:', err);
+      } finally {
+        setCompressingPhoto(false);
+      }
     }
   };
 
@@ -149,7 +161,7 @@ export default function CitizenForm({
               type="text"
               required
               maxLength={10}
-              pattern="\\d{10}"
+              pattern="\d{10}"
               inputMode="numeric"
               value={formData.nationalId}
               onChange={(e) => handleChange('nationalId', e.target.value.replace(/\D/g, ''))}
@@ -160,21 +172,46 @@ export default function CitizenForm({
 
           {/* Photo Selector */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Portrait Photo (File or URL)
-            </label>
-            <div className="flex gap-2">
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-gray-700">
+                Portrait Photo (File or URL)
+              </label>
+              {compressingPhoto && (
+                <span className="text-[11px] font-medium text-amber-600 animate-pulse">
+                  Compressing WebP...
+                </span>
+              )}
+              {!compressingPhoto && photoSizeKb !== null && (
+                <span className="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                  ✓ {photoSizeKb} KB (Firestore Ready)
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2 items-center">
+              {formData.photoUrl ? (
+                <img
+                  src={formData.photoUrl}
+                  alt="Avatar Preview"
+                  className="w-9 h-9 rounded-lg object-cover border border-gray-200 shrink-0"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              ) : null}
               <input
                 type="text"
                 value={formData.photoUrl}
-                onChange={(e) => handleChange('photoUrl', e.target.value)}
+                onChange={(e) => {
+                  handleChange('photoUrl', e.target.value);
+                  setPhotoSizeKb(null);
+                }}
                 placeholder="https://... or choose local file"
                 className="flex-1 px-3.5 py-2 border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
               />
-              <label className="px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-xl cursor-pointer text-xs font-medium text-gray-700 flex items-center gap-1.5 transition-colors">
+              <label className="px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-xl cursor-pointer text-xs font-medium text-gray-700 flex items-center gap-1.5 transition-colors shrink-0">
                 <Upload className="w-3.5 h-3.5" />
-                <span>Upload</span>
-                <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                <span>{compressingPhoto ? 'Compressing...' : 'Upload'}</span>
+                <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={compressingPhoto} className="hidden" />
               </label>
             </div>
           </div>

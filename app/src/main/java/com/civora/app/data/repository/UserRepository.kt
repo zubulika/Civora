@@ -87,7 +87,8 @@ class UserRepository(
                 "digitalIdActive" to updated.digitalIdActive,
                 "totalDocuments" to updated.totalDocuments,
                 "activeRequestsCount" to updated.activeRequestsCount,
-                "unreadNotificationsCount" to updated.unreadNotificationsCount
+                "unreadNotificationsCount" to updated.unreadNotificationsCount,
+                "photoUrl" to updated.photoUrl
             )
             db.collection("users").document(docId)
                 .set(map, com.google.firebase.firestore.SetOptions.merge())

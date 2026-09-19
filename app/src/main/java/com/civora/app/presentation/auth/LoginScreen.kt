@@ -102,7 +102,7 @@ fun LoginScreen(
             PublicServiceCardItem("Manage Digital Identity", iconRes = R.drawable.ic_manage_identity),
             PublicServiceCardItem("Absher Travel for Visitors", iconRes = R.drawable.ic_absher_travel),
             PublicServiceCardItem("Civil Affairs Appointment", iconRes = R.drawable.ic_appointment),
-            PublicServiceCardItem("Passport Appointments", iconRes = R.drawable.ic_appointment),
+            PublicServiceCardItem("Passport Appointments", iconRes = R.drawable.ic_passport_appointment),
             PublicServiceCardItem("Absher Authenticator", iconRes = R.drawable.ic_absher_authenticator)
         )
     }
@@ -359,4 +359,3 @@ private fun PublicServiceCard(
         }
     }
 }
-

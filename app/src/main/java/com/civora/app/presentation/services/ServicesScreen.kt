@@ -94,11 +94,11 @@ fun ServicesScreen(
         listOf(
             AbsherServiceGridItem("travel", "Absher Travel", R.drawable.ic_absher_travel),
             AbsherServiceGridItem("newborn", "Register\nNewborn", R.drawable.ic_register_newborn),
-            AbsherServiceGridItem("driving", "Renew Driving\nLicense", R.drawable.ic_driver_license),
-            AbsherServiceGridItem("resident_id", "Renew\nResident ID", R.drawable.ic_driver_license),
+            AbsherServiceGridItem("driving", "Renew Driving\nLicense", R.drawable.ic_renew_driving_license),
+            AbsherServiceGridItem("resident_id", "Renew\nResident ID", R.drawable.ic_manage_identity),
             AbsherServiceGridItem("auth", "Authentication\nServices", R.drawable.ic_authenticator),
             AbsherServiceGridItem("photo", "Update\nResident Pho...", R.drawable.ic_update_photo),
-            AbsherServiceGridItem("accident", "Report Minor\nAccident", R.drawable.ic_minor_accident),
+            AbsherServiceGridItem("accident", "Report Minor\nAccident", R.drawable.ic_car_front_outline),
             AbsherServiceGridItem("passport", "Update\nPassport ...", R.drawable.ic_update_passport)
         )
     }

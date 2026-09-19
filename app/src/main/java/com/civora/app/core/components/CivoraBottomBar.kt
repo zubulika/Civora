@@ -16,19 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Assignment
-import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.FamilyRestroom
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.civora.app.core.designsystem.AbsherMint
 import com.civora.app.core.designsystem.AbsherNavBg
@@ -47,17 +41,20 @@ import com.civora.app.core.designsystem.AbsherLightTextMuted
 import com.civora.app.core.designsystem.AppThemeMode
 import com.civora.app.core.designsystem.ThemeState
 import com.civora.app.navigation.Screen
+import com.civora.app.R
 
 sealed class BottomNavItem(
     val route: String,
     val title: String,
-    val icon: ImageVector
+    val iconRes: Int? = null,
+    val iconVector: ImageVector? = null
 ) {
-    object Dashboard : BottomNavItem(Screen.Dashboard.route, "Home", Icons.Default.Home)
-    object Services : BottomNavItem(Screen.Services.route, "Services", Icons.Default.Person)
-    object Family : BottomNavItem(Screen.Family.route, "Family", Icons.Default.FamilyRestroom)
-    object Workers : BottomNavItem(Screen.Workers.route, "Workers", Icons.Default.Groups)
-    object Other : BottomNavItem(Screen.Other.route, "Other", Icons.Default.GridView)
+    // The EPS does not contain a home glyph, so retain the platform icon only for Home.
+    object Dashboard : BottomNavItem(Screen.Dashboard.route, "Home", iconVector = Icons.Default.Home)
+    object Services : BottomNavItem(Screen.Services.route, "Services", R.drawable.ic_manage_identity)
+    object Family : BottomNavItem(Screen.Family.route, "Family", R.drawable.ic_family_solid)
+    object Workers : BottomNavItem(Screen.Workers.route, "Workers", R.drawable.ic_workers_solid)
+    object Other : BottomNavItem(Screen.Other.route, "Other", R.drawable.ic_other_grid)
 }
 
 
@@ -121,12 +118,22 @@ fun CivoraBottomBar(
                         }
                         .padding(horizontal = 6.dp, vertical = 4.dp)
                 ) {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.title,
-                        tint = contentColor,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    val clientIconRes = item.iconRes
+                    if (clientIconRes != null) {
+                        Icon(
+                            painter = painterResource(clientIconRes),
+                            contentDescription = item.title,
+                            tint = contentColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = item.iconVector ?: Icons.Default.Home,
+                            contentDescription = item.title,
+                            tint = contentColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = item.title,

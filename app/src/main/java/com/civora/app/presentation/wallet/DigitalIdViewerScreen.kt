@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.VerticalPager
@@ -138,8 +139,11 @@ fun DigitalIdViewerScreen(
                     //   visual height on screen = cardW = cardH * 1.586f
                     // Maximize cardH to fill nearly the entire viewport width with a slim margin,
                     // while ensuring visual height (cardW) fits within available vertical space.
-                    val maxHFromWidth = availableW - 12.dp
-                    val maxHFromHeight = (availableH - 16.dp) / 1.586f
+                    // The reference viewer uses the card as the hero of the screen.
+                    // Keep a small breathing room while allowing the rotated card to
+                    // use almost the full device width instead of the previous narrow fit.
+                    val maxHFromWidth = availableW * 0.90f
+                    val maxHFromHeight = (availableH - 8.dp) / 1.586f
                     val cardH = minOf(maxHFromWidth, maxHFromHeight)
                     val cardW = cardH * 1.586f
 
@@ -149,7 +153,6 @@ fun DigitalIdViewerScreen(
                             Box(
                                 modifier = Modifier
                                     .size(width = cardH, height = cardW)
-                                    .clip(RoundedCornerShape(16.dp))
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null
@@ -164,7 +167,10 @@ fun DigitalIdViewerScreen(
                                     user = user,
                                     language = currentLanguage,
                                     modifier = Modifier
-                                        .size(width = cardW, height = cardH)
+                                        // graphicsLayer rotation does not participate in
+                                        // measurement. Bypass the parent's narrow width
+                                        // constraint so the rotated card keeps its full size.
+                                        .requiredSize(width = cardW, height = cardH)
                                         .graphicsLayer {
                                             rotationZ = 90f
                                         }
@@ -176,7 +182,6 @@ fun DigitalIdViewerScreen(
                             Box(
                                 modifier = Modifier
                                     .size(width = cardH, height = cardW)
-                                    .clip(RoundedCornerShape(16.dp))
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null
@@ -192,7 +197,7 @@ fun DigitalIdViewerScreen(
                                     cardW = cardW,
                                     cardH = cardH,
                                     modifier = Modifier
-                                        .size(width = cardW, height = cardH)
+                                        .requiredSize(width = cardW, height = cardH)
                                         .graphicsLayer {
                                             rotationZ = 90f
                                         }

@@ -58,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.civora.app.R
+import com.civora.app.core.components.UserAvatarImage
 import com.civora.app.core.designsystem.AbsherCardBg
 import com.civora.app.core.designsystem.AbsherDarkSection
 import com.civora.app.core.designsystem.AbsherGreenHeader
@@ -240,8 +241,8 @@ fun ResidentIdDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(
-                                painter = painterResource(id = R.drawable.user_avatar),
+                            UserAvatarImage(
+                                photoUrl = user.photoUrl,
                                 contentDescription = "User Avatar",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier

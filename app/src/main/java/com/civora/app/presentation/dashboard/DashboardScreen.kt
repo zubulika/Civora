@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.civora.app.R
+import com.civora.app.core.components.UserAvatarImage
 import com.civora.app.core.components.DynamicMuqeemCard
 import com.civora.app.core.designsystem.AbsherCardBg
 import com.civora.app.core.designsystem.AbsherCardBorder
@@ -156,8 +157,8 @@ fun DashboardScreen(
                                     .padding(14.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.user_avatar),
+                                UserAvatarImage(
+                                    photoUrl = state.user.photoUrl,
                                     contentDescription = "User Avatar",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
@@ -275,7 +276,7 @@ fun DashboardScreen(
                             ) {
                                 AbsherGridCard(
                                     title = "Report Minor\nAccident",
-                                    iconRes = R.drawable.ic_minor_accident,
+                                    iconRes = R.drawable.ic_car_front_outline,
                                     cardBg = quickAccessCardBg,
                                     cardBorder = quickAccessCardBorder,
                                     iconColor = quickAccessIconColor,

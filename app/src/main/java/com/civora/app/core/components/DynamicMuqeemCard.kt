@@ -39,6 +39,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,6 +52,12 @@ import com.civora.app.core.designsystem.AppLanguage
 import com.civora.app.core.designsystem.LanguageState
 import com.civora.app.core.model.UserProfile
 import com.civora.app.core.util.OfficialQrGenerator
+
+private val CardLabelColor = Color(0xFF969696)
+private val CardValueColor = Color(0xFF171717)
+private val CardNameColor = Color(0xFF111111)
+private val CardTextFont = FontFamily.SansSerif
+private val CardArabicLabelFont = FontFamily(Font(R.font.tajawal_regular))
 
 /**
  * Extension helper to convert ASCII digits (0-9) to Eastern Arabic numerals (٠-٩).
@@ -109,7 +117,8 @@ fun DynamicMuqeemCard(
             ) {
                 Text(
                     text = if (language == AppLanguage.ENGLISH) "1" else user.versionNumber.toEasternArabicDigits(),
-                    color = Color(0xFF111111),
+                    color = CardNameColor,
+                    fontFamily = CardTextFont,
                     fontSize = (15.5f * scale).sp,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -129,8 +138,8 @@ fun DynamicMuqeemCard(
                     .clip(RoundedCornerShape(2.dp * scale))
                     .background(Color(0xFFE8EEF4))
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.user_avatar),
+                UserAvatarImage(
+                    photoUrl = user.photoUrl,
                     contentDescription = "Cardholder Photo",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -204,33 +213,37 @@ fun DynamicMuqeemCard(
                     ) {
                         Text(
                             text = "يجب التحقق",
+                            fontFamily = CardTextFont,
                             fontSize = (5.2f * scale).sp,
                             lineHeight = (6.2f * scale).sp,
-                            color = Color(0xFF111111),
+                            color = CardNameColor,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.End
                         )
                         Text(
                             text = "من الرمز السريع",
+                            fontFamily = CardTextFont,
                             fontSize = (5.2f * scale).sp,
                             lineHeight = (6.2f * scale).sp,
-                            color = Color(0xFF111111),
+                            color = CardNameColor,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.End
                         )
                         Text(
                             text = "قبل اعتماد",
+                            fontFamily = CardTextFont,
                             fontSize = (5.2f * scale).sp,
                             lineHeight = (6.2f * scale).sp,
-                            color = Color(0xFF111111),
+                            color = CardNameColor,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.End
                         )
                         Text(
                             text = "التعامل مع الهوية",
+                            fontFamily = CardTextFont,
                             fontSize = (5.2f * scale).sp,
                             lineHeight = (6.2f * scale).sp,
-                            color = Color(0xFF111111),
+                            color = CardNameColor,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.End
                         )
@@ -329,7 +342,8 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
             ) {
                 Text(
                     text = user.fullNameAr,
-                    color = Color(0xFF000000),
+                    color = CardNameColor,
+                    fontFamily = CardTextFont,
                     fontSize = (15.2f * scale).sp,
                     lineHeight = (17.5f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
@@ -342,11 +356,12 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                 Spacer(modifier = Modifier.height(0.8.dp * scale))
                 Text(
                     text = user.fullNameEn.uppercase(),
-                    color = Color(0xFF111111),
+                    color = CardNameColor,
+                    fontFamily = CardTextFont,
                     fontSize = (10.8f * scale).sp,
                     lineHeight = (12.8f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Medium,
                     letterSpacing = (0.38f * scale).sp,
                     textAlign = TextAlign.Start,
                     maxLines = 1,
@@ -444,18 +459,20 @@ private fun TwoColumnArabicRow(
         ) {
             Text(
                 text = rightLabel,
-                color = Color(0xFF2E2E2E),
+                color = CardLabelColor,
+                fontFamily = CardArabicLabelFont,
                 fontSize = (8.4f * scale).sp,
                 lineHeight = (10.5f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Normal,
                 maxLines = 1,
                 softWrap = false
             )
             Spacer(modifier = Modifier.width(3.dp * scale))
             Text(
                 text = rightValue,
-                color = Color(0xFF050505),
+                color = CardValueColor,
+                fontFamily = CardTextFont,
                 fontSize = (9.2f * scale).sp,
                 lineHeight = (11.2f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
@@ -475,18 +492,20 @@ private fun TwoColumnArabicRow(
         ) {
             Text(
                 text = leftLabel,
-                color = Color(0xFF2E2E2E),
+                color = CardLabelColor,
+                fontFamily = CardArabicLabelFont,
                 fontSize = (8.4f * scale).sp,
                 lineHeight = (10.5f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Normal,
                 maxLines = 1,
                 softWrap = false
             )
             Spacer(modifier = Modifier.width(3.dp * scale))
             Text(
                 text = leftValue,
-                color = Color(0xFF050505),
+                color = CardValueColor,
+                fontFamily = CardTextFont,
                 fontSize = (9.2f * scale).sp,
                 lineHeight = (11.2f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
@@ -514,18 +533,20 @@ private fun SingleArabicRow(
     ) {
         Text(
             text = label,
-            color = Color(0xFF2E2E2E),
+            color = CardLabelColor,
+            fontFamily = CardArabicLabelFont,
             fontSize = (8.6f * scale).sp,
             lineHeight = (10.8f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Normal,
             maxLines = 1,
             softWrap = false
         )
         Spacer(modifier = Modifier.width(3.5.dp * scale))
         Text(
             text = value,
-            color = Color(0xFF050505),
+            color = CardValueColor,
+            fontFamily = CardTextFont,
             fontSize = (9.4f * scale).sp,
             lineHeight = (11.6f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
@@ -550,7 +571,8 @@ private fun EnglishDataLayout(user: UserProfile, scale: Float) {
         Column(modifier = Modifier.padding(bottom = 1.dp * scale)) {
             Text(
                 text = user.fullNameAr,
-                color = Color(0xFF1E1E1E),
+                color = CardNameColor,
+                fontFamily = CardTextFont,
                 fontSize = (12.8f * scale).sp,
                 lineHeight = (15.0f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
@@ -560,11 +582,12 @@ private fun EnglishDataLayout(user: UserProfile, scale: Float) {
             )
             Text(
                 text = user.fullNameEn.uppercase(),
-                color = Color(0xFF0A0A0A),
+                color = CardNameColor,
+                fontFamily = CardTextFont,
                 fontSize = (12.8f * scale).sp,
                 lineHeight = (15.5f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.Medium,
                 letterSpacing = (0.3f * scale).sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -675,20 +698,22 @@ private fun EnglishFieldItem(
     ) {
         Text(
             text = label,
-            color = Color(0xFF2E2E2E),
+            color = CardLabelColor,
+            fontFamily = CardTextFont,
             fontSize = (9.0f * scale).sp,
             lineHeight = (11.0f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.Normal
         )
         Spacer(modifier = Modifier.width(3.5.dp * scale))
         Text(
             text = value,
-            color = Color(0xFF050505),
+            color = CardValueColor,
+            fontFamily = CardTextFont,
             fontSize = (9.6f * scale).sp,
             lineHeight = (11.6f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

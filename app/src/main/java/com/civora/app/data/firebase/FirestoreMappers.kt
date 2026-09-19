@@ -68,7 +68,8 @@ object FirestoreMappers {
                 insuranceStatus = doc.getString("insuranceStatus") ?: "Valid & Active",
                 insuranceExpiry = doc.getString("insuranceExpiry") ?: "14/04/2026",
                 hajjEligibility = doc.getString("hajjEligibility") ?: "Not Eligible / Not Performed",
-                lastHajjYear = doc.getString("lastHajjYear") ?: "-"
+                lastHajjYear = doc.getString("lastHajjYear") ?: "-",
+                photoUrl = doc.getString("photoUrl") ?: ""
             )
         } catch (e: Exception) {
             null

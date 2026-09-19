@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.FamilyRestroom
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.FloatingActionButton
@@ -164,7 +163,7 @@ fun FamilyScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.FamilyRestroom,
+                    painter = painterResource(id = R.drawable.ic_family_outline),
                     contentDescription = null,
                     tint = textMuted.copy(alpha = 0.6f),
                     modifier = Modifier.size(72.dp)

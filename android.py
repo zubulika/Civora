@@ -235,7 +235,15 @@ def launch_emulator(emulator_path, avd_name, port=DEFAULT_PORT, env=None):
         emulator_path,
         "-avd", avd_name,
         "-netdelay", "none",
-        "-netspeed", "full"
+        "-netspeed", "full",
+        # Avoid reusing or writing a Quick Boot snapshot after an ADB/emulator
+        # crash. This preserves the AVD's data while forcing a clean boot.
+        "-no-snapshot-load",
+        "-no-snapshot-save",
+        "-no-boot-anim",
+        # This workstation has a supported NVIDIA GPU; host rendering is both
+        # faster and more reliable than the SwiftShader fallback here.
+        "-gpu", "host"
     ]
     if port:
         cmd.extend(["-port", str(port)])
@@ -255,19 +263,25 @@ def launch_emulator(emulator_path, avd_name, port=DEFAULT_PORT, env=None):
     return proc
 
 
-def wait_for_emulator(adb_path, env, expected_port=None, proc=None, timeout=120):
+def wait_for_emulator(adb_path, env, expected_port=None, proc=None, timeout=240):
     start_time = time.time()
     print("[*] Waiting for desktop emulator to finish boot...")
     expected_serial = f"emulator-{expected_port}" if expected_port else None
 
+    offline_reconnect_attempted = False
     while time.time() - start_time < timeout:
-        if proc and proc.poll() is not None:
-            raise RuntimeError(f"Emulator process crashed or exited prematurely (exit code: {proc.returncode}).")
-
         try:
             output = subprocess.check_output([adb_path, "devices"], text=True, stderr=subprocess.DEVNULL, env=env)
             lines = [line.split()[0] for line in output.strip().split("\n")[1:] if line.strip() and "offline" not in line]
             emulator_serials = [s for s in lines if s.startswith("emulator-")]
+
+            # ADB can retain an offline transport after a previous emulator
+            # process was killed. Reconnect it once while the new process boots.
+            if any("offline" in line for line in output.splitlines()) and not offline_reconnect_attempted:
+                print("\n[*] ADB reports the emulator offline; requesting transport reconnect...")
+                subprocess.run([adb_path, "reconnect", "offline"], env=env,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                offline_reconnect_attempted = True
 
             candidates = [expected_serial] if (expected_serial and expected_serial in emulator_serials) else emulator_serials
 
@@ -529,4 +543,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

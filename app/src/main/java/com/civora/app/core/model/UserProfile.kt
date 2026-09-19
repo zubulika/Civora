@@ -47,7 +47,8 @@ data class UserProfile(
     val insuranceStatus: String = "Valid & Active",
     val insuranceExpiry: String = "14/04/2026",
     val hajjEligibility: String = "Not Eligible / Not Performed",
-    val lastHajjYear: String = "-"
+    val lastHajjYear: String = "-",
+    val photoUrl: String = ""
 )
 
 enum class VerificationLevel(val label: String) {

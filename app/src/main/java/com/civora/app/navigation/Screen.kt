@@ -6,6 +6,9 @@ sealed class Screen(val route: String) {
     object ServiceDetail : Screen("services/{serviceId}") {
         fun createRoute(serviceId: String) = "services/$serviceId"
     }
+    object ServicePlaceholder : Screen("service/{serviceId}") {
+        fun createRoute(serviceId: String) = "service/$serviceId"
+    }
     object Wallet : Screen("wallet")
     object Requests : Screen("requests")
     object Profile : Screen("profile")
@@ -18,6 +21,9 @@ sealed class Screen(val route: String) {
     object Family : Screen("family")
     object Workers : Screen("workers")
     object Other : Screen("other")
+    object OtherServicePlaceholder : Screen("other/{serviceId}") {
+        fun createRoute(serviceId: String) = "other/$serviceId"
+    }
     object PassportDetail : Screen("passport_detail")
     object ResidentIdDetail : Screen("resident_id_detail")
     object DigitalIdViewer : Screen("digital_id_viewer")

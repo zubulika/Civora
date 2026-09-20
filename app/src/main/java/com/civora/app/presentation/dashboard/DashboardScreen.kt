@@ -51,6 +51,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.civora.app.R
@@ -249,6 +250,7 @@ fun DashboardScreen(
                                 iconRes = R.drawable.ic_car_front_outline,
                                 title = "My Vehicles",
                                 subtitle = "View details, renew documents,\nreport accidents, and much more",
+                                height = 120.dp,
                                 cardBg = quickAccessCardBg,
                                 cardBorder = quickAccessCardBorder,
                                 iconColor = quickAccessIconColor,
@@ -321,6 +323,7 @@ fun DashboardScreen(
                                 iconRes = R.drawable.ic_weapon,
                                 title = "My Weapons",
                                 subtitle = "View weapons details, issue and\nview carry permits",
+                                iconSize = 60.dp,
                                 cardBg = quickAccessCardBg,
                                 cardBorder = quickAccessCardBorder,
                                 iconColor = quickAccessIconColor,
@@ -433,6 +436,8 @@ fun AbsherWideCard(
     iconRes: Int,
     title: String,
     subtitle: String,
+    height: Dp = 100.dp,
+    iconSize: Dp = 48.dp,
     cardBg: Color,
     cardBorder: Color,
     iconColor: Color,
@@ -447,7 +452,7 @@ fun AbsherWideCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp)
+                .height(height)
                 .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -463,7 +468,7 @@ fun AbsherWideCard(
                 painter = painterResource(id = iconRes),
                 contentDescription = title,
                 tint = iconColor,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(iconSize)
             )
 
             Spacer(modifier = Modifier.width(16.dp))

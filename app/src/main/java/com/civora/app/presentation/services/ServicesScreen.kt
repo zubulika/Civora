@@ -214,16 +214,16 @@ fun ServicesScreen(
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = cardBg),
                         border = BorderStroke(1.dp, cardBorder),
-                        elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 1.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .aspectRatio(1.08f)
+                            .aspectRatio(1f)
                             .clickable { onNavigateToDetail(service.id) }
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(16.dp),
+                                .padding(18.dp),
                             verticalArrangement = Arrangement.SpaceBetween,
                             horizontalAlignment = Alignment.Start
                         ) {
@@ -232,16 +232,16 @@ fun ServicesScreen(
                                 painter = painterResource(id = service.iconRes),
                                 contentDescription = service.title,
                                 tint = if (service.id == "passport") Color.Unspecified else iconColor,
-                                modifier = Modifier.size(42.dp)
+                                modifier = Modifier.size(54.dp)
                             )
 
                             // Title
                             Text(
                                 text = service.title,
                                 color = textPrimary,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Normal,
-                                lineHeight = 19.sp,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                lineHeight = 20.sp,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )

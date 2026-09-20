@@ -265,14 +265,25 @@ fun CivoraNavHost(
             ServicesScreen(
                 viewModel = viewModel,
                 onNavigateToDetail = { serviceId ->
-                    navController.navigate(Screen.ServiceDetail.createRoute(serviceId))
+                    navController.navigate(Screen.ServicePlaceholder.createRoute(serviceId))
                 },
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
             )
         }
 
-        // 3. Service Detail
+        // 3. Placeholder for service cards that are not available yet
+        composable(
+            route = Screen.ServicePlaceholder.route,
+            arguments = listOf(navArgument("serviceId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            com.civora.app.presentation.services.ServicePlaceholderScreen(
+                serviceId = backStackEntry.arguments?.getString("serviceId").orEmpty(),
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // 4. Service Detail
         composable(
             route = Screen.ServiceDetail.route,
             arguments = listOf(navArgument("serviceId") { type = NavType.StringType })
@@ -441,14 +452,25 @@ fun CivoraNavHost(
         composable(Screen.Other.route) {
             com.civora.app.presentation.other.OtherServicesScreen(
                 onNavigateToDetail = { serviceId ->
-                    navController.navigate(Screen.ServiceDetail.createRoute(serviceId))
+                    navController.navigate(Screen.OtherServicePlaceholder.createRoute(serviceId))
                 },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
             )
         }
 
-        // 16. My Passport Detail
+        // 16. Placeholder for services not available yet
+        composable(
+            route = Screen.OtherServicePlaceholder.route,
+            arguments = listOf(navArgument("serviceId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            com.civora.app.presentation.other.OtherServicePlaceholderScreen(
+                serviceId = backStackEntry.arguments?.getString("serviceId").orEmpty(),
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // 17. My Passport Detail
         composable(Screen.PassportDetail.route) {
             PassportDetailScreen(
                 onBackClick = { navController.popBackStack() }

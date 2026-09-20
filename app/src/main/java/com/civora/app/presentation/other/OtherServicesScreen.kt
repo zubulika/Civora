@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
@@ -60,8 +59,7 @@ import com.civora.app.core.designsystem.LocalThemeMode
 data class OtherServiceItem(
     val id: String,
     val title: String,
-    val iconRes: Int,
-    val isMultiLayer: Boolean = false
+    val iconRes: Int
 )
 
 @Composable
@@ -102,8 +100,8 @@ fun OtherServicesScreen(
         OtherServiceItem("visit_visa", "Manage Visit\nVisa", R.drawable.ic_visa),
         OtherServiceItem("activation", "Absher\nActivation Sit...", R.drawable.ic_activation_device),
         OtherServiceItem("qabul", "Manage Qabul\nRequests", R.drawable.ic_qabul),
-        OtherServiceItem("birth_cert", "Birth\nCertificates S...", R.drawable.ic_birth_certificates, isMultiLayer = true),
-        OtherServiceItem("death_cert", "Death\nCertificates S...", R.drawable.ic_death_certificates, isMultiLayer = true),
+        OtherServiceItem("birth_cert", "Birth\nCertificates S...", R.drawable.ic_birth_certificates),
+        OtherServiceItem("death_cert", "Death\nCertificates S...", R.drawable.ic_death_certificates),
         OtherServiceItem("payments", "Government\nPayments", R.drawable.ic_gov_payments)
     )
 
@@ -232,13 +230,13 @@ fun OtherServicesScreen(
                                         border = BorderStroke(1.dp, cardBorder),
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height(118.dp)
+                                            .aspectRatio(1f)
                                             .clickable { onNavigateToDetail(item.id) }
                                     ) {
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxSize()
-                                                .padding(14.dp),
+                                                .padding(18.dp),
                                             verticalArrangement = Arrangement.SpaceBetween,
                                             horizontalAlignment = Alignment.Start
                                         ) {
@@ -246,14 +244,14 @@ fun OtherServicesScreen(
                                                 painter = painterResource(id = item.iconRes),
                                                 contentDescription = item.title,
                                                 tint = iconColor,
-                                                modifier = Modifier.size(30.dp)
+                                                modifier = Modifier.size(54.dp)
                                             )
                                             Text(
                                                 text = item.title,
                                                 color = textPrimary,
-                                                fontSize = 13.sp,
-                                                fontWeight = FontWeight.Normal,
-                                                lineHeight = 17.sp,
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                lineHeight = 20.sp,
                                                 maxLines = 2
                                             )
                                         }
@@ -349,16 +347,16 @@ private fun ServiceCardItem(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = cardBg),
         border = BorderStroke(1.dp, cardBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
-            .height(118.dp)
+            .aspectRatio(1f)
             .clickable { onClick() }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(14.dp),
+                    .padding(18.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.Start
             ) {
@@ -366,36 +364,18 @@ private fun ServiceCardItem(
                     painter = painterResource(id = item.iconRes),
                     contentDescription = item.title,
                     tint = if (item.id in listOf("ehsan", "furijat")) Color.Unspecified else iconColor,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(54.dp)
                 )
 
                 Text(
                     text = item.title,
                     color = textPrimary,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Normal,
-                    lineHeight = 17.sp,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    lineHeight = 20.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-            }
-
-            if (item.isMultiLayer) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xFFE4ECE7))
-                        .padding(horizontal = 6.dp, vertical = 4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Layers,
-                        contentDescription = "Multi-item",
-                        tint = Color(0xFF6B7D74),
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
             }
         }
     }

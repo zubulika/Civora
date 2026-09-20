@@ -398,11 +398,17 @@ private fun ProfileSquareCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(14.dp),
+                .padding(18.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(painterResource(iconRes), title, tint = iconColor, modifier = Modifier.size(42.dp))
-            Text(title, color = textColor, fontSize = 15.sp, lineHeight = 18.sp)
+            Icon(painterResource(iconRes), title, tint = iconColor, modifier = Modifier.size(54.dp))
+            Text(
+                title,
+                color = textColor,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                lineHeight = 20.sp
+            )
         }
     }
 }

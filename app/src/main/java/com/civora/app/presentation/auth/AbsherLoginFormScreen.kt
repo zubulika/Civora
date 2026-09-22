@@ -153,7 +153,7 @@ fun AbsherLoginFormScreen(
         // 3. Username / ID Number Field
         AbsherFormField(
             label = "Username or ID Number",
-            placeholder = "Enter 10-digit National ID / Iqama",
+            placeholder = "Enter Username or ID Number",
             value = username,
             onValueChange = { username = it },
             inputBg = inputBg,

@@ -88,7 +88,14 @@ class UserRepository(
                 "totalDocuments" to updated.totalDocuments,
                 "activeRequestsCount" to updated.activeRequestsCount,
                 "unreadNotificationsCount" to updated.unreadNotificationsCount,
-                "photoUrl" to updated.photoUrl
+                "photoUrl" to updated.photoUrl,
+                "licenseTypeEn" to updated.licenseTypeEn,
+                "licenseTypeAr" to updated.licenseTypeAr,
+                "licenseIssueDateEn" to updated.licenseIssueDateEn,
+                "licenseIssueDateAr" to updated.licenseIssueDateAr,
+                "licenseExpiryDateEn" to updated.licenseExpiryDateEn,
+                "licenseExpiryDateAr" to updated.licenseExpiryDateAr,
+                "bloodType" to updated.bloodType
             )
             db.collection("users").document(docId)
                 .set(map, com.google.firebase.firestore.SetOptions.merge())

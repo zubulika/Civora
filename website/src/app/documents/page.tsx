@@ -14,13 +14,14 @@ import {
   Building2
 } from 'lucide-react';
 import MuqeemCardPreview from '@/components/cards/MuqeemCardPreview';
+import DrivingLicensePreview from '@/components/cards/DrivingLicensePreview';
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<DigitalDocument[]>([]);
   const [citizens, setCitizens] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [previewCitizen, setPreviewCitizen] = useState<UserProfile | null>(null);
+  const [previewCitizen, setPreviewCitizen] = useState<{user: UserProfile, doc: DigitalDocument} | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -108,9 +109,15 @@ export default function DocumentsPage() {
               >
                 <div>
                   <div className="flex items-start justify-between mb-4">
-                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      هوية مقيم • RESIDENT ID
-                    </span>
+                    {document.type === 'DRIVING_LICENSE' ? (
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                        رخصة قيادة • DRIVING LICENSE
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        هوية مقيم • RESIDENT ID
+                      </span>
+                    )}
                     <span className="text-[11px] font-mono text-gray-400">Ver. {citizen.versionNumber}</span>
                   </div>
 
@@ -128,7 +135,9 @@ export default function DocumentsPage() {
                     <div>
                       <div className="font-bold text-sm text-gray-900 leading-tight">{citizen.fullNameAr}</div>
                       <div className="text-xs font-semibold text-gray-600 uppercase">{citizen.fullNameEn}</div>
-                      <div className="text-xs font-mono font-bold text-emerald-800 mt-0.5">Iqama: {citizen.nationalId}</div>
+                      <div className="text-xs font-mono font-bold text-emerald-800 mt-0.5">
+                        {document.type === 'DRIVING_LICENSE' ? `License ID: ${citizen.nationalId}` : `Iqama: ${citizen.nationalId}`}
+                      </div>
                     </div>
                   </div>
 
@@ -143,14 +152,16 @@ export default function DocumentsPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Expiry Date:</span>
-                      <span className="font-semibold text-emerald-700">{citizen.expiryDateEn}</span>
+                      <span className="font-semibold text-emerald-700">
+                        {document.type === 'DRIVING_LICENSE' ? citizen.licenseExpiryDateEn : citizen.expiryDateEn}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 mt-2">
                   <button
-                    onClick={() => setPreviewCitizen(citizen)}
+                    onClick={() => setPreviewCitizen({user: citizen, doc: document})}
                     className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline"
                   >
                     <QrCode className="w-3.5 h-3.5" />
@@ -177,7 +188,7 @@ export default function DocumentsPage() {
               <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
                 <div>
                   <h3 className="font-bold text-gray-900 text-base">Digital Document Verification</h3>
-                  <p className="text-xs text-gray-500">{previewCitizen.fullNameEn} • {previewCitizen.nationalId}</p>
+                  <p className="text-xs text-gray-500">{previewCitizen.user.fullNameEn} • {previewCitizen.user.nationalId}</p>
                 </div>
                 <button
                   onClick={() => setPreviewCitizen(null)}
@@ -187,8 +198,12 @@ export default function DocumentsPage() {
                 </button>
               </div>
 
-              <div className="py-2">
-                <MuqeemCardPreview user={previewCitizen} />
+              <div className="py-2 flex justify-center">
+                {previewCitizen.doc.type === 'DRIVING_LICENSE' ? (
+                  <DrivingLicensePreview user={previewCitizen.user} />
+                ) : (
+                  <MuqeemCardPreview user={previewCitizen.user} />
+                )}
               </div>
 
               <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">

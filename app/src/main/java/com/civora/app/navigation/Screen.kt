@@ -26,5 +26,8 @@ sealed class Screen(val route: String) {
     }
     object PassportDetail : Screen("passport_detail")
     object ResidentIdDetail : Screen("resident_id_detail")
+    object ResidentIdCard : Screen("resident_id_card")
+    object VisaDetail : Screen("visa_detail")
     object DigitalIdViewer : Screen("digital_id_viewer")
+    object DrivingLicenseViewer : Screen("driving_license_viewer")
 }

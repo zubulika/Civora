@@ -69,7 +69,18 @@ object FirestoreMappers {
                 insuranceExpiry = doc.getString("insuranceExpiry") ?: "14/04/2026",
                 hajjEligibility = doc.getString("hajjEligibility") ?: "Not Eligible / Not Performed",
                 lastHajjYear = doc.getString("lastHajjYear") ?: "-",
-                photoUrl = doc.getString("photoUrl") ?: ""
+                photoUrl = doc.getString("photoUrl") ?: "",
+                residentIdIssuingDate = doc.getString("residentIdIssuingDate") ?: "28/03/2021",
+                visaNumber = doc.getString("visaNumber") ?: "",
+                visaType = doc.getString("visaType") ?: "",
+                visaExitDate = doc.getString("visaExitDate") ?: "",
+                licenseTypeEn = doc.getString("licenseTypeEn") ?: "Private",
+                licenseTypeAr = doc.getString("licenseTypeAr") ?: "خصوصي",
+                licenseIssueDateEn = doc.getString("licenseIssueDateEn") ?: "10/03/2026",
+                licenseIssueDateAr = doc.getString("licenseIssueDateAr") ?: "٢٠٢٦/٠٣/١٠",
+                licenseExpiryDateEn = doc.getString("licenseExpiryDateEn") ?: "21/11/2035",
+                licenseExpiryDateAr = doc.getString("licenseExpiryDateAr") ?: "٢٠٣٥/١١/٢١",
+                bloodType = doc.getString("bloodType") ?: "A+"
             )
         } catch (e: Exception) {
             null

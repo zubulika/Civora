@@ -152,12 +152,13 @@ fun DashboardScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .height(120.dp)
                                 .clickable { onNavigateToProfile() }
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(14.dp),
+                                    .fillMaxSize()
+                                    .padding(horizontal = 18.dp, vertical = 14.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 UserAvatarImage(
@@ -165,24 +166,29 @@ fun DashboardScreen(
                                     contentDescription = "User Avatar",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .size(62.dp)
+                                        .clip(RoundedCornerShape(14.dp))
                                 )
 
-                                Spacer(modifier = Modifier.width(14.dp))
+                                Spacer(modifier = Modifier.width(16.dp))
 
-                                Column {
+                                Column(
+                                    verticalArrangement = Arrangement.Center
+                                ) {
                                     Text(
-                                        text = state.user.fullNameEn,
+                                        text = state.user.fullNameEn.uppercase(),
                                         color = textPrimary,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        lineHeight = 23.sp,
+                                        maxLines = 2
                                     )
-                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = "ID No.: ${state.user.nationalId}",
                                         color = textMuted,
-                                        fontSize = 13.sp
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }

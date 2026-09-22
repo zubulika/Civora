@@ -106,7 +106,7 @@ fun AbsherOtpScreen(
             .fillMaxSize()
             .background(bgColor)
             .statusBarsPadding()
-            .padding(horizontal = 24.dp)
+            .padding(start = 24.dp, end = 24.dp, bottom = 48.dp)
     ) {
         // 1. Top Back Button
         Row(

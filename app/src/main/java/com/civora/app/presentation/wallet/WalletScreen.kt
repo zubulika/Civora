@@ -51,7 +51,9 @@ import com.civora.app.core.model.DocumentType
 @Composable
 fun WalletScreen(
     viewModel: WalletViewModel,
-    onNavigateToNotifications: () -> Unit
+    onNavigateToNotifications: () -> Unit,
+    onNavigateToDrivingLicense: () -> Unit = {},
+    onNavigateToDigitalId: () -> Unit = {}
 ) {
     val documents by viewModel.documents.collectAsState()
     val selectedId by viewModel.selectedDocumentId.collectAsState()
@@ -90,7 +92,14 @@ fun WalletScreen(
                 DigitalDocumentCard(
                     document = doc,
                     isExpanded = isExpanded,
-                    onToggleExpand = { viewModel.selectDocument(doc.id) }
+                    onToggleExpand = { viewModel.selectDocument(doc.id) },
+                    onOpenViewer = {
+                        when (doc.type) {
+                            DocumentType.DRIVING_LICENSE -> onNavigateToDrivingLicense()
+                            DocumentType.NATIONAL_ID -> onNavigateToDigitalId()
+                            else -> {}
+                        }
+                    }
                 )
             }
         }
@@ -101,7 +110,8 @@ fun WalletScreen(
 fun DigitalDocumentCard(
     document: DigitalDocument,
     isExpanded: Boolean,
-    onToggleExpand: () -> Unit
+    onToggleExpand: () -> Unit,
+    onOpenViewer: () -> Unit = {}
 ) {
     val cardGradient = when (document.type) {
         DocumentType.NATIONAL_ID -> Brush.linearGradient(
@@ -269,6 +279,26 @@ fun DigitalDocumentCard(
                             tint = Color.White.copy(alpha = 0.8f),
                             modifier = Modifier.size(24.dp)
                         )
+                    }
+
+                    if (document.type == DocumentType.DRIVING_LICENSE || document.type == DocumentType.NATIONAL_ID) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(CivoraGold)
+                                .clickable { onOpenViewer() }
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (document.type == DocumentType.DRIVING_LICENSE) "View Official Driving License Card" else "View Official Resident ID Card",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = Color(0xFF1B2C1A),
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }

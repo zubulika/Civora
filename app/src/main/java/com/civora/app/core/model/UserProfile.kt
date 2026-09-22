@@ -48,7 +48,21 @@ data class UserProfile(
     val insuranceExpiry: String = "14/04/2026",
     val hajjEligibility: String = "Not Eligible / Not Performed",
     val lastHajjYear: String = "-",
-    val photoUrl: String = ""
+    val photoUrl: String = "",
+    // Resident ID specific
+    val residentIdIssuingDate: String = "28/03/2021",
+    // Visa specific
+    val visaNumber: String = "",
+    val visaType: String = "",
+    val visaExitDate: String = "",
+    // Driving License specific
+    val licenseTypeEn: String = "Private",
+    val licenseTypeAr: String = "خصوصي",
+    val licenseIssueDateEn: String = "10/03/2026",
+    val licenseIssueDateAr: String = "٢٠٢٦/٠٣/١٠",
+    val licenseExpiryDateEn: String = "21/11/2035",
+    val licenseExpiryDateAr: String = "٢٠٣٥/١١/٢١",
+    val bloodType: String = "A+"
 )
 
 enum class VerificationLevel(val label: String) {

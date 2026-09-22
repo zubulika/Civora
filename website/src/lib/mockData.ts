@@ -31,6 +31,13 @@ export const INITIAL_USERS: UserProfile[] = [
     expiryDateDigits: '081026',
     issueDateDigits: '070926',
     photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80',
+    licenseTypeEn: 'Private',
+    licenseTypeAr: 'خصوصي',
+    licenseIssueDateEn: '10/03/2026',
+    licenseIssueDateAr: '٢٠٢٦/٠٣/١٠',
+    licenseExpiryDateEn: '21/11/2035',
+    licenseExpiryDateAr: '٢٠٣٥/١١/٢١',
+    bloodType: 'A+',
     verificationLevel: 'TIER_3_VERIFIED',
     digitalIdActive: true,
     totalDocuments: 4,
@@ -155,6 +162,26 @@ export const INITIAL_DOCUMENTS: DigitalDocument[] = [
       'Full Name': 'Tariq Abdulaziz Al-Mansoor',
       'Arabic Name': 'طارق عبدالعزيز المنصور',
       'Blood Group': 'O+'
+    }
+  },
+  {
+    id: 'doc_dl_2495685261',
+    userId: 'usr_992140',
+    type: 'DRIVING_LICENSE',
+    title: 'Private Driving License',
+    titleAr: 'رخصة قيادة خصوصية',
+    subtitle: 'Ministry of Interior - General Directorate of Traffic',
+    documentNumber: '2495685261',
+    issueDate: '10/03/2026',
+    expiryDate: '21/11/2035',
+    status: 'ACTIVE',
+    issuer: 'General Directorate of Traffic',
+    qrCodePayload: 'https://absher.sa/verify/dl/2495685261?type=private&expiry=20351121',
+    details: {
+      'Full Name': 'MD ABDUL HALIM MEIA',
+      'Arabic Name': 'مد عبد ال حليم مياه',
+      'License Type': 'Private',
+      'Blood Type': 'A+'
     }
   }
 ];

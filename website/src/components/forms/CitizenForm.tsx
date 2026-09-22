@@ -577,7 +577,110 @@ export default function CitizenForm({
         </div>
       </div>
 
+      {/* 4. Driving License Details */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-200/90 shadow-xs">
+        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-gray-100">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+            <FileText className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-sm">Driving License Details</h3>
+            <p className="text-xs text-gray-500">License type, issue date, and blood type</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">License Type (EN)</label>
+            <input type="text" value={formData.licenseTypeEn || ''} onChange={(e) => handleChange('licenseTypeEn', e.target.value)} placeholder="e.g. Private" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">License Type (AR)</label>
+            <input type="text" dir="rtl" value={formData.licenseTypeAr || ''} onChange={(e) => handleChange('licenseTypeAr', e.target.value)} placeholder="e.g. خصوصي" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Issue Date (EN)</label>
+            <input type="text" value={formData.licenseIssueDateEn || ''} onChange={(e) => handleChange('licenseIssueDateEn', e.target.value)} placeholder="DD/MM/YYYY" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Issue Date (AR)</label>
+            <input type="text" dir="rtl" value={formData.licenseIssueDateAr || ''} onChange={(e) => handleChange('licenseIssueDateAr', e.target.value)} placeholder="YYYY/MM/DD" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Expiry Date (EN)</label>
+            <input type="text" value={formData.licenseExpiryDateEn || ''} onChange={(e) => handleChange('licenseExpiryDateEn', e.target.value)} placeholder="DD/MM/YYYY" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Expiry Date (AR)</label>
+            <input type="text" dir="rtl" value={formData.licenseExpiryDateAr || ''} onChange={(e) => handleChange('licenseExpiryDateAr', e.target.value)} placeholder="YYYY/MM/DD" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Blood Type</label>
+            <input type="text" value={formData.bloodType || ''} onChange={(e) => handleChange('bloodType', e.target.value)} placeholder="e.g. A+" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Resident ID Details */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-200/90 shadow-xs">
+        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-gray-100">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+            <FileText className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-sm">Resident ID Details</h3>
+            <p className="text-xs text-gray-500">ID version and dates shown in the app</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">ID Version</label>
+            <input type="text" value={formData.versionNumber || ''} onChange={(e) => handleChange('versionNumber', e.target.value)} placeholder="e.g. 2 or ٢" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Issuing Date</label>
+            <input type="text" value={formData.residentIdIssuingDate || ''} onChange={(e) => handleChange('residentIdIssuingDate', e.target.value)} placeholder="DD/MM/YYYY" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Expiry Date (EN)</label>
+            <input type="text" value={formData.expiryDateEn || ''} onChange={(e) => handleChange('expiryDateEn', e.target.value)} placeholder="YYYY/MM/DD" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Expiry Date (AR)</label>
+            <input type="text" dir="rtl" value={formData.expiryDateAr || ''} onChange={(e) => handleChange('expiryDateAr', e.target.value)} placeholder="YYYY/MM/DD" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+        </div>
+      </div>
+
+      {/* 6. Visa Details */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-200/90 shadow-xs">
+        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-gray-100">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
+            <FileText className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-sm">Visa Details</h3>
+            <p className="text-xs text-gray-500">Visa number, type, and exit date shown in the app</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Visa Number</label>
+            <input type="text" value={formData.visaNumber || ''} onChange={(e) => handleChange('visaNumber', e.target.value)} placeholder="e.g. 209340027" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Visa Type</label>
+            <input type="text" value={formData.visaType || ''} onChange={(e) => handleChange('visaType', e.target.value)} placeholder="e.g. Final Exit" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Exit from KSA before</label>
+            <input type="text" value={formData.visaExitDate || ''} onChange={(e) => handleChange('visaExitDate', e.target.value)} placeholder="DD/MM/YYYY" className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs" />
+          </div>
+        </div>
+      </div>
+
       {/* Submit Action */}
+
       <div className="flex justify-end gap-3 pt-2">
         <button
           type="submit"

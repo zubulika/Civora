@@ -50,7 +50,9 @@ import com.civora.app.presentation.notifications.NotificationsViewModel
 import com.civora.app.presentation.profile.PassportDetailScreen
 import com.civora.app.presentation.profile.ProfileScreen
 import com.civora.app.presentation.profile.ProfileViewModel
+import com.civora.app.presentation.profile.ResidentIdCardScreen
 import com.civora.app.presentation.profile.ResidentIdDetailScreen
+import com.civora.app.presentation.profile.VisaDetailScreen
 import com.civora.app.presentation.requests.RequestsScreen
 import com.civora.app.presentation.requests.RequestsViewModel
 import com.civora.app.presentation.services.ServiceDetailScreen
@@ -310,7 +312,9 @@ fun CivoraNavHost(
             )
             WalletScreen(
                 viewModel = viewModel,
-                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
+                onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
+                onNavigateToDrivingLicense = { navController.navigate(Screen.DrivingLicenseViewer.route) },
+                onNavigateToDigitalId = { navController.navigate(Screen.DigitalIdViewer.route) }
             )
         }
 
@@ -340,8 +344,10 @@ fun CivoraNavHost(
                 },
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToPassport = { navController.navigate(Screen.PassportDetail.route) },
-                onNavigateToResidentId = { navController.navigate(Screen.DigitalIdViewer.route) },
+                onNavigateToResidentId = { navController.navigate(Screen.ResidentIdCard.route) },
+                onNavigateToVisa = { navController.navigate(Screen.VisaDetail.route) },
                 onNavigateToPersonalDetails = { navController.navigate(Screen.ResidentIdDetail.route) },
+                onNavigateToDrivingLicense = { navController.navigate(Screen.DrivingLicenseViewer.route) },
                 onLogoutClick = {
                     container.authRepository.signOut()
                     navController.navigate(Screen.Login.route) {
@@ -488,6 +494,28 @@ fun CivoraNavHost(
             )
         }
 
+        // 19. My Resident ID Card screen
+        composable(Screen.ResidentIdCard.route) {
+            val viewModel: ProfileViewModel = viewModel(
+                factory = ProfileViewModel.provideFactory(container.userRepository)
+            )
+            ResidentIdCardScreen(
+                viewModel = viewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // 20. My Visa detail screen
+        composable(Screen.VisaDetail.route) {
+            val viewModel: ProfileViewModel = viewModel(
+                factory = ProfileViewModel.provideFactory(container.userRepository)
+            )
+            VisaDetailScreen(
+                viewModel = viewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
         // 18. Full-Screen Digital ID Card Viewer (Opens vertically from bottom)
         composable(
             route = Screen.DigitalIdViewer.route,
@@ -514,6 +542,37 @@ fun CivoraNavHost(
             }
         ) {
             DigitalIdViewerScreen(
+                userRepository = container.userRepository,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // 19. Full-Screen Driving License Card Viewer (Opens vertically from bottom)
+        composable(
+            route = Screen.DrivingLicenseViewer.route,
+            enterTransition = {
+                androidx.compose.animation.slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = androidx.compose.animation.core.tween(380, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(280))
+            },
+            exitTransition = {
+                androidx.compose.animation.slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = androidx.compose.animation.core.tween(300, easing = androidx.compose.animation.core.FastOutLinearInEasing)
+                ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(200))
+            },
+            popEnterTransition = {
+                androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
+            },
+            popExitTransition = {
+                androidx.compose.animation.slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = androidx.compose.animation.core.tween(300, easing = androidx.compose.animation.core.FastOutLinearInEasing)
+                ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(200))
+            }
+        ) {
+            com.civora.app.presentation.wallet.DrivingLicenseViewerScreen(
                 userRepository = container.userRepository,
                 onBackClick = { navController.popBackStack() }
             )

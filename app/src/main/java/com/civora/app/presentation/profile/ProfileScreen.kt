@@ -35,6 +35,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.material.icons.filled.ContentCopy
+import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,7 +79,9 @@ fun ProfileScreen(
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToPassport: () -> Unit = {},
     onNavigateToResidentId: () -> Unit = {},
+    onNavigateToVisa: () -> Unit = {},
     onNavigateToPersonalDetails: () -> Unit = {},
+    onNavigateToDrivingLicense: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
@@ -183,8 +190,8 @@ fun ProfileScreen(
                 )
             }
 
-            ProfileWideActionCard("My Visa", R.drawable.ic_visa, cardBg, cardBorder, accent, primary)
-            ProfileWideActionCard("My Driving License", R.drawable.ic_driver_license, cardBg, cardBorder, accent, primary)
+            ProfileWideActionCard("My Visa", R.drawable.ic_visa, cardBg, cardBorder, accent, primary, onClick = onNavigateToVisa)
+            ProfileWideActionCard("My Driving License", R.drawable.ic_driver_license, cardBg, cardBorder, accent, primary, onClick = onNavigateToDrivingLicense)
 
             Card(
                 shape = RoundedCornerShape(18.dp),
@@ -279,6 +286,8 @@ private fun ProfileIdentityCard(
     onDetailsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
     Box(modifier = modifier) {
         Card(
             modifier = Modifier.fillMaxSize(),
@@ -300,7 +309,20 @@ private fun ProfileIdentityCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("ID No. ${user.nationalId}", color = muted, fontSize = 13.sp)
                     Spacer(Modifier.width(6.dp))
-                    Text("▣", color = accent, fontSize = 18.sp)
+                    IconButton(
+                        onClick = {
+                            clipboardManager.setText(AnnotatedString(user.nationalId))
+                            Toast.makeText(context, "ID copied to clipboard", Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = "Copy ID",
+                            tint = accent,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
                 Spacer(Modifier.height(16.dp))
                 Row(
@@ -420,7 +442,8 @@ private fun ProfileWideActionCard(
     cardBg: Color,
     cardBorder: Color,
     iconColor: Color,
-    textColor: Color
+    textColor: Color,
+    onClick: () -> Unit = {}
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -430,6 +453,7 @@ private fun ProfileWideActionCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(70.dp)
+            .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier

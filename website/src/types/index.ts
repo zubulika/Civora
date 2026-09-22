@@ -35,6 +35,19 @@ export interface UserProfile {
   expiryDateDigits: string; // e.g. "081026"
   issueDateDigits: string; // e.g. "070926"
   photoUrl?: string;
+  licenseTypeEn?: string;
+  licenseTypeAr?: string;
+  licenseIssueDateEn?: string;
+  licenseIssueDateAr?: string;
+  licenseExpiryDateEn?: string;
+  licenseExpiryDateAr?: string;
+  bloodType?: string;
+  // Resident ID specific
+  residentIdIssuingDate?: string;
+  // Visa specific
+  visaNumber?: string;
+  visaType?: string;
+  visaExitDate?: string;
   verificationLevel: VerificationLevel;
   digitalIdActive: boolean;
   totalDocuments: number;

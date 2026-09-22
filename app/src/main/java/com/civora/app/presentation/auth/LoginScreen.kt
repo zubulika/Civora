@@ -320,8 +320,8 @@ private fun PublicServiceCard(
         border = BorderStroke(1.dp, cardBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = modifier
-            .width(112.dp)
-            .height(112.dp)
+            .width(135.dp)
+            .height(135.dp)
             .clickable { onClick() }
     ) {
         Column(
@@ -336,23 +336,23 @@ private fun PublicServiceCard(
                     painter = painterResource(id = item.iconRes),
                     contentDescription = item.title,
                     tint = AbsherGreenHeader,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(38.dp)
                 )
             } else if (item.iconVector != null) {
                 Icon(
                     imageVector = item.iconVector,
                     contentDescription = item.title,
                     tint = AbsherGreenHeader,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(38.dp)
                 )
             }
 
             Text(
                 text = item.title,
                 color = textPrimary,
-                fontSize = 12.sp,
-                lineHeight = 15.sp,
-                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                lineHeight = 17.sp,
+                fontWeight = FontWeight.Bold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )

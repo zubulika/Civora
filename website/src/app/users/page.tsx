@@ -13,9 +13,12 @@ import {
   Edit3, 
   ShieldCheck, 
   Eye,
-  Filter
+  Filter,
+  Car,
+  CreditCard
 } from 'lucide-react';
 import MuqeemCardPreview from '@/components/cards/MuqeemCardPreview';
+import DrivingLicensePreview from '@/components/cards/DrivingLicensePreview';
 
 export default function UsersDirectoryPage() {
   const [citizens, setCitizens] = useState<UserProfile[]>([]);
@@ -23,6 +26,7 @@ export default function UsersDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedNationality, setSelectedNationality] = useState('ALL');
   const [previewCitizen, setPreviewCitizen] = useState<UserProfile | null>(null);
+  const [modalCardTab, setModalCardTab] = useState<'license' | 'resident'>('license');
 
   const loadCitizens = useCallback(async () => {
     setLoading(true);
@@ -258,8 +262,40 @@ export default function UsersDirectoryPage() {
                 </button>
               </div>
 
+              {/* Modal Card Template Switcher */}
+              <div className="flex bg-slate-100 p-1 rounded-xl mb-4 border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setModalCardTab('license')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    modalCardTab === 'license'
+                      ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <Car className="w-3.5 h-3.5" />
+                  <span>Driving License (رخصة القيادة)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalCardTab('resident')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    modalCardTab === 'resident'
+                      ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Resident ID (هوية مقيم)</span>
+                </button>
+              </div>
+
               <div className="py-2">
-                <MuqeemCardPreview user={previewCitizen} />
+                {modalCardTab === 'license' ? (
+                  <DrivingLicensePreview user={previewCitizen} />
+                ) : (
+                  <MuqeemCardPreview user={previewCitizen} />
+                )}
               </div>
 
               <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">

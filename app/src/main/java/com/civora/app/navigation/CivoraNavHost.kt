@@ -344,7 +344,7 @@ fun CivoraNavHost(
                 },
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToPassport = { navController.navigate(Screen.PassportDetail.route) },
-                onNavigateToResidentId = { navController.navigate(Screen.ResidentIdDetail.route) },
+                onNavigateToResidentId = { navController.navigate(Screen.ResidentIdCard.route) },
                 onNavigateToVisa = { navController.navigate(Screen.VisaDetail.route) },
                 onNavigateToPersonalDetails = { navController.navigate(Screen.ResidentIdDetail.route) },
                 onNavigateToDrivingLicense = { navController.navigate(Screen.DrivingLicenseViewer.route) },

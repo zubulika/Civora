@@ -7,15 +7,17 @@ import Sidebar from '@/components/layout/Sidebar';
 import TopHeader from '@/components/layout/TopHeader';
 import CitizenForm from '@/components/forms/CitizenForm';
 import MuqeemCardPreview from '@/components/cards/MuqeemCardPreview';
+import DrivingLicensePreview from '@/components/cards/DrivingLicensePreview';
 import { fetchCitizenById, saveCitizen } from '@/lib/firestoreService';
 import { UserProfile } from '@/types';
-import { ArrowLeft, CheckCircle2, Sparkles, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Sparkles, AlertCircle, CreditCard, Car, Layers } from 'lucide-react';
 
 export default function EditCitizenPage() {
   const params = useParams();
   const router = useRouter();
   const citizenId = params.id as string;
 
+  const [activeCardTab, setActiveCardTab] = useState<'license' | 'resident' | 'both'>('license');
   const [citizen, setCitizen] = useState<UserProfile | null>(null);
   const [livePreviewData, setLivePreviewData] = useState<Partial<UserProfile>>({});
   const [loading, setLoading] = useState(true);
@@ -125,11 +127,74 @@ export default function EditCitizenPage() {
                       <span>Live Card Preview</span>
                       <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                     </h3>
-                    <p className="text-[11px] text-gray-500">Updates live as you modify details</p>
+                    <p className="text-[11px] text-gray-500">Updates live matching mobile application view</p>
                   </div>
                 </div>
 
-                <MuqeemCardPreview user={livePreviewData} />
+                {/* Card Template Switcher */}
+                <div className="flex bg-slate-100 p-1 rounded-xl mb-4 border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setActiveCardTab('license')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      activeCardTab === 'license'
+                        ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    <Car className="w-3.5 h-3.5" />
+                    <span>Driving License (رخصة القيادة)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCardTab('resident')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      activeCardTab === 'resident'
+                        ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>Resident ID (هوية مقيم)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCardTab('both')}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      activeCardTab === 'both'
+                        ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>Both</span>
+                  </button>
+                </div>
+
+                {activeCardTab === 'license' && (
+                  <DrivingLicensePreview user={livePreviewData} />
+                )}
+                {activeCardTab === 'resident' && (
+                  <MuqeemCardPreview user={livePreviewData} />
+                )}
+                {activeCardTab === 'both' && (
+                  <div className="space-y-6">
+                    <div>
+                      <div className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                        <Car className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Official Saudi Driving License (رخصة القيادة)</span>
+                      </div>
+                      <DrivingLicensePreview user={livePreviewData} />
+                    </div>
+                    <div className="pt-4 border-t border-slate-200">
+                      <div className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                        <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Official Resident ID (هوية مقيم / Muqeem)</span>
+                      </div>
+                      <MuqeemCardPreview user={livePreviewData} />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

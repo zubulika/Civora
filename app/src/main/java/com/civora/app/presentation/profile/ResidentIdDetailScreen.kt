@@ -96,11 +96,12 @@ fun ResidentIdDetailScreen(
 
     var isEditing by remember { mutableStateOf(false) }
 
-    // Section accordion states
-    var isPersonalExpanded by remember { mutableStateOf(true) }
-    var isSponsorExpanded by remember { mutableStateOf(false) }
-    var isInsuranceExpanded by remember { mutableStateOf(false) }
-    var isHajjExpanded by remember { mutableStateOf(false) }
+    // Section accordion state: exactly one section expanded at a time
+    var expandedSectionIndex by remember { mutableStateOf<Int?>(0) }
+    val isPersonalExpanded = expandedSectionIndex == 0
+    val isSponsorExpanded = expandedSectionIndex == 1
+    val isInsuranceExpanded = expandedSectionIndex == 2
+    val isHajjExpanded = expandedSectionIndex == 3
 
     // Editable state holders initialized from user
     var editName by remember(user) { mutableStateOf<String>(user.fullNameEn) }
@@ -219,7 +220,7 @@ fun ResidentIdDetailScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { isPersonalExpanded = !isPersonalExpanded }
+                            .clickable { expandedSectionIndex = if (expandedSectionIndex == 0) null else 0 }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -303,7 +304,7 @@ fun ResidentIdDetailScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { isSponsorExpanded = !isSponsorExpanded }
+                            .clickable { expandedSectionIndex = if (expandedSectionIndex == 1) null else 1 }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -376,7 +377,7 @@ fun ResidentIdDetailScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { isInsuranceExpanded = !isInsuranceExpanded }
+                            .clickable { expandedSectionIndex = if (expandedSectionIndex == 2) null else 2 }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -442,7 +443,7 @@ fun ResidentIdDetailScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { isHajjExpanded = !isHajjExpanded }
+                            .clickable { expandedSectionIndex = if (expandedSectionIndex == 3) null else 3 }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween

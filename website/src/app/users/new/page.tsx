@@ -6,28 +6,70 @@ import Sidebar from '@/components/layout/Sidebar';
 import TopHeader from '@/components/layout/TopHeader';
 import CitizenForm from '@/components/forms/CitizenForm';
 import MuqeemCardPreview from '@/components/cards/MuqeemCardPreview';
+import DrivingLicensePreview from '@/components/cards/DrivingLicensePreview';
 import { saveCitizen } from '@/lib/firestoreService';
 import { UserProfile } from '@/types';
-import { ArrowLeft, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Sparkles, CreditCard, Car, Layers } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NewCitizenPage() {
   const router = useRouter();
+  const [activeCardTab, setActiveCardTab] = useState<'license' | 'resident' | 'both'>('license');
   const [livePreviewData, setLivePreviewData] = useState<Partial<UserProfile>>({
-    nationalId: '2495685261',
-    fullNameEn: 'MD ABDUL HALIM MEIA',
-    fullNameAr: 'مد عبد ال حليم مياه',
-    dateOfBirth: '1988/02/03',
-    nationality: 'Bangladesh',
-    nationalityAr: 'بنجلاديش',
-    professionEn: 'Laundry Worker',
-    professionAr: 'عامل غسيل ملابس',
-    sponsorId: '7034884309',
-    sponsorName: 'مؤسسة درر نجاح للملابس',
-    issuePlace: 'شركة العلم لامن المعلومات',
-    expiryDateEn: '2026/10/08',
+    nationalId: '',
+    fullNameEn: '',
+    fullNameAr: '',
+    dateOfBirth: '',
+    dateOfBirthAr: '',
+    dateOfBirthHijri: '',
+    nationality: '',
+    nationalityAr: '',
+    placeOfBirthEn: '',
+    placeOfBirthAr: '',
+    birthCity: '',
+    birthCountry: '',
+    maritalStatus: '',
+    sponsorshipTransfers: '',
+    religionEn: '',
+    religionAr: '',
+    workPermit: '',
+    biometricsCollected: '',
+    travelStatus: '',
+    professionEn: '',
+    professionAr: '',
+    sponsorId: '',
+    sponsorNameEn: '',
+    sponsorName: '',
+    establishmentStatus: '',
+    issuePlaceEn: '',
+    issuePlace: '',
+    workPlaceAr: '',
+    insuranceIssuingDate: '',
+    insuranceExpiry: '',
+    bloodType: '',
+    insuranceCompany: '',
+    insurancePolicyNo: '',
+    insuranceStatus: '',
+    hajjEligibility: '',
+    lastHajjYear: '',
+    expiryDateEn: '',
+    expiryDateAr: '',
     versionNumber: '٢',
-    photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80'
+    expiryDateDigits: '',
+    issueDateDigits: '',
+    photoUrl: '',
+    licenseTypeEn: '',
+    licenseTypeAr: '',
+    licenseIssueDateEn: '',
+    licenseIssueDateAr: '',
+    licenseExpiryDateEn: '',
+    licenseExpiryDateAr: '',
+    residentIdIssuingDate: '',
+    visaNumber: '',
+    visaType: '',
+    visaExitDate: '',
+    verificationLevel: 'TIER_3_VERIFIED',
+    digitalIdActive: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -36,7 +78,7 @@ export default function NewCitizenPage() {
     setIsSubmitting(true);
     try {
       await saveCitizen(data);
-      setSuccessMessage(`Document issued successfully for ${data.fullNameEn}!`);
+      setSuccessMessage(`Document issued successfully for ${data.fullNameEn || data.fullNameAr || data.nationalId}!`);
       setTimeout(() => {
         router.push('/users');
       }, 1500);
@@ -95,18 +137,85 @@ export default function NewCitizenPage() {
                 <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
                   <div>
                     <h3 className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
-                      <span>Real-Time ID Preview</span>
+                      <span>Real-Time Card Preview</span>
                       <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                     </h3>
-                    <p className="text-[11px] text-gray-500">Live preview of the issued Saudi Resident card</p>
+                    <p className="text-[11px] text-gray-500">Live preview matching mobile application rendering</p>
                   </div>
                 </div>
 
-                {/* The Interactive Preview */}
-                <MuqeemCardPreview user={livePreviewData} />
+                {/* Card Template Switcher */}
+                <div className="flex bg-slate-100 p-1 rounded-xl mb-4 border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setActiveCardTab('license')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      activeCardTab === 'license'
+                        ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    <Car className="w-3.5 h-3.5" />
+                    <span>Driving License (رخصة القيادة)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCardTab('resident')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      activeCardTab === 'resident'
+                        ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>Resident ID (هوية مقيم)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCardTab('both')}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      activeCardTab === 'both'
+                        ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>Both</span>
+                  </button>
+                </div>
+
+                {/* Interactive Card Preview */}
+                {activeCardTab === 'license' && (
+                  <DrivingLicensePreview user={livePreviewData} />
+                )}
+                {activeCardTab === 'resident' && (
+                  <MuqeemCardPreview user={livePreviewData} />
+                )}
+                {activeCardTab === 'both' && (
+                  <div className="space-y-6">
+                    <div>
+                      <div className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                        <Car className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Official Saudi Driving License (رخصة القيادة)</span>
+                      </div>
+                      <DrivingLicensePreview user={livePreviewData} />
+                    </div>
+                    <div className="pt-4 border-t border-slate-200">
+                      <div className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                        <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Official Resident ID (هوية مقيم / Muqeem)</span>
+                      </div>
+                      <MuqeemCardPreview user={livePreviewData} />
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-4 p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-[11px] text-emerald-900 leading-relaxed">
-                  <strong>Notice:</strong> Once issued, this digital document will immediately sync to Firebase Firestore collection <code className="font-mono text-[10px] bg-emerald-100 px-1 py-0.5 rounded">users/{livePreviewData.nationalId}</code> and become viewable on the citizen&apos;s mobile device upon login.
+                  <strong>Notice:</strong> Once issued, this digital document will immediately sync to Firebase Firestore collection{' '}
+                  <code className="font-mono text-[10px] bg-emerald-100 px-1 py-0.5 rounded">
+                    users/{livePreviewData.nationalId || '[National-ID]'}
+                  </code>{' '}
+                  and become viewable on the citizen&apos;s mobile device upon login.
                 </div>
               </div>
             </div>

@@ -27,11 +27,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -63,8 +66,8 @@ private data class DrivingLicenseField(
 )
 
 /**
- * Text rendered with a crisp white stroke / outline around bold dark glyphs,
- * matching the authentic Saudi driving license physical card printing.
+ * Text rendered with prominent white stroke outline and soft feathered halo around bold dark glyphs,
+ * exactly matching the authentic Saudi driving license physical card printing.
  */
 @Composable
 private fun OutlinedText(
@@ -72,7 +75,7 @@ private fun OutlinedText(
     modifier: Modifier = Modifier,
     fillColor: Color = LicenseTextColor,
     strokeColor: Color = Color.White,
-    strokeWidth: Float = 3.2f,
+    strokeWidth: Float = 3.4f,
     fontSize: TextUnit,
     fontWeight: FontWeight = FontWeight.Bold,
     fontFamily: FontFamily? = null,
@@ -83,7 +86,32 @@ private fun OutlinedText(
     lineHeight: TextUnit = TextUnit.Unspecified
 ) {
     Box(modifier = modifier) {
-        // White outline / stroke halo
+        // 1. Soft feathered white glow layer (blurred outer halo)
+        Text(
+            text = text,
+            color = strokeColor,
+            fontSize = fontSize,
+            fontWeight = fontWeight,
+            fontFamily = fontFamily,
+            maxLines = maxLines,
+            overflow = overflow,
+            textAlign = textAlign,
+            letterSpacing = letterSpacing,
+            lineHeight = lineHeight,
+            style = TextStyle(
+                platformStyle = PlatformTextStyle(includeFontPadding = false),
+                drawStyle = Stroke(
+                    width = strokeWidth + 2.2f,
+                    join = StrokeJoin.Round
+                ),
+                shadow = Shadow(
+                    color = Color.White.copy(alpha = 0.95f),
+                    offset = Offset.Zero,
+                    blurRadius = 6.0f
+                )
+            )
+        )
+        // 2. Crisp solid white outline stroke (prominent clean border)
         Text(
             text = text,
             color = strokeColor,
@@ -103,7 +131,7 @@ private fun OutlinedText(
                 )
             )
         )
-        // Solid black fill
+        // 3. Crisp bold dark glyphs
         Text(
             text = text,
             color = fillColor,
@@ -128,8 +156,7 @@ private fun OutlinedText(
  * Uses the official driving license template background (bg_driving_license.webp).
  *
  * All holder credentials (names, photo, verification QR, and 7 bilingual fields)
- * are rendered with authentic bold sizing and white outline strokes to pop clearly
- * against the underlying security guilloche pattern.
+ * are rendered with authentic bold sizing, prominent white stroke, and soft feathering.
  */
 @Composable
 fun DynamicDrivingLicenseCard(
@@ -139,24 +166,36 @@ fun DynamicDrivingLicenseCard(
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFCFBF7)),
-        border = BorderStroke(1.dp, Color(0xFFE2DDD0)),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.5.dp, Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        modifier = modifier.aspectRatio(1.586f) // Standard ID-1 aspect ratio
+        modifier = modifier
+            .aspectRatio(1.586f)
+            .clip(RoundedCornerShape(16.dp))
     ) {
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White)
+        ) {
             val cardWidth = maxWidth
             val cardHeight = maxHeight
 
             // Proportional scaling multiplier based on reference width (350dp)
             val scale = (cardWidth / 350.dp).coerceIn(0.82f, 2.2f)
 
-            // 1. Template Background (Guilloche Waves, Official Headers, Watermarks)
+            // 1. Template Background: Scaled slightly and clipped to eliminate any scan outline and outer artifacts
             Image(
                 painter = painterResource(id = R.drawable.bg_driving_license),
                 contentDescription = "Saudi Driving License Background",
                 contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = 1.05f
+                        scaleY = 1.05f
+                    }
             )
 
             // 2. Holder Photo (Positioned precisely within the template's photo frame cutout)

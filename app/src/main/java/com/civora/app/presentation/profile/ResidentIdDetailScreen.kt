@@ -29,7 +29,10 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -86,6 +89,7 @@ fun ResidentIdDetailScreen(
     }
 
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     val user by viewModel.userProfile.collectAsState()
 
     var isEditing by remember { mutableStateOf(false) }
@@ -109,14 +113,16 @@ fun ResidentIdDetailScreen(
     var editBiometrics by remember(user) { mutableStateOf<String>(user.biometricsCollected) }
     var editTravelStatus by remember(user) { mutableStateOf<String>(user.travelStatus) }
 
-    var editSponsorName by remember(user) { mutableStateOf<String>(user.sponsorNameEn) }
+    var editSponsorName by remember(user) { mutableStateOf<String>(user.sponsorName.ifBlank { user.sponsorNameEn }) }
     var editSponsorId by remember(user) { mutableStateOf<String>(user.sponsorId) }
     var editEstStatus by remember(user) { mutableStateOf<String>(user.establishmentStatus) }
 
+    var editInsuranceIssuingDate by remember(user) { mutableStateOf<String>(user.insuranceIssuingDate) }
+    var editInsuranceExpiry by remember(user) { mutableStateOf<String>(user.insuranceExpiry) }
+    var editBloodType by remember(user) { mutableStateOf<String>(user.bloodType) }
     var editInsuranceCompany by remember(user) { mutableStateOf<String>(user.insuranceCompany) }
     var editPolicyNo by remember(user) { mutableStateOf<String>(user.insurancePolicyNo) }
     var editInsuranceStatus by remember(user) { mutableStateOf<String>(user.insuranceStatus) }
-    var editInsuranceExpiry by remember(user) { mutableStateOf<String>(user.insuranceExpiry) }
 
     var editHajjEligibility by remember(user) { mutableStateOf<String>(user.hajjEligibility) }
     var editLastHajjYear by remember(user) { mutableStateOf<String>(user.lastHajjYear) }
@@ -141,6 +147,7 @@ fun ResidentIdDetailScreen(
             workPermit = editWorkPermit.trim(),
             biometricsCollected = editBiometrics.trim(),
             travelStatus = editTravelStatus.trim(),
+            sponsorName = editSponsorName.trim(),
             sponsorNameEn = editSponsorName.trim(),
             sponsorId = editSponsorId.trim(),
             establishmentStatus = editEstStatus.trim(),
@@ -148,6 +155,8 @@ fun ResidentIdDetailScreen(
             insurancePolicyNo = editPolicyNo.trim(),
             insuranceStatus = editInsuranceStatus.trim(),
             insuranceExpiry = editInsuranceExpiry.trim(),
+            insuranceIssuingDate = editInsuranceIssuingDate.trim(),
+            bloodType = editBloodType.trim(),
             hajjEligibility = editHajjEligibility.trim(),
             lastHajjYear = editLastHajjYear.trim()
         )
@@ -171,49 +180,22 @@ fun ResidentIdDetailScreen(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = if (isDark) Color.White else AbsherGreenHeader
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "My Personal Details",
-                        color = if (isDark) Color.White else AbsherLightTextPrimary,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Normal
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = if (isDark) Color.White else AbsherGreenHeader
                     )
                 }
-
-                // Official MOI Verified Status Badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(if (isDark) Color(0xFF19382B) else Color(0xFFE8F5E9))
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Verified by Ministry of Interior",
-                            tint = if (isDark) AbsherMint else AbsherGreenHeader,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Verified",
-                            color = if (isDark) AbsherMint else AbsherGreenHeader,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "My Personal Details",
+                    color = if (isDark) Color.White else AbsherLightTextPrimary,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Normal
+                )
             }
         }
 
@@ -361,13 +343,20 @@ fun ResidentIdDetailScreen(
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
                             if (!isEditing) {
-                                PersonalDetailField("Sponsor Name", user.sponsorNameEn, textMuted, textPrimary)
-                                PersonalDetailField("Sponsor ID", user.sponsorId, textMuted, textPrimary)
-                                PersonalDetailField("Establishment Status", user.establishmentStatus, textMuted, textPrimary)
+                                PersonalDetailField("Sponsor Name", user.sponsorName.ifBlank { user.sponsorNameEn }, textMuted, textPrimary)
+                                PersonalDetailFieldWithCopy(
+                                    label = "Sponsor ID Number",
+                                    value = user.sponsorId,
+                                    labelColor = textMuted,
+                                    valueColor = textPrimary,
+                                    onCopy = {
+                                        clipboardManager.setText(AnnotatedString(user.sponsorId))
+                                        Toast.makeText(context, "Sponsor ID copied", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
                             } else {
                                 EditFieldInput("Sponsor Name", editSponsorName, { editSponsorName = it }, textPrimary, textMuted, cardBorder)
-                                EditFieldInput("Sponsor ID", editSponsorId, { editSponsorId = it }, textPrimary, textMuted, cardBorder)
-                                EditFieldInput("Establishment Status", editEstStatus, { editEstStatus = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Sponsor ID Number", editSponsorId, { editSponsorId = it }, textPrimary, textMuted, cardBorder)
                             }
                         }
                     }
@@ -427,15 +416,13 @@ fun ResidentIdDetailScreen(
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
                             if (!isEditing) {
-                                PersonalDetailField("Insurance Company", user.insuranceCompany, textMuted, textPrimary)
-                                PersonalDetailField("Policy Number", user.insurancePolicyNo, textMuted, textPrimary)
-                                PersonalDetailField("Policy Status", user.insuranceStatus, textMuted, textPrimary)
+                                PersonalDetailField("Issuing Date", user.insuranceIssuingDate, textMuted, textPrimary)
                                 PersonalDetailField("Expiry Date", user.insuranceExpiry, textMuted, textPrimary)
+                                PersonalDetailField("Blood Type", user.bloodType, textMuted, textPrimary)
                             } else {
-                                EditFieldInput("Insurance Company", editInsuranceCompany, { editInsuranceCompany = it }, textPrimary, textMuted, cardBorder)
-                                EditFieldInput("Policy Number", editPolicyNo, { editPolicyNo = it }, textPrimary, textMuted, cardBorder)
-                                EditFieldInput("Policy Status", editInsuranceStatus, { editInsuranceStatus = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Issuing Date", editInsuranceIssuingDate, { editInsuranceIssuingDate = it }, textPrimary, textMuted, cardBorder)
                                 EditFieldInput("Expiry Date", editInsuranceExpiry, { editInsuranceExpiry = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Blood Type", editBloodType, { editBloodType = it }, textPrimary, textMuted, cardBorder)
                             }
                         }
                     }
@@ -564,6 +551,48 @@ private fun PersonalDetailField(
             fontSize = 14.5.sp,
             fontWeight = FontWeight.Normal
         )
+    }
+}
+
+@Composable
+private fun PersonalDetailFieldWithCopy(
+    label: String,
+    value: String,
+    labelColor: Color,
+    valueColor: Color,
+    onCopy: () -> Unit
+) {
+    Column {
+        Text(
+            text = label,
+            color = labelColor,
+            fontSize = 12.5.sp,
+            fontWeight = FontWeight.Normal
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = value.ifBlank { "-" },
+                color = valueColor.copy(alpha = 0.88f),
+                fontSize = 14.5.sp,
+                fontWeight = FontWeight.Normal
+            )
+            IconButton(
+                onClick = onCopy,
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.ContentCopy,
+                    contentDescription = "Copy $label",
+                    tint = AbsherGreenHeader,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
     }
 }
 

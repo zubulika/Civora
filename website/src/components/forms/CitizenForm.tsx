@@ -10,12 +10,13 @@ import {
 
   ShieldCheck, 
   Save, 
-
   Upload,
   KeyRound,
   Eye,
   EyeOff,
-  RefreshCw
+  RefreshCw,
+  HeartPulse,
+  Moon
 } from 'lucide-react';
 
 interface CitizenFormProps {
@@ -65,22 +66,48 @@ export default function CitizenForm({
     nationalityAr: initialData?.nationalityAr || 'بنجلاديش',
     placeOfBirthEn: initialData?.placeOfBirthEn || 'Bangladesh',
     placeOfBirthAr: initialData?.placeOfBirthAr || 'بنجلاديش',
+    birthCity: initialData?.birthCity || '-',
+    birthCountry: initialData?.birthCountry || 'Bangladesh',
+    maritalStatus: initialData?.maritalStatus || 'SINGLE',
+    sponsorshipTransfers: initialData?.sponsorshipTransfers || '2',
     religionEn: initialData?.religionEn || 'Islam',
     religionAr: initialData?.religionAr || 'الاسلام',
+    workPermit: initialData?.workPermit || '-',
+    biometricsCollected: initialData?.biometricsCollected || 'Yes',
+    travelStatus: initialData?.travelStatus || 'Inside Kingdom',
     professionEn: initialData?.professionEn || 'Laundry Worker',
     professionAr: initialData?.professionAr || 'عامل غسيل ملابس',
     sponsorId: initialData?.sponsorId || '7034884309',
     sponsorNameEn: initialData?.sponsorNameEn || 'Durrat Najah Laundry',
     sponsorName: initialData?.sponsorName || 'مؤسسة درر نجاح للملابس',
+    establishmentStatus: initialData?.establishmentStatus || 'Active (Green)',
     issuePlaceEn: initialData?.issuePlaceEn || 'Elm Information Security',
     issuePlace: initialData?.issuePlace || 'شركة العلم لامن المعلومات',
     workPlaceAr: initialData?.workPlaceAr || 'منطقة الرياض',
+    insuranceIssuingDate: initialData?.insuranceIssuingDate || '-',
+    insuranceExpiry: initialData?.insuranceExpiry || '-',
+    bloodType: initialData?.bloodType || 'A+',
+    insuranceCompany: initialData?.insuranceCompany || 'Bupa Arabia',
+    insurancePolicyNo: initialData?.insurancePolicyNo || 'POL-9842144',
+    insuranceStatus: initialData?.insuranceStatus || 'Valid & Active',
+    hajjEligibility: initialData?.hajjEligibility || 'Not Eligible / Not Performed',
+    lastHajjYear: initialData?.lastHajjYear || '-',
     expiryDateEn: initialData?.expiryDateEn || '2026/10/08',
     expiryDateAr: initialData?.expiryDateAr || '٢٠٢٦/١٠/٠٨',
     versionNumber: initialData?.versionNumber || '٢',
     expiryDateDigits: initialData?.expiryDateDigits || '081026',
     issueDateDigits: initialData?.issueDateDigits || '070926',
     photoUrl: initialData?.photoUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80',
+    licenseTypeEn: initialData?.licenseTypeEn || 'Private',
+    licenseTypeAr: initialData?.licenseTypeAr || 'خصوصي',
+    licenseIssueDateEn: initialData?.licenseIssueDateEn || '10/03/2026',
+    licenseIssueDateAr: initialData?.licenseIssueDateAr || '٢٠٢٦/٠٣/١٠',
+    licenseExpiryDateEn: initialData?.licenseExpiryDateEn || '21/11/2035',
+    licenseExpiryDateAr: initialData?.licenseExpiryDateAr || '٢٠٣٥/١١/٢١',
+    residentIdIssuingDate: initialData?.residentIdIssuingDate || '28/03/2021',
+    visaNumber: initialData?.visaNumber || '',
+    visaType: initialData?.visaType || '',
+    visaExitDate: initialData?.visaExitDate || '',
     verificationLevel: initialData?.verificationLevel || 'TIER_3_VERIFIED',
     digitalIdActive: initialData?.digitalIdActive !== false,
     totalDocuments: initialData?.totalDocuments || 4,
@@ -310,6 +337,142 @@ export default function CitizenForm({
               />
             </div>
           </div>
+
+          {/* Birth City & Country */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Birth City & Birth Country
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={formData.birthCity || ''}
+                onChange={(e) => handleChange('birthCity', e.target.value)}
+                placeholder="Birth City (e.g. -)"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs"
+              />
+              <input
+                type="text"
+                value={formData.birthCountry || ''}
+                onChange={(e) => handleChange('birthCountry', e.target.value)}
+                placeholder="Birth Country (e.g. Bangladesh)"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Place of Birth */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Place of Birth (English & Arabic)
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={formData.placeOfBirthEn || ''}
+                onChange={(e) => handleChange('placeOfBirthEn', e.target.value)}
+                placeholder="English (e.g. Bangladesh)"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs"
+              />
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.placeOfBirthAr || ''}
+                onChange={(e) => handleChange('placeOfBirthAr', e.target.value)}
+                placeholder="العربية (مثال: بنجلاديش)"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Marital Status & Sponsorship Transfers */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Marital Status & Sponsorship Transfers
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={formData.maritalStatus || 'SINGLE'}
+                onChange={(e) => handleChange('maritalStatus', e.target.value)}
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs bg-white"
+              >
+                <option value="SINGLE">SINGLE (أعزب)</option>
+                <option value="MARRIED">MARRIED (متزوج)</option>
+                <option value="DIVORCED">DIVORCED (مطلق)</option>
+                <option value="WIDOWED">WIDOWED (أرمل)</option>
+              </select>
+              <input
+                type="text"
+                value={formData.sponsorshipTransfers || ''}
+                onChange={(e) => handleChange('sponsorshipTransfers', e.target.value)}
+                placeholder="Transfers count (e.g. 2)"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Religion */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Religion (English & Arabic)
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={formData.religionEn || ''}
+                onChange={(e) => handleChange('religionEn', e.target.value)}
+                placeholder="English (e.g. Islam)"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs"
+              />
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.religionAr || ''}
+                onChange={(e) => handleChange('religionAr', e.target.value)}
+                placeholder="العربية (مثال: الاسلام)"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Work Permit & Biometrics */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Work Permit & Biometrics Collected
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={formData.workPermit || ''}
+                onChange={(e) => handleChange('workPermit', e.target.value)}
+                placeholder="Work Permit (e.g. -)"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs"
+              />
+              <select
+                value={formData.biometricsCollected || 'Yes'}
+                onChange={(e) => handleChange('biometricsCollected', e.target.value)}
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs bg-white"
+              >
+                <option value="Yes">Yes (نعم)</option>
+                <option value="No">No (لا)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Travel Status */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Travel Status (حالة السفر)
+            </label>
+            <select
+              value={formData.travelStatus || 'Inside Kingdom'}
+              onChange={(e) => handleChange('travelStatus', e.target.value)}
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs bg-white"
+            >
+              <option value="Inside Kingdom">Inside Kingdom (داخل المملكة)</option>
+              <option value="Outside Kingdom">Outside Kingdom (خارج المملكة)</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -475,18 +638,46 @@ export default function CitizenForm({
             />
           </div>
 
+          {/* Establishment Status */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Establishment Status (حالة المنشأة)
+            </label>
+            <input
+              type="text"
+              value={formData.establishmentStatus || ''}
+              onChange={(e) => handleChange('establishmentStatus', e.target.value)}
+              placeholder="e.g. Active (Green)"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs"
+            />
+          </div>
+
           {/* Sponsor Name Arabic */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Sponsor Name (اسم صاحب العمل)
+              Sponsor Name in Arabic (اسم صاحب العمل)
             </label>
             <input
               type="text"
               dir="rtl"
               value={formData.sponsorName}
               onChange={(e) => handleChange('sponsorName', e.target.value)}
-              placeholder="مثال: مؤسسة درر نجاح للملابس"
+              placeholder="مثال: شركة مهند عبدالله عبيد القرشي للخدمات التجارية"
               className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs font-semibold"
+            />
+          </div>
+
+          {/* Sponsor Name English */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Sponsor Name in English
+            </label>
+            <input
+              type="text"
+              value={formData.sponsorNameEn || ''}
+              onChange={(e) => handleChange('sponsorNameEn', e.target.value)}
+              placeholder="e.g. MOHANAD ABDULLAH COMMERCIAL SERVICES"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs"
             />
           </div>
 
@@ -509,12 +700,155 @@ export default function CitizenForm({
             <label className="block text-xs font-semibold text-gray-700 mb-1">
               Issuance Place (مكان الإصدار)
             </label>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.issuePlace}
+                onChange={(e) => handleChange('issuePlace', e.target.value)}
+                placeholder="العربية (شركة العلم)"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs"
+              />
+              <input
+                type="text"
+                value={formData.issuePlaceEn || ''}
+                onChange={(e) => handleChange('issuePlaceEn', e.target.value)}
+                placeholder="English (Elm Info)"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-xl text-xs"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Health Insurance Details (Matches Mobile App Exactly) */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-200/90 shadow-xs">
+        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-gray-100">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+            <HeartPulse className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-sm">Health Insurance</h3>
+            <p className="text-xs text-gray-500">Official health coverage and dates shown in the app</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Issuing Date (تاريخ الإصدار)
+            </label>
             <input
               type="text"
-              dir="rtl"
-              value={formData.issuePlace}
-              onChange={(e) => handleChange('issuePlace', e.target.value)}
-              placeholder="مثال: شركة العلم لامن المعلومات"
+              value={formData.insuranceIssuingDate || ''}
+              onChange={(e) => handleChange('insuranceIssuingDate', e.target.value)}
+              placeholder="e.g. - or DD/MM/YYYY"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Expiry Date (تاريخ الانتهاء)
+            </label>
+            <input
+              type="text"
+              value={formData.insuranceExpiry || ''}
+              onChange={(e) => handleChange('insuranceExpiry', e.target.value)}
+              placeholder="e.g. - or DD/MM/YYYY"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Blood Type (فصيلة الدم)
+            </label>
+            <input
+              type="text"
+              value={formData.bloodType || ''}
+              onChange={(e) => handleChange('bloodType', e.target.value)}
+              placeholder="e.g. - or A+"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs font-bold text-emerald-800"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Insurance Company
+            </label>
+            <input
+              type="text"
+              value={formData.insuranceCompany || ''}
+              onChange={(e) => handleChange('insuranceCompany', e.target.value)}
+              placeholder="e.g. Bupa Arabia"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Policy Number
+            </label>
+            <input
+              type="text"
+              value={formData.insurancePolicyNo || ''}
+              onChange={(e) => handleChange('insurancePolicyNo', e.target.value)}
+              placeholder="e.g. POL-9842144"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Policy Status
+            </label>
+            <input
+              type="text"
+              value={formData.insuranceStatus || ''}
+              onChange={(e) => handleChange('insuranceStatus', e.target.value)}
+              placeholder="e.g. Valid & Active"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Hajj Details */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-200/90 shadow-xs">
+        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-gray-100">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+            <Moon className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-sm">Hajj Details</h3>
+            <p className="text-xs text-gray-500">Pilgrimage eligibility and history</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Eligibility Status (أهلية الحج)
+            </label>
+            <input
+              type="text"
+              value={formData.hajjEligibility || ''}
+              onChange={(e) => handleChange('hajjEligibility', e.target.value)}
+              placeholder="e.g. Not Eligible / Not Performed"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Last Hajj Year (آخر سنة أداء للحج)
+            </label>
+            <input
+              type="text"
+              value={formData.lastHajjYear || ''}
+              onChange={(e) => handleChange('lastHajjYear', e.target.value)}
+              placeholder="e.g. -"
               className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs"
             />
           </div>

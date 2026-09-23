@@ -46,6 +46,7 @@ data class UserProfile(
     val insurancePolicyNo: String = "POL-9842144",
     val insuranceStatus: String = "Valid & Active",
     val insuranceExpiry: String = "14/04/2026",
+    val insuranceIssuingDate: String = "-",
     val hajjEligibility: String = "Not Eligible / Not Performed",
     val lastHajjYear: String = "-",
     val photoUrl: String = "",

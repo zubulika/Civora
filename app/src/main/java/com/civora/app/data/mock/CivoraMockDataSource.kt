@@ -57,7 +57,8 @@ object CivoraMockDataSource {
         insuranceCompany = "Bupa Arabia",
         insurancePolicyNo = "POL-9842144",
         insuranceStatus = "Valid & Active",
-        insuranceExpiry = "14/04/2026",
+        insuranceExpiry = "-",
+        insuranceIssuingDate = "-",
         hajjEligibility = "Not Eligible / Not Performed",
         lastHajjYear = "-"
     )

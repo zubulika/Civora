@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -43,6 +44,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -482,10 +484,58 @@ fun ResidentIdDetailScreen(
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
                             if (!isEditing) {
-                                PersonalDetailField("Eligibility Status", user.hajjEligibility, textMuted, textPrimary)
+                                Column {
+                                    Text(
+                                        text = "Hajj Status",
+                                        color = textMuted,
+                                        fontSize = 12.5.sp,
+                                        fontWeight = FontWeight.Normal
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    val isEligible = user.hajjEligibility.contains("Eligible", ignoreCase = true) &&
+                                            !user.hajjEligibility.contains("Not Eligible", ignoreCase = true)
+                                    val isDark = isSystemInDarkTheme()
+                                    val badgeBg = when {
+                                        isEligible -> if (isDark) Color(0xFF133E2B) else Color(0xFFE6F4EA)
+                                        user.hajjEligibility.contains("Not", ignoreCase = true) -> if (isDark) Color(0xFF3E1C1C) else Color(0xFFFCE8E6)
+                                        else -> if (isDark) Color(0xFF2A2A2A) else Color(0xFFF1F3F4)
+                                    }
+                                    val badgeColor = when {
+                                        isEligible -> if (isDark) Color(0xFF81C995) else Color(0xFF0D652D)
+                                        user.hajjEligibility.contains("Not", ignoreCase = true) -> if (isDark) Color(0xFFF28B82) else Color(0xFFC5221F)
+                                        else -> textPrimary
+                                    }
+                                    val dotColor = when {
+                                        isEligible -> if (isDark) Color(0xFF34A853) else Color(0xFF0D652D)
+                                        user.hajjEligibility.contains("Not", ignoreCase = true) -> if (isDark) Color(0xFFEA4335) else Color(0xFFC5221F)
+                                        else -> textMuted
+                                    }
+                                    Surface(
+                                        shape = RoundedCornerShape(percent = 50),
+                                        color = badgeBg
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(7.dp)
+                                                    .background(dotColor, CircleShape)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = if (isEligible) "Eligible for Hajj" else user.hajjEligibility.ifBlank { "-" },
+                                                color = badgeColor,
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    }
+                                }
                                 PersonalDetailField("Last Hajj Year", user.lastHajjYear, textMuted, textPrimary)
                             } else {
-                                EditFieldInput("Eligibility Status", editHajjEligibility, { editHajjEligibility = it }, textPrimary, textMuted, cardBorder)
+                                EditFieldInput("Hajj Status", editHajjEligibility, { editHajjEligibility = it }, textPrimary, textMuted, cardBorder)
                                 EditFieldInput("Last Hajj Year", editLastHajjYear, { editLastHajjYear = it }, textPrimary, textMuted, cardBorder)
                             }
                         }

@@ -59,7 +59,7 @@ object CivoraMockDataSource {
         insuranceStatus = "Valid & Active",
         insuranceExpiry = "-",
         insuranceIssuingDate = "-",
-        hajjEligibility = "Not Eligible / Not Performed",
+        hajjEligibility = "Eligible for Hajj",
         lastHajjYear = "-"
     )
 

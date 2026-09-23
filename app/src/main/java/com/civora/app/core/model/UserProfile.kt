@@ -47,7 +47,7 @@ data class UserProfile(
     val insuranceStatus: String = "Valid & Active",
     val insuranceExpiry: String = "14/04/2026",
     val insuranceIssuingDate: String = "-",
-    val hajjEligibility: String = "Not Eligible / Not Performed",
+    val hajjEligibility: String = "Eligible for Hajj",
     val lastHajjYear: String = "-",
     val photoUrl: String = "",
     // Resident ID specific

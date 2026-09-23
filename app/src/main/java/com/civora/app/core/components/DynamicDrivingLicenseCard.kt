@@ -28,7 +28,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -40,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.civora.app.R
@@ -59,18 +63,73 @@ private data class DrivingLicenseField(
 )
 
 /**
+ * Text rendered with a crisp white stroke / outline around bold dark glyphs,
+ * matching the authentic Saudi driving license physical card printing.
+ */
+@Composable
+private fun OutlinedText(
+    text: String,
+    modifier: Modifier = Modifier,
+    fillColor: Color = LicenseTextColor,
+    strokeColor: Color = Color.White,
+    strokeWidth: Float = 3.2f,
+    fontSize: TextUnit,
+    fontWeight: FontWeight = FontWeight.Bold,
+    fontFamily: FontFamily? = null,
+    maxLines: Int = 1,
+    overflow: TextOverflow = TextOverflow.Ellipsis,
+    textAlign: TextAlign? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    lineHeight: TextUnit = TextUnit.Unspecified
+) {
+    Box(modifier = modifier) {
+        // White outline / stroke halo
+        Text(
+            text = text,
+            color = strokeColor,
+            fontSize = fontSize,
+            fontWeight = fontWeight,
+            fontFamily = fontFamily,
+            maxLines = maxLines,
+            overflow = overflow,
+            textAlign = textAlign,
+            letterSpacing = letterSpacing,
+            lineHeight = lineHeight,
+            style = TextStyle(
+                platformStyle = PlatformTextStyle(includeFontPadding = false),
+                drawStyle = Stroke(
+                    width = strokeWidth,
+                    join = StrokeJoin.Round
+                )
+            )
+        )
+        // Solid black fill
+        Text(
+            text = text,
+            color = fillColor,
+            fontSize = fontSize,
+            fontWeight = fontWeight,
+            fontFamily = fontFamily,
+            maxLines = maxLines,
+            overflow = overflow,
+            textAlign = textAlign,
+            letterSpacing = letterSpacing,
+            lineHeight = lineHeight,
+            style = TextStyle(
+                platformStyle = PlatformTextStyle(includeFontPadding = false),
+                drawStyle = Fill
+            )
+        )
+    }
+}
+
+/**
  * Authentic Saudi Driving License Digital Document Card.
  * Uses the official driving license template background (bg_driving_license.webp).
  *
- * NOTE: The background template already contains the official header branding:
- * - "رخصة سياقة" (Top-Left)
- * - "المملكة العربية السعودية / وزارة الداخلية" & MOI Coat of Arms (Top-Right)
- * - Photo frame outline and guilloche security patterns.
- * Therefore, dynamic content ONLY renders holder-specific fields:
- * 1. Holder Photo (aligned inside the template's green frame)
- * 2. Verification QR Box with authentic Absher center emblem and 4-line Arabic disclaimer
- * 3. Bilingual Holder Name (Arabic & English, right-aligned below MOI branding)
- * 4. 7 Bilingual Driving License Credential Rows
+ * All holder credentials (names, photo, verification QR, and 7 bilingual fields)
+ * are rendered with authentic bold sizing and white outline strokes to pop clearly
+ * against the underlying security guilloche pattern.
  */
 @Composable
 fun DynamicDrivingLicenseCard(
@@ -184,57 +243,44 @@ fun DynamicDrivingLicenseCard(
                             .weight(1f)
                             .padding(end = 1.dp * scale)
                     ) {
-                        val disclaimerStyle = TextStyle(
-                            fontFamily = CardArabicFont,
-                            fontSize = (4.8f * scale).sp,
-                            fontWeight = FontWeight.Bold,
-                            color = LicenseTextColor,
-                            lineHeight = (6.0f * scale).sp,
-                            textAlign = TextAlign.End,
-                            platformStyle = PlatformTextStyle(includeFontPadding = false)
-                        )
-                        Text("يجب التحقق", style = disclaimerStyle)
-                        Text("من الرمز السريع", style = disclaimerStyle)
-                        Text("قبل اعتماد", style = disclaimerStyle)
-                        Text("التعامل مع الهوية", style = disclaimerStyle)
+                        val discSize = (5.2f * scale).sp
+                        val discLineHeight = (6.4f * scale).sp
+                        OutlinedText("يجب التحقق", fontSize = discSize, strokeWidth = 1.8f * scale, fontFamily = CardArabicFont, lineHeight = discLineHeight)
+                        OutlinedText("من الرمز السريع", fontSize = discSize, strokeWidth = 1.8f * scale, fontFamily = CardArabicFont, lineHeight = discLineHeight)
+                        OutlinedText("قبل اعتماد", fontSize = discSize, strokeWidth = 1.8f * scale, fontFamily = CardArabicFont, lineHeight = discLineHeight)
+                        OutlinedText("التعامل مع الهوية", fontSize = discSize, strokeWidth = 1.8f * scale, fontFamily = CardArabicFont, lineHeight = discLineHeight)
                     }
                 }
             }
 
-            // 4. Holder Name Section (Right-aligned, immediately below MOI header)
+            // 4. Holder Name Section (Prominent size, with white outline stroke)
             Column(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .offset(
-                        x = -(cardWidth * 0.055f),
-                        y = cardHeight * 0.280f
+                        x = -(cardWidth * 0.050f),
+                        y = cardHeight * 0.272f
                     ),
                 horizontalAlignment = Alignment.End
             ) {
-                Text(
+                OutlinedText(
                     text = user.fullNameAr.ifEmpty { "محمد بالا مد حسين أوسين" },
-                    color = LicenseTextColor,
                     fontFamily = CardArabicFont,
-                    fontSize = (12f * scale).sp,
+                    fontSize = (15.5f * scale).sp,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                    strokeWidth = 3.6f * scale
                 )
-                Spacer(modifier = Modifier.height(2.5.dp * scale))
-                Text(
+                Spacer(modifier = Modifier.height(2.dp * scale))
+                OutlinedText(
                     text = user.fullNameEn.ifEmpty { "MD BALAL HOSSAIN" }.uppercase(),
-                    color = LicenseTextColor,
                     fontFamily = FontFamily.SansSerif,
-                    fontSize = (8.8f * scale).sp,
+                    fontSize = (11.0f * scale).sp,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                    strokeWidth = 3.0f * scale
                 )
             }
 
-            // 5. 7 Bilingual License Credentials Rows
+            // 5. 7 Bilingual License Credentials Rows (Larger bold font + white stroke outline)
             val fields = listOf(
                 DrivingLicenseField(
                     labelEn = "ID Number:",
@@ -283,11 +329,11 @@ fun DynamicDrivingLicenseCard(
             Column(
                 modifier = Modifier
                     .offset(
-                        x = cardWidth * 0.338f,
-                        y = cardHeight * 0.445f
+                        x = cardWidth * 0.332f,
+                        y = cardHeight * 0.440f
                     )
-                    .width(cardWidth * 0.607f)
-                    .height(cardHeight * 0.520f),
+                    .width(cardWidth * 0.620f)
+                    .height(cardHeight * 0.525f),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 fields.forEach { field ->
@@ -301,24 +347,18 @@ fun DynamicDrivingLicenseCard(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Start
                         ) {
-                            Text(
+                            OutlinedText(
                                 text = field.labelEn,
-                                color = LicenseTextColor,
-                                fontSize = (6.8f * scale).sp,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.SansSerif,
-                                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                                fontSize = (9.2f * scale).sp,
+                                strokeWidth = 2.8f * scale,
+                                fontFamily = FontFamily.SansSerif
                             )
                             Spacer(modifier = Modifier.width(3.dp * scale))
-                            Text(
+                            OutlinedText(
                                 text = field.valueEn,
-                                color = LicenseTextColor,
-                                fontSize = (7.0f * scale).sp,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.SansSerif,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                                fontSize = (9.5f * scale).sp,
+                                strokeWidth = 2.8f * scale,
+                                fontFamily = FontFamily.SansSerif
                             )
                         }
 
@@ -329,24 +369,18 @@ fun DynamicDrivingLicenseCard(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Start
                             ) {
-                                Text(
+                                OutlinedText(
                                     text = field.labelAr,
-                                    color = LicenseTextColor,
-                                    fontSize = (6.8f * scale).sp,
-                                    fontWeight = FontWeight.Bold,
-                                    fontFamily = CardArabicFont,
-                                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                                    fontSize = (9.8f * scale).sp,
+                                    strokeWidth = 2.8f * scale,
+                                    fontFamily = CardArabicFont
                                 )
                                 Spacer(modifier = Modifier.width(3.dp * scale))
-                                Text(
+                                OutlinedText(
                                     text = field.valueAr,
-                                    color = LicenseTextColor,
-                                    fontSize = (7.0f * scale).sp,
-                                    fontWeight = FontWeight.Bold,
-                                    fontFamily = CardArabicFont,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                                    fontSize = (10.0f * scale).sp,
+                                    strokeWidth = 2.8f * scale,
+                                    fontFamily = CardArabicFont
                                 )
                             }
                         }

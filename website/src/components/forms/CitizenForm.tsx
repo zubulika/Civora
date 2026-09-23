@@ -90,7 +90,7 @@ export default function CitizenForm({
     insuranceCompany: initialData?.insuranceCompany || 'Bupa Arabia',
     insurancePolicyNo: initialData?.insurancePolicyNo || 'POL-9842144',
     insuranceStatus: initialData?.insuranceStatus || 'Valid & Active',
-    hajjEligibility: initialData?.hajjEligibility || 'Not Eligible / Not Performed',
+    hajjEligibility: initialData?.hajjEligibility || 'Eligible for Hajj',
     lastHajjYear: initialData?.lastHajjYear || '-',
     expiryDateEn: initialData?.expiryDateEn || '2026/10/08',
     expiryDateAr: initialData?.expiryDateAr || '٢٠٢٦/١٠/٠٨',
@@ -829,13 +829,13 @@ export default function CitizenForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Eligibility Status (أهلية الحج)
+              Hajj Status (حالة الحج)
             </label>
             <input
               type="text"
               value={formData.hajjEligibility || ''}
               onChange={(e) => handleChange('hajjEligibility', e.target.value)}
-              placeholder="e.g. Not Eligible / Not Performed"
+              placeholder="e.g. Eligible for Hajj"
               className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs"
             />
           </div>

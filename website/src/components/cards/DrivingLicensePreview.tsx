@@ -56,6 +56,11 @@ export default function DrivingLicensePreview({ user }: DrivingLicensePreviewPro
     },
   ];
 
+  const strokeStyle: React.CSSProperties = {
+    textShadow:
+      '-0.6px -0.6px 0 #fff, 0.6px -0.6px 0 #fff, -0.6px 0.6px 0 #fff, 0.6px 0.6px 0 #fff, 0 0 2px #fff',
+  };
+
   return (
     <div
       className="relative w-full max-w-[620px] rounded-2xl overflow-hidden shadow-2xl select-none"
@@ -111,7 +116,7 @@ export default function DrivingLicensePreview({ user }: DrivingLicensePreviewPro
           </div>
           <div
             className="text-right text-gray-950 font-bold leading-tight flex-1"
-            style={{ fontSize: '1.3%', lineHeight: 1.25 }}
+            style={{ fontSize: '1.45%', lineHeight: 1.25, ...strokeStyle }}
             dir="rtl"
           >
             يجب التحقق
@@ -128,14 +133,20 @@ export default function DrivingLicensePreview({ user }: DrivingLicensePreviewPro
         <div
           className="absolute flex flex-col items-end text-right"
           style={{
-            right: '5.5%',
-            top: '28.0%',
+            right: '5.0%',
+            top: '27.2%',
           }}
         >
-          <div className="font-bold text-gray-950 leading-tight" style={{ fontSize: '3.4%' }}>
+          <div
+            className="font-bold text-gray-950 leading-tight"
+            style={{ fontSize: '4.4%', ...strokeStyle }}
+          >
             {user.fullNameAr || 'محمد بالا مد حسين أوسين'}
           </div>
-          <div className="font-bold tracking-wide text-gray-950 uppercase mt-0.5" style={{ fontSize: '2.4%' }}>
+          <div
+            className="font-bold tracking-wide text-gray-950 uppercase mt-0.5"
+            style={{ fontSize: '3.1%', ...strokeStyle }}
+          >
             {user.fullNameEn || 'MD BALAL HOSSAIN'}
           </div>
         </div>
@@ -144,27 +155,35 @@ export default function DrivingLicensePreview({ user }: DrivingLicensePreviewPro
         <div
           className="absolute flex flex-col justify-between"
           style={{
-            left: '33.8%',
-            top: '44.5%',
-            width: '60.7%',
-            height: '52.0%',
+            left: '33.2%',
+            top: '44.0%',
+            width: '62.0%',
+            height: '52.5%',
           }}
         >
           {fields.map((field) => (
             <div
               key={field.labelEn}
               className="flex items-center"
-              style={{ fontSize: '1.9%', lineHeight: 1.4 }}
+              style={{ fontSize: '2.55%', lineHeight: 1.35 }}
             >
               {/* EN column (Left) */}
               <div className="flex items-center gap-1" style={{ width: '50%' }}>
-                <span className="font-bold text-gray-950 whitespace-nowrap">{field.labelEn}</span>
-                <span className="font-bold text-gray-950 truncate">{field.valueEn}</span>
+                <span className="font-bold text-gray-950 whitespace-nowrap" style={strokeStyle}>
+                  {field.labelEn}
+                </span>
+                <span className="font-bold text-gray-950 truncate" style={strokeStyle}>
+                  {field.valueEn}
+                </span>
               </div>
               {/* AR column (Right, RTL) */}
               <div className="flex items-center justify-start gap-1" style={{ width: '50%' }} dir="rtl">
-                <span className="font-bold text-gray-950 whitespace-nowrap">{field.labelAr}</span>
-                <span className="font-bold text-gray-950 truncate">{field.valueAr}</span>
+                <span className="font-bold text-gray-950 whitespace-nowrap" style={strokeStyle}>
+                  {field.labelAr}
+                </span>
+                <span className="font-bold text-gray-950 truncate" style={strokeStyle}>
+                  {field.valueAr}
+                </span>
               </div>
             </div>
           ))}

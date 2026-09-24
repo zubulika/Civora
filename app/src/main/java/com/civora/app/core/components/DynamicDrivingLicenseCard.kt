@@ -56,7 +56,7 @@ import com.civora.app.core.model.UserProfile
 import com.civora.app.core.util.OfficialQrGenerator
 
 private val LicenseTextColor = Color(0xFF111111)
-private val CardArabicFont = FontFamily(Font(R.font.tajawal_regular))
+private val CardArabicFont = FontFamily.SansSerif
 
 private data class DrivingLicenseField(
     val labelEn: String,

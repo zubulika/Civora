@@ -36,16 +36,45 @@ object OfficialQrGenerator {
             val hints = mapOf(
                 EncodeHintType.CHARACTER_SET to "UTF-8",
                 EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.H,
-                EncodeHintType.MARGIN to 1
+                EncodeHintType.MARGIN to 0
             )
             val bitMatrix = QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, size, size, hints)
-            val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-            for (x in 0 until size) {
-                for (y in 0 until size) {
+            val matrixWidth = bitMatrix.width
+            val matrixHeight = bitMatrix.height
+
+            var minX = matrixWidth
+            var minY = matrixHeight
+            var maxX = 0
+            var maxY = 0
+
+            for (x in 0 until matrixWidth) {
+                for (y in 0 until matrixHeight) {
+                    if (bitMatrix[x, y]) {
+                        if (x < minX) minX = x
+                        if (y < minY) minY = y
+                        if (x > maxX) maxX = x
+                        if (y > maxY) maxY = y
+                    }
+                }
+            }
+
+            if (maxX < minX || maxY < minY) {
+                minX = 0
+                minY = 0
+                maxX = matrixWidth - 1
+                maxY = matrixHeight - 1
+            }
+
+            val qrWidth = maxX - minX + 1
+            val qrHeight = maxY - minY + 1
+
+            val bitmap = Bitmap.createBitmap(qrWidth, qrHeight, Bitmap.Config.ARGB_8888)
+            for (x in 0 until qrWidth) {
+                for (y in 0 until qrHeight) {
                     bitmap.setPixel(
                         x,
                         y,
-                        if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+                        if (bitMatrix[minX + x, minY + y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE
                     )
                 }
             }
@@ -55,3 +84,4 @@ object OfficialQrGenerator {
         }
     }
 }
+

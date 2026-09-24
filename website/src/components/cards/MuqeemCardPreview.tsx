@@ -94,23 +94,23 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
 
             {/* 3. Lower Verification Box: Authentic Scannable QR + 4-Line Arabic Disclaimer */}
             <div
-              className="absolute bg-white rounded-[4px] border border-[#DCD6C8] px-1 py-0.5 flex items-center justify-between"
+              className="absolute bg-white rounded-[4px] border border-[#DCD6C8] pr-1 pl-0.5 py-0.5 flex items-center justify-between"
               style={{
                 left: '4.6%',
                 top: '75.8%',
-                width: '26.6%',
+                width: '27.0%',
                 height: '16.5%',
               }}
             >
-              {/* QR Code Container with Centered Absher Logo */}
-              <div className="relative flex items-center justify-center" style={{ width: '46%', height: '90%' }}>
+              {/* QR Code Container with Centered Absher Logo (Touching left border, larger) */}
+              <div className="relative flex items-center justify-start h-full aspect-square">
                 <img
                   src={qrImageUrl}
                   alt="Valid Security QR Code"
                   onError={() => setQrSrcIndex((prev) => prev + 1)}
                   className="w-full h-full object-contain"
                 />
-                <div className="absolute w-[30%] h-[30%] bg-white rounded-2xs p-0.5 shadow-2xs flex items-center justify-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[28%] h-[28%] bg-white rounded-2xs p-0.5 shadow-2xs flex items-center justify-center">
                   <img
                     src="/ic_absher_qr_emblem.png"
                     alt="Absher"
@@ -119,12 +119,12 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
                 </div>
               </div>
 
-              {/* 4-Line Official Arabic Disclaimer */}
+              {/* 4-Line Official Arabic Disclaimer with Extra Bold Typography */}
               <div
-                className="text-right text-[#1a1a1a] font-bold flex-1 pr-1"
+                className="text-right text-[#111827] font-black flex-1 pr-1"
                 style={{
-                  fontSize: '5.2px',
-                  lineHeight: '6.2px',
+                  fontSize: '6.0px',
+                  lineHeight: '7.2px',
                 }}
                 dir="rtl"
               >
@@ -187,11 +187,11 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
               {/* Row 1: Expiry Date (Left) | National ID (Right) */}
               <div className="flex items-baseline justify-between text-[9.5px] leading-tight">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-gray-500 font-medium">رقم الهوية:</span>
+                  <span className="text-[#444444] font-semibold">رقم الهوية:</span>
                   <span className="font-bold text-gray-950 font-mono tracking-wider">{user.nationalId || ''}</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-gray-500 font-medium">تاريخ الانتهاء:</span>
+                  <span className="text-[#444444] font-semibold">تاريخ الانتهاء:</span>
                   <span className="font-bold text-gray-900">{user.expiryDateAr || user.expiryDateEn || ''}</span>
                 </div>
               </div>
@@ -199,11 +199,11 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
               {/* Row 2: Place of Birth (Left) | Date of Birth (Right) */}
               <div className="flex items-baseline justify-between text-[9.5px] leading-tight">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-gray-500 font-medium">تاريخ الميلاد:</span>
+                  <span className="text-[#444444] font-semibold">تاريخ الميلاد:</span>
                   <span className="font-bold text-gray-900">{user.dateOfBirthAr || user.dateOfBirth || ''}</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-gray-500 font-medium">مكان الميلاد:</span>
+                  <span className="text-[#444444] font-semibold">مكان الميلاد:</span>
                   <span className="font-bold text-gray-900 truncate max-w-[110px]">{user.placeOfBirthAr || ''}</span>
                 </div>
               </div>
@@ -211,42 +211,42 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
               {/* Row 3: Religion (Left) | Nationality (Right) */}
               <div className="flex items-baseline justify-between text-[9.5px] leading-tight">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-gray-500 font-medium">الجنسية:</span>
+                  <span className="text-[#444444] font-semibold">الجنسية:</span>
                   <span className="font-bold text-gray-900">{user.nationalityAr || ''}</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-gray-500 font-medium">الديانة:</span>
+                  <span className="text-[#444444] font-semibold">الديانة:</span>
                   <span className="font-bold text-gray-900">{user.religionAr || ''}</span>
                 </div>
               </div>
 
               {/* Row 4: Profession */}
               <div className="flex items-baseline gap-1 text-[9.5px] leading-tight">
-                <span className="text-gray-500 font-medium">المهنة:</span>
+                <span className="text-[#444444] font-semibold">المهنة:</span>
                 <span className="font-bold text-gray-950 truncate">{user.professionAr || ''}</span>
               </div>
 
               {/* Row 5: Employer / Sponsor ID */}
               <div className="flex items-baseline gap-1 text-[9.5px] leading-tight">
-                <span className="text-gray-500 font-medium">هوية صاحب العمل:</span>
+                <span className="text-[#444444] font-semibold">هوية صاحب العمل:</span>
                 <span className="font-mono text-gray-900 font-bold">{user.sponsorId || ''}</span>
               </div>
 
               {/* Row 6: Place of Issue */}
               <div className="flex items-baseline gap-1 text-[9.5px] leading-tight">
-                <span className="text-gray-500 font-medium">مكان الإصدار:</span>
+                <span className="text-[#444444] font-semibold">مكان الإصدار:</span>
                 <span className="font-medium text-gray-900 truncate">{user.issuePlace || ''}</span>
               </div>
 
               {/* Row 7: Place of Work */}
               <div className="flex items-baseline gap-1 text-[9.5px] leading-tight">
-                <span className="text-gray-500 font-medium">مكان العمل:</span>
+                <span className="text-[#444444] font-semibold">مكان العمل:</span>
                 <span className="font-medium text-gray-900 truncate">{user.workPlaceAr || ''}</span>
               </div>
 
               {/* Row 8: Employer / Sponsor Name */}
               <div className="flex items-baseline gap-1 text-[9.5px] leading-tight pb-0.5">
-                <span className="text-gray-500 font-medium">اسم صاحب العمل:</span>
+                <span className="text-[#444444] font-semibold">اسم صاحب العمل:</span>
                 <span className="font-bold text-gray-900 truncate">{user.sponsorName || ''}</span>
               </div>
             </div>

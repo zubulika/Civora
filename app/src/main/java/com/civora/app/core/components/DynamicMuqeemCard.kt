@@ -33,7 +33,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -53,11 +56,34 @@ import com.civora.app.core.designsystem.LanguageState
 import com.civora.app.core.model.UserProfile
 import com.civora.app.core.util.OfficialQrGenerator
 
-private val CardLabelColor = Color(0xFF969696)
-private val CardValueColor = Color(0xFF171717)
+private val CardLabelColor = Color(0xFF444444)
+private val CardValueColor = Color(0xFF111111)
 private val CardNameColor = Color(0xFF111111)
 private val CardTextFont = FontFamily.SansSerif
-private val CardArabicLabelFont = FontFamily(Font(R.font.tajawal_regular))
+private val CardArabicLabelFont = FontFamily.SansSerif
+
+@Composable
+private fun ArabicDisclaimerLine(
+    text: String,
+    fontSize: TextUnit,
+    lineHeight: TextUnit
+) {
+    Text(
+        text = text,
+        fontFamily = CardTextFont,
+        fontSize = fontSize,
+        lineHeight = lineHeight,
+        color = Color.Black,
+        fontWeight = FontWeight.Black,
+        textAlign = TextAlign.End,
+        maxLines = 1,
+        softWrap = false,
+        style = TextStyle(
+            platformStyle = PlatformTextStyle(includeFontPadding = false)
+        ),
+        modifier = Modifier.fillMaxWidth()
+    )
+}
 
 /**
  * Extension helper to convert ASCII digits (0-9) to Eastern Arabic numerals (٠-٩).
@@ -151,7 +177,7 @@ fun DynamicMuqeemCard(
                 OfficialQrGenerator.buildPayload(user)
             }
             val qrBitmap = remember(qrPayload) {
-                OfficialQrGenerator.generateBitmap(qrPayload, size = 180)
+                OfficialQrGenerator.generateBitmap(qrPayload, size = 200)
             }
 
             Box(
@@ -161,37 +187,40 @@ fun DynamicMuqeemCard(
                         y = cardHeight * 0.758f
                     )
                     .size(
-                        width = cardWidth * 0.266f,
+                        width = cardWidth * 0.270f,
                         height = cardHeight * 0.165f
                     )
-                    .background(Color.White, RoundedCornerShape(4.dp * scale))
-                    .border(BorderStroke(0.5.dp, Color(0xFFDCD6C8)), RoundedCornerShape(4.dp * scale))
-                    .padding(horizontal = 3.dp * scale, vertical = 2.dp * scale),
-                contentAlignment = Alignment.Center
+                    .background(Color.White, RoundedCornerShape(3.dp * scale))
+                    .border(BorderStroke(0.6.dp, Color(0xFFD0CAC0)), RoundedCornerShape(3.dp * scale))
+                    .padding(start = 0.5.dp * scale, end = 2.dp * scale, top = 0.5.dp * scale, bottom = 0.5.dp * scale),
+                contentAlignment = Alignment.CenterStart
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // QR Code with centered Absher emblem
+                    // QR Code touching the left border of the white container (full-height prominent sizing)
                     Box(
                         modifier = Modifier
-                            .size(cardHeight * 0.142f),
+                            .fillMaxHeight()
+                            .aspectRatio(1f),
                         contentAlignment = Alignment.Center
                     ) {
                         if (qrBitmap != null) {
                             Image(
                                 bitmap = qrBitmap.asImageBitmap(),
                                 contentDescription = "Card QR Code",
+                                contentScale = ContentScale.FillBounds,
                                 modifier = Modifier.fillMaxSize()
                             )
                             // Authentic Centered Absher Emblem over QR Code
                             Box(
                                 modifier = Modifier
-                                    .size(cardHeight * 0.046f)
+                                    .size(cardHeight * 0.048f)
+                                    .align(Alignment.Center)
                                     .background(Color.White, RoundedCornerShape(1.dp * scale))
-                                    .padding(0.8.dp * scale),
+                                    .padding(0.6.dp * scale),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Image(
@@ -203,50 +232,21 @@ fun DynamicMuqeemCard(
                         }
                     }
 
-                    // 4-Line Arabic Official Disclaimer
+                    // 4-Line Arabic Official Security Disclaimer (Crisp Black Bold Typography)
                     Column(
-                        verticalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.SpaceEvenly,
                         horizontalAlignment = Alignment.End,
                         modifier = Modifier
                             .weight(1f)
+                            .fillMaxHeight()
                             .padding(end = 1.dp * scale)
                     ) {
-                        Text(
-                            text = "يجب التحقق",
-                            fontFamily = CardTextFont,
-                            fontSize = (5.2f * scale).sp,
-                            lineHeight = (6.2f * scale).sp,
-                            color = CardNameColor,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.End
-                        )
-                        Text(
-                            text = "من الرمز السريع",
-                            fontFamily = CardTextFont,
-                            fontSize = (5.2f * scale).sp,
-                            lineHeight = (6.2f * scale).sp,
-                            color = CardNameColor,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.End
-                        )
-                        Text(
-                            text = "قبل اعتماد",
-                            fontFamily = CardTextFont,
-                            fontSize = (5.2f * scale).sp,
-                            lineHeight = (6.2f * scale).sp,
-                            color = CardNameColor,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.End
-                        )
-                        Text(
-                            text = "التعامل مع الهوية",
-                            fontFamily = CardTextFont,
-                            fontSize = (5.2f * scale).sp,
-                            lineHeight = (6.2f * scale).sp,
-                            color = CardNameColor,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.End
-                        )
+                        val discFontSize = (6.4f * scale).sp
+                        val discLineHeight = (7.5f * scale).sp
+                        ArabicDisclaimerLine("يجب التحقق", discFontSize, discLineHeight)
+                        ArabicDisclaimerLine("من الرمز السريع", discFontSize, discLineHeight)
+                        ArabicDisclaimerLine("قبل اعتماد", discFontSize, discLineHeight)
+                        ArabicDisclaimerLine("التعامل مع الهوية", discFontSize, discLineHeight)
                     }
                 }
             }
@@ -464,7 +464,7 @@ private fun TwoColumnArabicRow(
                 fontSize = (9.8f * scale).sp,
                 lineHeight = (11.9f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                fontWeight = FontWeight.Normal,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 softWrap = false
             )
@@ -497,7 +497,7 @@ private fun TwoColumnArabicRow(
                 fontSize = (9.8f * scale).sp,
                 lineHeight = (11.9f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                fontWeight = FontWeight.Normal,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 softWrap = false
             )
@@ -538,7 +538,7 @@ private fun SingleArabicRow(
             fontSize = (10.0f * scale).sp,
             lineHeight = (12.2f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-            fontWeight = FontWeight.Normal,
+            fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             softWrap = false
         )

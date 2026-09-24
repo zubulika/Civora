@@ -318,16 +318,16 @@ private fun PublicServiceCard(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = cardBg),
         border = BorderStroke(1.dp, cardBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
-            .width(135.dp)
-            .height(135.dp)
+            .width(158.dp)
+            .height(158.dp)
             .clickable { onClick() }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(18.dp),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.Start
         ) {
@@ -336,25 +336,25 @@ private fun PublicServiceCard(
                     painter = painterResource(id = item.iconRes),
                     contentDescription = item.title,
                     tint = AbsherGreenHeader,
-                    modifier = Modifier.size(38.dp)
+                    modifier = Modifier.size(54.dp)
                 )
             } else if (item.iconVector != null) {
                 Icon(
                     imageVector = item.iconVector,
                     contentDescription = item.title,
                     tint = AbsherGreenHeader,
-                    modifier = Modifier.size(38.dp)
+                    modifier = Modifier.size(54.dp)
                 )
             }
 
             Text(
                 text = item.title,
                 color = textPrimary,
-                fontSize = 14.sp,
-                lineHeight = 17.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Clip
             )
         }
     }

@@ -307,7 +307,7 @@ fun DynamicDrivingLicenseCard(
                     fontFamily = CardArabicFont,
                     fontSize = (15.5f * scale).sp,
                     fontWeight = FontWeight.Bold,
-                    strokeWidth = 3.6f * scale
+                    strokeWidth = 4.2f * scale
                 )
                 Spacer(modifier = Modifier.height(2.dp * scale))
                 OutlinedText(
@@ -315,7 +315,7 @@ fun DynamicDrivingLicenseCard(
                     fontFamily = FontFamily.SansSerif,
                     fontSize = (11.0f * scale).sp,
                     fontWeight = FontWeight.Bold,
-                    strokeWidth = 3.0f * scale
+                    strokeWidth = 3.6f * scale
                 )
             }
 
@@ -389,14 +389,14 @@ fun DynamicDrivingLicenseCard(
                             OutlinedText(
                                 text = field.labelEn,
                                 fontSize = (9.2f * scale).sp,
-                                strokeWidth = 2.8f * scale,
+                                strokeWidth = 3.2f * scale,
                                 fontFamily = FontFamily.SansSerif
                             )
                             Spacer(modifier = Modifier.width(3.dp * scale))
                             OutlinedText(
                                 text = field.valueEn,
                                 fontSize = (9.5f * scale).sp,
-                                strokeWidth = 2.8f * scale,
+                                strokeWidth = 3.2f * scale,
                                 fontFamily = FontFamily.SansSerif
                             )
                         }
@@ -411,14 +411,14 @@ fun DynamicDrivingLicenseCard(
                                 OutlinedText(
                                     text = field.labelAr,
                                     fontSize = (9.8f * scale).sp,
-                                    strokeWidth = 2.8f * scale,
+                                    strokeWidth = 3.2f * scale,
                                     fontFamily = CardArabicFont
                                 )
                                 Spacer(modifier = Modifier.width(3.dp * scale))
                                 OutlinedText(
                                     text = field.valueAr,
                                     fontSize = (10.0f * scale).sp,
-                                    strokeWidth = 2.8f * scale,
+                                    strokeWidth = 3.2f * scale,
                                     fontFamily = CardArabicFont
                                 )
                             }

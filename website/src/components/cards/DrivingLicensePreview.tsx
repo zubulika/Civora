@@ -66,10 +66,10 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
     },
   ];
 
-  // White stroke halo with authentic dark drop shadow to make credentials pop against security guilloche background
+  // Multi-directional white stroke with soft feathered glow around bold text
   const strokeStyle: React.CSSProperties = {
     textShadow:
-      '-0.6px -0.6px 0 #fff, 0.6px -0.6px 0 #fff, -0.6px 0.6px 0 #fff, 0.6px 0.6px 0 #fff, 1.2px 1.5px 2px rgba(0, 0, 0, 0.65)',
+      '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, 0 0 3px #fff, 0 0 5px rgba(255, 255, 255, 0.95)',
   };
 
   return (
@@ -94,11 +94,11 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
 
       {/* Card Container (Aspect Ratio 1.586 standard ID card matching Android) */}
       <div
-        className="w-full max-w-[540px] aspect-[1.586/1] rounded-2xl shadow-xl border border-emerald-900/15 overflow-hidden relative select-none"
+        className="w-full max-w-[540px] aspect-[1.586/1] rounded-2xl shadow-xl border-2 border-white overflow-hidden relative select-none"
         style={{
           backgroundColor: '#FFFFFF',
           backgroundImage: 'url(/bg_driving_license.webp)',
-          backgroundSize: 'cover',
+          backgroundSize: '105% 105%',
           backgroundPosition: 'center',
           boxShadow: '0 12px 32px -4px rgba(12, 61, 46, 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.08)',
         }}

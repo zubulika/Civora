@@ -241,17 +241,17 @@ fun DynamicMuqeemCard(
                         }
                     }
 
-                    // 4-Line Arabic Official Security Disclaimer (Crisp Black Bold Typography)
+                    // 4-Line Arabic Official Security Disclaimer (Crisp Black Bold Typography, Zero Cropping)
                     Column(
-                        verticalArrangement = Arrangement.SpaceEvenly,
+                        verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.End,
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .padding(end = 1.dp * scale, top = 0.5.dp * scale, bottom = 0.5.dp * scale)
+                            .padding(end = 1.5.dp * scale, top = 1.5.dp * scale, bottom = 1.5.dp * scale)
                     ) {
-                        val discFontSize = (5.5f * scale).sp
-                        val discLineHeight = (6.4f * scale).sp
+                        val discFontSize = (4.8f * scale).sp
+                        val discLineHeight = (5.6f * scale).sp
                         ArabicDisclaimerLine("يجب التحقق", discFontSize, discLineHeight)
                         ArabicDisclaimerLine("من الرمز السريع", discFontSize, discLineHeight)
                         ArabicDisclaimerLine("قبل اعتماد", discFontSize, discLineHeight)
@@ -277,16 +277,16 @@ fun DynamicMuqeemCard(
                 ResidentBarcode()
             }
 
-            // 6. Dynamic Citizen Data Fields (Aligned across the guilloche security region)
+            // 6. Dynamic Citizen Data Fields (Aligned across the guilloche security region with ample headroom)
             Box(
                 modifier = Modifier
                     .offset(
                         x = cardWidth * 0.315f,
-                        y = cardHeight * 0.238f
+                        y = cardHeight * 0.175f
                     )
                     .size(
                         width = cardWidth * 0.650f,
-                        height = cardHeight * 0.722f
+                        height = cardHeight * 0.795f
                     )
             ) {
                 if (language == AppLanguage.ENGLISH) {
@@ -353,8 +353,8 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                     text = user.fullNameAr,
                     color = CardNameArColor,
                     fontFamily = CardTextFont,
-                    fontSize = (17.8f * scale).sp,
-                    lineHeight = (20.0f * scale).sp,
+                    fontSize = (15.5f * scale).sp,
+                    lineHeight = (17.5f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                     fontWeight = FontWeight.Black,
                     textAlign = TextAlign.Start,
@@ -362,16 +362,15 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                     softWrap = false,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(1.dp * scale))
                 Text(
                     text = user.fullNameEn.uppercase(),
                     color = CardNameEnColor,
                     fontFamily = CardTextFont,
-                    fontSize = (12.8f * scale).sp,
-                    lineHeight = (14.8f * scale).sp,
+                    fontSize = (11.0f * scale).sp,
+                    lineHeight = (12.8f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                     fontWeight = FontWeight.Medium,
-                    letterSpacing = (0.38f * scale).sp,
+                    letterSpacing = (0.35f * scale).sp,
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     softWrap = false,
@@ -427,14 +426,14 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                 scale = scale
             )
 
-            // Row 7: Place of Work
+            // Row 7: Place of Work (مكان العمل)
             SingleArabicRow(
                 label = "مكان العمل:",
-                value = user.workPlaceAr,
+                value = user.workPlaceAr.ifEmpty { "منطقة الرياض" },
                 scale = scale
             )
 
-            // Row 8: Employer Name (visible along bottom border)
+            // Row 8: Employer Name (visible if present)
             if (user.sponsorName.isNotEmpty()) {
                 SingleArabicRow(
                     label = "اسم صاحب العمل:",
@@ -458,7 +457,7 @@ private fun TwoColumnArabicRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 0.5.dp * scale),
+            .padding(vertical = 0.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // In RTL: first child is on the RIGHT (Right Column)
@@ -470,8 +469,8 @@ private fun TwoColumnArabicRow(
                 text = rightLabel,
                 color = CardLabelColor,
                 fontFamily = CardArabicLabelFont,
-                fontSize = (9.8f * scale).sp,
-                lineHeight = (11.9f * scale).sp,
+                fontSize = (9.2f * scale).sp,
+                lineHeight = (11.0f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -482,8 +481,8 @@ private fun TwoColumnArabicRow(
                 text = rightValue,
                 color = CardValueColor,
                 fontFamily = CardTextFont,
-                fontSize = (11.2f * scale).sp,
-                lineHeight = (13.2f * scale).sp,
+                fontSize = (10.6f * scale).sp,
+                lineHeight = (12.4f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -503,8 +502,8 @@ private fun TwoColumnArabicRow(
                 text = leftLabel,
                 color = CardLabelColor,
                 fontFamily = CardArabicLabelFont,
-                fontSize = (9.8f * scale).sp,
-                lineHeight = (11.9f * scale).sp,
+                fontSize = (9.2f * scale).sp,
+                lineHeight = (11.0f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -515,8 +514,8 @@ private fun TwoColumnArabicRow(
                 text = leftValue,
                 color = CardValueColor,
                 fontFamily = CardTextFont,
-                fontSize = (11.2f * scale).sp,
-                lineHeight = (13.2f * scale).sp,
+                fontSize = (10.6f * scale).sp,
+                lineHeight = (12.4f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -537,27 +536,27 @@ private fun SingleArabicRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 0.5.dp * scale),
+            .padding(vertical = 0.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             color = CardLabelColor,
             fontFamily = CardArabicLabelFont,
-            fontSize = (10.0f * scale).sp,
-            lineHeight = (12.2f * scale).sp,
+            fontSize = (9.2f * scale).sp,
+            lineHeight = (11.0f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             softWrap = false
         )
-        Spacer(modifier = Modifier.width(3.5.dp * scale))
+        Spacer(modifier = Modifier.width(3.dp * scale))
         Text(
             text = value,
             color = CardValueColor,
             fontFamily = CardTextFont,
-            fontSize = (11.4f * scale).sp,
-            lineHeight = (13.4f * scale).sp,
+            fontSize = (10.6f * scale).sp,
+            lineHeight = (12.4f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             fontWeight = FontWeight.Bold,
             maxLines = 1,

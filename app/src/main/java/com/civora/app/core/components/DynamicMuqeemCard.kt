@@ -65,6 +65,11 @@ private val CardNameEnColor = Color(0xFF32322A)
 private val CardDisclaimerColor = Color(0xFF2B2B2B)
 private val CardTextFont = FontFamily.SansSerif
 private val CardArabicLabelFont = FontFamily(Font(R.font.tajawal_regular))
+private val DisclaimerArabicFont = FontFamily(
+    Font(R.font.noto_kufi_arabic_900, FontWeight.Black),
+    Font(R.font.noto_kufi_arabic_800, FontWeight.ExtraBold),
+    Font(R.font.noto_kufi_arabic_700, FontWeight.Bold)
+)
 
 @Composable
 private fun ArabicDisclaimerLine(
@@ -74,7 +79,7 @@ private fun ArabicDisclaimerLine(
 ) {
     Text(
         text = text,
-        fontFamily = CardTextFont,
+        fontFamily = DisclaimerArabicFont,
         fontSize = fontSize,
         lineHeight = lineHeight,
         color = CardDisclaimerColor,
@@ -188,15 +193,15 @@ fun DynamicMuqeemCard(
                 modifier = Modifier
                     .offset(
                         x = cardWidth * 0.046f,
-                        y = cardHeight * 0.758f
+                        y = cardHeight * 0.755f
                     )
                     .size(
                         width = cardWidth * 0.270f,
-                        height = cardHeight * 0.165f
+                        height = cardHeight * 0.168f
                     )
                     .background(Color.White, RoundedCornerShape(3.dp * scale))
                     .border(BorderStroke(0.6.dp, Color(0xFFD0CAC0)), RoundedCornerShape(3.dp * scale))
-                    .padding(start = 0.5.dp * scale, end = 2.dp * scale, top = 0.5.dp * scale, bottom = 0.5.dp * scale),
+                    .padding(start = 0.5.dp * scale, end = 2.dp * scale, top = 0.dp, bottom = 0.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Row(
@@ -221,10 +226,10 @@ fun DynamicMuqeemCard(
                             // Authentic Centered Absher Emblem over QR Code
                             Box(
                                 modifier = Modifier
-                                    .size(cardHeight * 0.048f)
+                                    .size(cardHeight * 0.046f)
                                     .align(Alignment.Center)
                                     .background(Color.White, RoundedCornerShape(1.dp * scale))
-                                    .padding(0.6.dp * scale),
+                                    .padding(0.5.dp * scale),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Image(
@@ -243,10 +248,10 @@ fun DynamicMuqeemCard(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .padding(end = 1.dp * scale)
+                            .padding(end = 1.dp * scale, top = 0.5.dp * scale, bottom = 0.5.dp * scale)
                     ) {
-                        val discFontSize = (6.4f * scale).sp
-                        val discLineHeight = (7.5f * scale).sp
+                        val discFontSize = (5.5f * scale).sp
+                        val discLineHeight = (6.4f * scale).sp
                         ArabicDisclaimerLine("يجب التحقق", discFontSize, discLineHeight)
                         ArabicDisclaimerLine("من الرمز السريع", discFontSize, discLineHeight)
                         ArabicDisclaimerLine("قبل اعتماد", discFontSize, discLineHeight)

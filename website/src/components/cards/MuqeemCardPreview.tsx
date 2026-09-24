@@ -121,7 +121,7 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
 
               {/* 4-Line Official Arabic Disclaimer with Extra Bold Typography */}
               <div
-                className="text-right text-[#111827] font-black flex-1 pr-1"
+                className="text-right text-[#2b2b2b] font-black flex-1 pr-1"
                 style={{
                   fontSize: '6.0px',
                   lineHeight: '7.2px',
@@ -173,11 +173,11 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
             >
               {/* Names Header */}
               <div className="flex flex-col text-right">
-                <div className="font-black text-[#111827] leading-tight text-[15.5px] truncate">
+                <div className="font-black text-[#343436] leading-tight text-[15.5px] truncate">
                   {user.fullNameAr || ''}
                 </div>
                 <div
-                  className="font-bold text-[#1f2937] uppercase tracking-wide text-[11.2px] truncate mt-0.5"
+                  className="font-bold text-[#32322a] uppercase tracking-wide text-[11.2px] truncate mt-0.5"
                   dir="ltr"
                 >
                   {user.fullNameEn?.toUpperCase() || ''}
@@ -187,67 +187,67 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
               {/* Row 1: Expiry Date (Left) | National ID (Right) */}
               <div className="flex items-baseline justify-between text-[9.5px] leading-tight">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#444444] font-semibold">رقم الهوية:</span>
-                  <span className="font-bold text-gray-950 font-mono tracking-wider">{user.nationalId || ''}</span>
+                  <span className="text-[#817f70] font-semibold">رقم الهوية:</span>
+                  <span className="font-bold text-[#3e3d3b] font-mono tracking-wider">{user.nationalId || ''}</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#444444] font-semibold">تاريخ الانتهاء:</span>
-                  <span className="font-bold text-gray-900">{user.expiryDateAr || user.expiryDateEn || ''}</span>
+                  <span className="text-[#817f70] font-semibold">تاريخ الانتهاء:</span>
+                  <span className="font-bold text-[#3e3d3b]">{user.expiryDateAr || user.expiryDateEn || ''}</span>
                 </div>
               </div>
 
               {/* Row 2: Place of Birth (Left) | Date of Birth (Right) */}
               <div className="flex items-baseline justify-between text-[9.5px] leading-tight">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#444444] font-semibold">تاريخ الميلاد:</span>
-                  <span className="font-bold text-gray-900">{user.dateOfBirthAr || user.dateOfBirth || ''}</span>
+                  <span className="text-[#817f70] font-semibold">تاريخ الميلاد:</span>
+                  <span className="font-bold text-[#3e3d3b]">{user.dateOfBirthAr || user.dateOfBirth || ''}</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#444444] font-semibold">مكان الميلاد:</span>
-                  <span className="font-bold text-gray-900 truncate max-w-[110px]">{user.placeOfBirthAr || ''}</span>
+                  <span className="text-[#817f70] font-semibold">مكان الميلاد:</span>
+                  <span className="font-bold text-[#3e3d3b] truncate max-w-[110px]">{user.placeOfBirthAr || ''}</span>
                 </div>
               </div>
 
               {/* Row 3: Religion (Left) | Nationality (Right) */}
               <div className="flex items-baseline justify-between text-[9.5px] leading-tight">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#444444] font-semibold">الجنسية:</span>
-                  <span className="font-bold text-gray-900">{user.nationalityAr || ''}</span>
+                  <span className="text-[#817f70] font-semibold">الجنسية:</span>
+                  <span className="font-bold text-[#3e3d3b]">{user.nationalityAr || ''}</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#444444] font-semibold">الديانة:</span>
-                  <span className="font-bold text-gray-900">{user.religionAr || ''}</span>
+                  <span className="text-[#817f70] font-semibold">الديانة:</span>
+                  <span className="font-bold text-[#3e3d3b]">{user.religionAr || ''}</span>
                 </div>
               </div>
 
               {/* Row 4: Profession */}
               <div className="flex items-baseline gap-1 text-[9.5px] leading-tight">
-                <span className="text-[#444444] font-semibold">المهنة:</span>
-                <span className="font-bold text-gray-950 truncate">{user.professionAr || ''}</span>
+                <span className="text-[#817f70] font-semibold">المهنة:</span>
+                <span className="font-bold text-[#3e3d3b] truncate">{user.professionAr || ''}</span>
               </div>
 
               {/* Row 5: Employer / Sponsor ID */}
               <div className="flex items-baseline gap-1 text-[9.5px] leading-tight">
-                <span className="text-[#444444] font-semibold">هوية صاحب العمل:</span>
-                <span className="font-mono text-gray-900 font-bold">{user.sponsorId || ''}</span>
+                <span className="text-[#817f70] font-semibold">هوية صاحب العمل:</span>
+                <span className="font-mono text-[#3e3d3b] font-bold">{user.sponsorId || ''}</span>
               </div>
 
               {/* Row 6: Place of Issue */}
               <div className="flex items-baseline gap-1 text-[9.5px] leading-tight">
-                <span className="text-[#444444] font-semibold">مكان الإصدار:</span>
-                <span className="font-medium text-gray-900 truncate">{user.issuePlace || ''}</span>
+                <span className="text-[#817f70] font-semibold">مكان الإصدار:</span>
+                <span className="font-medium text-[#3e3d3b] truncate">{user.issuePlace || ''}</span>
               </div>
 
               {/* Row 7: Place of Work */}
               <div className="flex items-baseline gap-1 text-[9.5px] leading-tight">
-                <span className="text-[#444444] font-semibold">مكان العمل:</span>
-                <span className="font-medium text-gray-900 truncate">{user.workPlaceAr || ''}</span>
+                <span className="text-[#817f70] font-semibold">مكان العمل:</span>
+                <span className="font-medium text-[#3e3d3b] truncate">{user.workPlaceAr || ''}</span>
               </div>
 
               {/* Row 8: Employer / Sponsor Name */}
               <div className="flex items-baseline gap-1 text-[9.5px] leading-tight pb-0.5">
-                <span className="text-[#444444] font-semibold">اسم صاحب العمل:</span>
-                <span className="font-bold text-gray-900 truncate">{user.sponsorName || ''}</span>
+                <span className="text-[#817f70] font-semibold">اسم صاحب العمل:</span>
+                <span className="font-bold text-[#3e3d3b] truncate">{user.sponsorName || ''}</span>
               </div>
             </div>
           </div>

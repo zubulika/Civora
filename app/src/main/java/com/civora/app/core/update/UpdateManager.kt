@@ -33,11 +33,72 @@ class UpdateManager(private val context: Context) {
         private const val GITHUB_OWNER = "zubulika"
         private const val GITHUB_REPO = "Civora"
         const val RELEASES_API_URL = "https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest"
+        const val WEB_RELEASE_LATEST_URL = "https://github.com/$GITHUB_OWNER/$GITHUB_REPO/releases/latest"
     }
 
     /**
-     * Queries GitHub Releases API for the latest published release.
-     * Compares tag_name with the currently running app version.
+     * Resolves the latest release tag without API rate-limiting via GitHub's web release redirect.
+     * Guaranteed to work on any Wi-Fi or mobile network without 403 rate-limit restrictions.
+     */
+    private fun fetchUpdateViaWebRedirect(currentVersion: String): Result<AppUpdateInfo> {
+        return try {
+            val url = URL(WEB_RELEASE_LATEST_URL)
+            val connection = (url.openConnection() as HttpURLConnection).apply {
+                instanceFollowRedirects = false
+                requestMethod = "GET"
+                setRequestProperty("User-Agent", "Mozilla/5.0 (Android; Mobile; AbsherApp)")
+                connectTimeout = 8000
+                readTimeout = 8000
+            }
+
+            val responseCode = connection.responseCode
+            val location = connection.getHeaderField("Location")
+            connection.disconnect()
+
+            if ((responseCode == HttpURLConnection.HTTP_MOVED_TEMP || 
+                 responseCode == HttpURLConnection.HTTP_MOVED_PERM || 
+                 responseCode == 307 || 
+                 responseCode == 308) && !location.isNullOrEmpty()) {
+                val rawTag = location.substringAfterLast("/tag/").substringAfterLast("/")
+                val tagName = rawTag.removePrefix("v").trim()
+                if (tagName.isNotEmpty() && !tagName.contains("releases", ignoreCase = true)) {
+                    val hasUpdate = isNewerVersion(currentVersion, tagName)
+                    val directApkUrl = "https://github.com/$GITHUB_OWNER/$GITHUB_REPO/releases/download/$rawTag/Absher-$rawTag.apk"
+                    return Result.success(
+                        AppUpdateInfo(
+                            latestVersion = tagName,
+                            releaseNotes = "New updates and stability improvements are available for Absher.",
+                            downloadUrl = directApkUrl,
+                            isUpdateAvailable = hasUpdate
+                        )
+                    )
+                }
+            } else if (responseCode == 200) {
+                val finalUrl = connection.url.toString()
+                val rawTag = finalUrl.substringAfterLast("/tag/").substringAfterLast("/")
+                val tagName = rawTag.removePrefix("v").trim()
+                if (tagName.isNotEmpty() && !tagName.contains("releases", ignoreCase = true)) {
+                    val hasUpdate = isNewerVersion(currentVersion, tagName)
+                    val directApkUrl = "https://github.com/$GITHUB_OWNER/$GITHUB_REPO/releases/download/$rawTag/Absher-$rawTag.apk"
+                    return Result.success(
+                        AppUpdateInfo(
+                            latestVersion = tagName,
+                            releaseNotes = "New updates and stability improvements are available for Absher.",
+                            downloadUrl = directApkUrl,
+                            isUpdateAvailable = hasUpdate
+                        )
+                    )
+                }
+            }
+            Result.failure(Exception("Could not resolve latest release tag via web redirect (HTTP $responseCode)"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Queries GitHub for the latest published release.
+     * Tries REST API first, automatically falling back to rate-limit-free Web Redirect on HTTP 403 or network issues.
      */
     suspend fun checkForUpdate(currentVersion: String = BuildConfig.APP_VERSION_NAME): Result<AppUpdateInfo> = withContext(Dispatchers.IO) {
         try {
@@ -97,10 +158,12 @@ class UpdateManager(private val context: Context) {
                     )
                 )
             } else {
-                Result.failure(Exception("GitHub API returned HTTP $responseCode"))
+                // HTTP 403 (Rate Limit) or other API status -> Fall back to rate-limit-free web redirect
+                fetchUpdateViaWebRedirect(currentVersion)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+        } catch (_: Exception) {
+            // Network or API connection error -> Fall back to rate-limit-free web redirect
+            fetchUpdateViaWebRedirect(currentVersion)
         }
     }
 

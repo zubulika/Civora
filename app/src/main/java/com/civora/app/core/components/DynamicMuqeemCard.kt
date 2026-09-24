@@ -58,11 +58,13 @@ import com.civora.app.core.designsystem.LanguageState
 import com.civora.app.core.model.UserProfile
 import com.civora.app.core.util.OfficialQrGenerator
 
-private val CardLabelColor = Color(0xFF444444)
-private val CardValueColor = Color(0xFF111111)
-private val CardNameColor = Color(0xFF111111)
+private val CardLabelColor = Color(0xFF817F70)
+private val CardValueColor = Color(0xFF3E3D3B)
+private val CardNameArColor = Color(0xFF343436)
+private val CardNameEnColor = Color(0xFF32322A)
+private val CardDisclaimerColor = Color(0xFF2B2B2B)
 private val CardTextFont = FontFamily.SansSerif
-private val CardArabicLabelFont = FontFamily.SansSerif
+private val CardArabicLabelFont = FontFamily(Font(R.font.tajawal_regular))
 
 @Composable
 private fun ArabicDisclaimerLine(
@@ -75,7 +77,7 @@ private fun ArabicDisclaimerLine(
         fontFamily = CardTextFont,
         fontSize = fontSize,
         lineHeight = lineHeight,
-        color = Color.Black,
+        color = CardDisclaimerColor,
         fontWeight = FontWeight.Black,
         textAlign = TextAlign.End,
         maxLines = 1,
@@ -145,7 +147,7 @@ fun DynamicMuqeemCard(
             ) {
                 Text(
                     text = if (language == AppLanguage.ENGLISH) "1" else user.versionNumber.toEasternArabicDigits(),
-                    color = CardNameColor,
+                    color = CardNameArColor,
                     fontFamily = CardTextFont,
                     fontSize = (15.5f * scale).sp,
                     fontWeight = FontWeight.ExtraBold
@@ -344,7 +346,7 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
             ) {
                 Text(
                     text = user.fullNameAr,
-                    color = CardNameColor,
+                    color = CardNameArColor,
                     fontFamily = CardTextFont,
                     fontSize = (17.8f * scale).sp,
                     lineHeight = (20.0f * scale).sp,
@@ -358,7 +360,7 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                 Spacer(modifier = Modifier.height(1.dp * scale))
                 Text(
                     text = user.fullNameEn.uppercase(),
-                    color = CardNameColor,
+                    color = CardNameEnColor,
                     fontFamily = CardTextFont,
                     fontSize = (12.8f * scale).sp,
                     lineHeight = (14.8f * scale).sp,
@@ -573,7 +575,7 @@ private fun EnglishDataLayout(user: UserProfile, scale: Float) {
         Column(modifier = Modifier.padding(bottom = 1.dp * scale)) {
             Text(
                 text = user.fullNameAr,
-                color = CardNameColor,
+                color = CardNameArColor,
                 fontFamily = CardTextFont,
                 fontSize = (13.5f * scale).sp,
                 lineHeight = (15.7f * scale).sp,
@@ -584,7 +586,7 @@ private fun EnglishDataLayout(user: UserProfile, scale: Float) {
             )
             Text(
                 text = user.fullNameEn.uppercase(),
-                color = CardNameColor,
+                color = CardNameEnColor,
                 fontFamily = CardTextFont,
                 fontSize = (13.5f * scale).sp,
                 lineHeight = (16.2f * scale).sp,

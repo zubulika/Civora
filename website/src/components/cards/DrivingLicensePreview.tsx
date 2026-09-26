@@ -66,10 +66,12 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
     },
   ];
 
-  // Multi-directional white stroke with soft feathered glow around bold text
-  const strokeStyle: React.CSSProperties = {
+  // White font fill with crisp black outline stroke and subtle drop shadow for placeholder permanent labels
+  const labelStrokeStyle: React.CSSProperties = {
+    color: '#ffffff',
+    WebkitTextStroke: '0.6px #111111',
     textShadow:
-      '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, 0 0 3px #fff, 0 0 5px rgba(255, 255, 255, 0.95)',
+      '-0.8px -0.8px 0 #111, 0.8px -0.8px 0 #111, -0.8px 0.8px 0 #111, 0.8px 0.8px 0 #111, -0.8px 0 0 #111, 0.8px 0 0 #111, 0 -0.8px 0 #111, 0 0.8px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.45)',
   };
 
   return (
@@ -135,9 +137,9 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
               className="absolute bg-white/95 rounded-[4px] border border-gray-300 px-1 py-0.5 flex items-center justify-between"
               style={{
                 left: '6.5%',
-                top: '73.2%',
-                width: '23.6%',
-                height: '14.4%',
+                top: '72.5%',
+                width: '24.2%',
+                height: '15.5%',
               }}
             >
               {/* QR Container with Centered Absher Logo */}
@@ -157,13 +159,12 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
                 </div>
               </div>
 
-              {/* 4-Line Official Arabic Disclaimer with White Stroke */}
+              {/* 4-Line Official Arabic Disclaimer (Identical typography to primary document) */}
               <div
-                className="text-right text-gray-950 font-bold flex-1 pr-1"
+                className="text-right text-[#2b2b2b] font-black flex-1 pr-1.5 py-0.5 flex flex-col justify-between h-full select-none"
                 style={{
-                  fontSize: '5.2px',
-                  lineHeight: '6.2px',
-                  ...strokeStyle,
+                  fontSize: '4.8px',
+                  lineHeight: '5.6px',
                 }}
                 dir="rtl"
               >
@@ -174,7 +175,7 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
               </div>
             </div>
 
-            {/* 3. Holder Name Section (Prominent, High-Contrast with White Halo) */}
+            {/* 3. Holder Name Section (Crisp bold dark text matching reference image) */}
             <div
               className="absolute flex flex-col items-end text-right"
               style={{
@@ -184,14 +185,12 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
               }}
             >
               <div
-                className="font-bold text-gray-950 leading-tight truncate text-[14.5px]"
-                style={strokeStyle}
+                className="font-black text-[#222222] leading-tight truncate text-[14.5px]"
               >
                 {user.fullNameAr || ''}
               </div>
               <div
-                className="font-bold tracking-wide text-gray-950 uppercase mt-0.5 truncate text-[10.5px]"
-                style={strokeStyle}
+                className="font-bold tracking-wide text-[#222222] uppercase mt-0.5 truncate text-[10.5px]"
               >
                 {user.fullNameEn?.toUpperCase() || ''}
               </div>
@@ -208,17 +207,17 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
               }}
             >
               {fields.map((f, i) => (
-                <div key={i} className="flex items-center justify-between text-gray-950 font-bold text-[8.8px] leading-tight">
-                  {/* English Column (Left) */}
-                  <div className="flex items-center gap-1.5" style={strokeStyle}>
-                    <span className="font-semibold text-gray-900">{f.labelEn}</span>
-                    <span className="font-bold">{f.valueEn}</span>
+                <div key={i} className="flex items-center justify-between text-[#1e1e1e] font-bold text-[8.8px] leading-tight">
+                  {/* English Column (Left): White text with black outline stroke + crisp solid black value */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold" style={labelStrokeStyle}>{f.labelEn}</span>
+                    <span className="font-bold text-[#1e1e1e]">{f.valueEn}</span>
                   </div>
 
-                  {/* Arabic Column (Right) */}
-                  <div className="flex items-center gap-1.5" dir="rtl" style={strokeStyle}>
-                    <span className="font-semibold text-gray-900">{f.labelAr}</span>
-                    <span className="font-bold">{f.valueAr}</span>
+                  {/* Arabic Column (Right): White text with black outline stroke + crisp solid black value */}
+                  <div className="flex items-center gap-1.5" dir="rtl">
+                    <span className="font-bold" style={labelStrokeStyle}>{f.labelAr}</span>
+                    <span className="font-bold text-[#1e1e1e]">{f.valueAr}</span>
                   </div>
                 </div>
               ))}

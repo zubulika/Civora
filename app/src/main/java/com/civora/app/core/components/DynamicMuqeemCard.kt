@@ -282,11 +282,11 @@ fun DynamicMuqeemCard(
                 modifier = Modifier
                     .offset(
                         x = cardWidth * 0.315f,
-                        y = cardHeight * 0.242f
+                        y = cardHeight * 0.245f
                     )
                     .size(
                         width = cardWidth * 0.650f,
-                        height = cardHeight * 0.725f
+                        height = cardHeight * 0.745f
                     )
             ) {
                 if (language == AppLanguage.ENGLISH) {
@@ -347,16 +347,18 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
             // Names Header (Arabic on top, English below)
             Column(
                 horizontalAlignment = Alignment.Start,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 1.dp * scale)
             ) {
                 Text(
                     text = user.fullNameAr,
                     color = CardNameArColor,
                     fontFamily = CardTextFont,
-                    fontSize = (15.5f * scale).sp,
-                    lineHeight = (17.5f * scale).sp,
+                    fontSize = (19.0f * scale).sp,
+                    lineHeight = (21.0f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                    fontWeight = FontWeight.Black,
+                    fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     softWrap = false,
@@ -366,8 +368,8 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                     text = user.fullNameEn.uppercase(),
                     color = CardNameEnColor,
                     fontFamily = CardTextFont,
-                    fontSize = (11.0f * scale).sp,
-                    lineHeight = (12.8f * scale).sp,
+                    fontSize = (13.5f * scale).sp,
+                    lineHeight = (15.5f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                     fontWeight = FontWeight.Medium,
                     letterSpacing = (0.35f * scale).sp,
@@ -581,8 +583,8 @@ private fun EnglishDataLayout(user: UserProfile, scale: Float) {
                 text = user.fullNameAr,
                 color = CardNameArColor,
                 fontFamily = CardTextFont,
-                fontSize = (13.5f * scale).sp,
-                lineHeight = (15.7f * scale).sp,
+                fontSize = (16.0f * scale).sp,
+                lineHeight = (18.2f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -592,8 +594,8 @@ private fun EnglishDataLayout(user: UserProfile, scale: Float) {
                 text = user.fullNameEn.uppercase(),
                 color = CardNameEnColor,
                 fontFamily = CardTextFont,
-                fontSize = (13.5f * scale).sp,
-                lineHeight = (16.2f * scale).sp,
+                fontSize = (14.5f * scale).sp,
+                lineHeight = (17.0f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Medium,
                 letterSpacing = (0.3f * scale).sp,

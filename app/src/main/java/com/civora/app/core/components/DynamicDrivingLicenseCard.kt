@@ -378,17 +378,17 @@ fun DynamicDrivingLicenseCard(
                     .align(Alignment.TopEnd)
                     .offset(
                         x = -(cardWidth * 0.050f),
-                        y = cardHeight * 0.272f
+                        y = cardHeight * 0.258f
                     ),
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
                     text = user.fullNameAr.ifEmpty { "محمد بالا مد حسين أوسين" },
                     fontFamily = CardTextFont,
-                    fontSize = (15.5f * scale).sp,
-                    lineHeight = (17.5f * scale).sp,
+                    fontSize = (18.5f * scale).sp,
+                    lineHeight = (20.5f * scale).sp,
                     color = CardNameArColor,
-                    fontWeight = FontWeight.Black,
+                    fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.End,
                     maxLines = 1,
                     softWrap = false,
@@ -399,10 +399,10 @@ fun DynamicDrivingLicenseCard(
                 Text(
                     text = user.fullNameEn.ifEmpty { "MD BALAL HOSSAIN" }.uppercase(),
                     fontFamily = CardTextFont,
-                    fontSize = (11.0f * scale).sp,
-                    lineHeight = (13.0f * scale).sp,
+                    fontSize = (13.0f * scale).sp,
+                    lineHeight = (15.0f * scale).sp,
                     color = CardNameEnColor,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Medium,
                     letterSpacing = (0.35f * scale).sp,
                     textAlign = TextAlign.End,
                     maxLines = 1,
@@ -464,10 +464,10 @@ fun DynamicDrivingLicenseCard(
                 modifier = Modifier
                     .offset(
                         x = cardWidth * 0.332f,
-                        y = cardHeight * 0.440f
+                        y = cardHeight * 0.430f
                     )
                     .width(cardWidth * 0.620f)
-                    .height(cardHeight * 0.525f),
+                    .height(cardHeight * 0.535f),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 fields.forEach { field ->
@@ -515,17 +515,17 @@ fun DynamicDrivingLicenseCard(
                                 ) {
                                     FeatheredStrokeLabel(
                                         text = field.labelAr,
-                                        fontSize = (9.6f * scale).sp,
+                                        fontSize = (9.8f * scale).sp,
                                         scale = scale,
                                         fontFamily = CardArabicLabelFont,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.ExtraBold
                                     )
                                     Spacer(modifier = Modifier.width(3.dp * scale))
                                     Text(
                                         text = field.valueAr,
                                         color = CardValueColor,
-                                        fontSize = (10.0f * scale).sp,
-                                        fontWeight = FontWeight.Bold,
+                                        fontSize = (10.6f * scale).sp,
+                                        fontWeight = FontWeight.Black,
                                         fontFamily = CardTextFont,
                                         maxLines = 1,
                                         softWrap = false,

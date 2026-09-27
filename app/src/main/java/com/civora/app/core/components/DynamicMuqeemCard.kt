@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.PlatformTextStyle
@@ -48,6 +49,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -131,8 +133,12 @@ fun DynamicMuqeemCard(
             val cardWidth = maxWidth
             val cardHeight = maxHeight
 
-            // Proportional scaling multiplier based on reference width (360dp) with dynamic responsive adaptation
-            val scale = (cardWidth / 360.dp).coerceIn(0.5f, 2.0f)
+            val currentDensity = LocalDensity.current
+            CompositionLocalProvider(
+                LocalDensity provides Density(currentDensity.density, fontScale = 1.0f)
+            ) {
+                // Proportional scaling multiplier based on reference width (360dp) with dynamic responsive adaptation
+                val scale = (cardWidth / 360.dp).coerceIn(0.5f, 2.0f)
 
             // 1. Authentic Template Background (Guilloche Waves, Watermark, Seals, Calligraphy)
             Image(
@@ -286,7 +292,7 @@ fun DynamicMuqeemCard(
                     )
                     .size(
                         width = cardWidth * 0.640f,
-                        height = cardHeight * 0.725f
+                        height = cardHeight * 0.712f
                     )
             ) {
                 if (language == AppLanguage.ENGLISH) {
@@ -294,6 +300,7 @@ fun DynamicMuqeemCard(
                 } else {
                     ArabicDataLayout(user = user, scale = scale)
                 }
+            }
             }
         }
     }
@@ -367,10 +374,10 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                     text = user.fullNameEn.uppercase(),
                     color = CardNameEnColor,
                     fontFamily = CardTextFont,
-                    fontSize = (13.5f * scale).sp,
-                    lineHeight = (15.5f * scale).sp,
+                    fontSize = (12.2f * scale).sp,
+                    lineHeight = (14.0f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                     letterSpacing = (0.35f * scale).sp,
                     textAlign = TextAlign.Start,
                     maxLines = 1,
@@ -466,8 +473,8 @@ private fun TwoColumnArabicRow(
                 text = rightLabel,
                 color = CardLabelColor,
                 fontFamily = CardArabicLabelFont,
-                fontSize = (10.2f * scale).sp,
-                lineHeight = (12.2f * scale).sp,
+                fontSize = (9.5f * scale).sp,
+                lineHeight = (11.5f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -478,8 +485,8 @@ private fun TwoColumnArabicRow(
                 text = rightValue,
                 color = CardValueColor,
                 fontFamily = CardTextFont,
-                fontSize = (11.6f * scale).sp,
-                lineHeight = (13.6f * scale).sp,
+                fontSize = (10.8f * scale).sp,
+                lineHeight = (12.8f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -499,8 +506,8 @@ private fun TwoColumnArabicRow(
                 text = leftLabel,
                 color = CardLabelColor,
                 fontFamily = CardArabicLabelFont,
-                fontSize = (10.2f * scale).sp,
-                lineHeight = (12.2f * scale).sp,
+                fontSize = (9.5f * scale).sp,
+                lineHeight = (11.5f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -511,8 +518,8 @@ private fun TwoColumnArabicRow(
                 text = leftValue,
                 color = CardValueColor,
                 fontFamily = CardTextFont,
-                fontSize = (11.6f * scale).sp,
-                lineHeight = (13.6f * scale).sp,
+                fontSize = (10.8f * scale).sp,
+                lineHeight = (12.8f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -538,8 +545,8 @@ private fun SingleArabicRow(
             text = label,
             color = CardLabelColor,
             fontFamily = CardArabicLabelFont,
-            fontSize = (10.2f * scale).sp,
-            lineHeight = (12.2f * scale).sp,
+            fontSize = (9.5f * scale).sp,
+            lineHeight = (11.5f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
@@ -550,8 +557,8 @@ private fun SingleArabicRow(
             text = value,
             color = CardValueColor,
             fontFamily = CardTextFont,
-            fontSize = (11.6f * scale).sp,
-            lineHeight = (13.6f * scale).sp,
+            fontSize = (10.8f * scale).sp,
+            lineHeight = (12.8f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             fontWeight = FontWeight.Bold,
             maxLines = 1,

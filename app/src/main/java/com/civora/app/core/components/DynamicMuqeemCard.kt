@@ -58,10 +58,10 @@ import com.civora.app.core.designsystem.LanguageState
 import com.civora.app.core.model.UserProfile
 import com.civora.app.core.util.OfficialQrGenerator
 
-private val CardLabelColor = Color(0xFF817F70)
-private val CardValueColor = Color(0xFF3E3D3B)
-private val CardNameArColor = Color(0xFF343436)
-private val CardNameEnColor = Color(0xFF32322A)
+private val CardLabelColor = Color(0xFF828072)
+private val CardValueColor = Color(0xFF1E1E1E)
+private val CardNameArColor = Color(0xFF1E1E1E)
+private val CardNameEnColor = Color(0xFF222222)
 private val CardDisclaimerColor = Color(0xFF2B2B2B)
 private val CardTextFont = FontFamily.SansSerif
 private val CardArabicLabelFont = FontFamily(Font(R.font.tajawal_regular))
@@ -131,8 +131,8 @@ fun DynamicMuqeemCard(
             val cardWidth = maxWidth
             val cardHeight = maxHeight
 
-            // Proportional scaling multiplier based on reference width (350dp) with readable mobile floor
-            val scale = (cardWidth / 350.dp).coerceIn(0.82f, 2.2f)
+            // Proportional scaling multiplier based on reference width (360dp) with dynamic responsive adaptation
+            val scale = (cardWidth / 360.dp).coerceIn(0.5f, 2.0f)
 
             // 1. Authentic Template Background (Guilloche Waves, Watermark, Seals, Calligraphy)
             Image(
@@ -277,16 +277,16 @@ fun DynamicMuqeemCard(
                 ResidentBarcode()
             }
 
-            // 6. Dynamic Citizen Data Fields (Aligned below the template header watermark/emblem)
+            // 6. Dynamic Citizen Data Fields (Aligned 1:1 precisely matching official reference card)
             Box(
                 modifier = Modifier
                     .offset(
-                        x = cardWidth * 0.315f,
-                        y = cardHeight * 0.245f
+                        x = cardWidth * 0.320f,
+                        y = cardHeight * 0.252f
                     )
                     .size(
-                        width = cardWidth * 0.650f,
-                        height = cardHeight * 0.745f
+                        width = cardWidth * 0.640f,
+                        height = cardHeight * 0.725f
                     )
             ) {
                 if (language == AppLanguage.ENGLISH) {
@@ -347,16 +347,14 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
             // Names Header (Arabic on top, English below)
             Column(
                 horizontalAlignment = Alignment.Start,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 1.dp * scale)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = user.fullNameAr,
                     color = CardNameArColor,
                     fontFamily = CardTextFont,
-                    fontSize = (19.0f * scale).sp,
-                    lineHeight = (21.0f * scale).sp,
+                    fontSize = (17.0f * scale).sp,
+                    lineHeight = (19.0f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,
@@ -364,6 +362,7 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                     softWrap = false,
                     overflow = TextOverflow.Ellipsis
                 )
+                Spacer(modifier = Modifier.height(1.dp * scale))
                 Text(
                     text = user.fullNameEn.uppercase(),
                     color = CardNameEnColor,
@@ -371,7 +370,7 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                     fontSize = (13.5f * scale).sp,
                     lineHeight = (15.5f * scale).sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     letterSpacing = (0.35f * scale).sp,
                     textAlign = TextAlign.Start,
                     maxLines = 1,
@@ -431,18 +430,16 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
             // Row 7: Place of Work (مكان العمل)
             SingleArabicRow(
                 label = "مكان العمل:",
-                value = user.workPlaceAr.ifEmpty { "منطقة الرياض" },
+                value = user.workPlaceAr.ifBlank { "منطقة الرياض" },
                 scale = scale
             )
 
-            // Row 8: Employer Name (visible if present)
-            if (user.sponsorName.isNotEmpty()) {
-                SingleArabicRow(
-                    label = "اسم صاحب العمل:",
-                    value = user.sponsorName,
-                    scale = scale
-                )
-            }
+            // Row 8: Employer Name (اسم صاحب العمل)
+            SingleArabicRow(
+                label = "اسم صاحب العمل:",
+                value = user.sponsorName.ifBlank { user.sponsorNameEn.ifBlank { "مؤسسة درر نجاح للملابس" } },
+                scale = scale
+            )
         }
     }
 }
@@ -457,22 +454,20 @@ private fun TwoColumnArabicRow(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 0.dp),
+        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // In RTL: first child is on the RIGHT (Right Column)
         Row(
-            modifier = Modifier.weight(1.05f),
+            modifier = Modifier.weight(1.08f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = rightLabel,
                 color = CardLabelColor,
                 fontFamily = CardArabicLabelFont,
-                fontSize = (9.2f * scale).sp,
-                lineHeight = (11.0f * scale).sp,
+                fontSize = (10.2f * scale).sp,
+                lineHeight = (12.2f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -483,8 +478,8 @@ private fun TwoColumnArabicRow(
                 text = rightValue,
                 color = CardValueColor,
                 fontFamily = CardTextFont,
-                fontSize = (10.6f * scale).sp,
-                lineHeight = (12.4f * scale).sp,
+                fontSize = (11.6f * scale).sp,
+                lineHeight = (13.6f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -497,15 +492,15 @@ private fun TwoColumnArabicRow(
 
         // In RTL: second child is on the LEFT (Left Column)
         Row(
-            modifier = Modifier.weight(1.10f),
+            modifier = Modifier.weight(1.0f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = leftLabel,
                 color = CardLabelColor,
                 fontFamily = CardArabicLabelFont,
-                fontSize = (9.2f * scale).sp,
-                lineHeight = (11.0f * scale).sp,
+                fontSize = (10.2f * scale).sp,
+                lineHeight = (12.2f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -516,8 +511,8 @@ private fun TwoColumnArabicRow(
                 text = leftValue,
                 color = CardValueColor,
                 fontFamily = CardTextFont,
-                fontSize = (10.6f * scale).sp,
-                lineHeight = (12.4f * scale).sp,
+                fontSize = (11.6f * scale).sp,
+                lineHeight = (13.6f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -536,17 +531,15 @@ private fun SingleArabicRow(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 0.dp),
+        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             color = CardLabelColor,
             fontFamily = CardArabicLabelFont,
-            fontSize = (9.2f * scale).sp,
-            lineHeight = (11.0f * scale).sp,
+            fontSize = (10.2f * scale).sp,
+            lineHeight = (12.2f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
@@ -557,8 +550,8 @@ private fun SingleArabicRow(
             text = value,
             color = CardValueColor,
             fontFamily = CardTextFont,
-            fontSize = (10.6f * scale).sp,
-            lineHeight = (12.4f * scale).sp,
+            fontSize = (11.6f * scale).sp,
+            lineHeight = (13.6f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             fontWeight = FontWeight.Bold,
             maxLines = 1,
@@ -578,13 +571,13 @@ private fun EnglishDataLayout(user: UserProfile, scale: Float) {
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         // Names Header
-        Column(modifier = Modifier.padding(bottom = 1.dp * scale)) {
+        Column(modifier = Modifier.padding(bottom = 0.5.dp * scale)) {
             Text(
                 text = user.fullNameAr,
                 color = CardNameArColor,
                 fontFamily = CardTextFont,
-                fontSize = (16.0f * scale).sp,
-                lineHeight = (18.2f * scale).sp,
+                fontSize = (14.0f * scale).sp,
+                lineHeight = (16.0f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -594,8 +587,8 @@ private fun EnglishDataLayout(user: UserProfile, scale: Float) {
                 text = user.fullNameEn.uppercase(),
                 color = CardNameEnColor,
                 fontFamily = CardTextFont,
-                fontSize = (14.5f * scale).sp,
-                lineHeight = (17.0f * scale).sp,
+                fontSize = (12.0f * scale).sp,
+                lineHeight = (14.0f * scale).sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 fontWeight = FontWeight.Medium,
                 letterSpacing = (0.3f * scale).sp,
@@ -703,25 +696,25 @@ private fun EnglishFieldItem(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.padding(vertical = 0.5.dp * scale),
+        modifier = modifier.padding(vertical = 0.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             color = CardLabelColor,
             fontFamily = CardTextFont,
-            fontSize = (9.5f * scale).sp,
-            lineHeight = (11.5f * scale).sp,
+            fontSize = (8.0f * scale).sp,
+            lineHeight = (9.6f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             fontWeight = FontWeight.Normal
         )
-        Spacer(modifier = Modifier.width(3.5.dp * scale))
+        Spacer(modifier = Modifier.width(3.dp * scale))
         Text(
             text = value,
             color = CardValueColor,
             fontFamily = CardTextFont,
-            fontSize = (10.1f * scale).sp,
-            lineHeight = (12.1f * scale).sp,
+            fontSize = (9.0f * scale).sp,
+            lineHeight = (10.6f * scale).sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,

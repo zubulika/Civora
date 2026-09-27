@@ -277,16 +277,16 @@ fun DynamicMuqeemCard(
                 ResidentBarcode()
             }
 
-            // 6. Dynamic Citizen Data Fields (Aligned across the guilloche security region with ample headroom)
+            // 6. Dynamic Citizen Data Fields (Aligned below the template header watermark/emblem)
             Box(
                 modifier = Modifier
                     .offset(
                         x = cardWidth * 0.315f,
-                        y = cardHeight * 0.175f
+                        y = cardHeight * 0.242f
                     )
                     .size(
                         width = cardWidth * 0.650f,
-                        height = cardHeight * 0.795f
+                        height = cardHeight * 0.725f
                     )
             ) {
                 if (language == AppLanguage.ENGLISH) {

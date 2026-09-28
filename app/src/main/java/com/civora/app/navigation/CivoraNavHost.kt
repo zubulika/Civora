@@ -312,6 +312,7 @@ fun CivoraNavHost(
             )
             WalletScreen(
                 viewModel = viewModel,
+                userRepository = container.userRepository,
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToDrivingLicense = { navController.navigate(Screen.DrivingLicenseViewer.route) },
                 onNavigateToDigitalId = { navController.navigate(Screen.DigitalIdViewer.route) }
@@ -479,6 +480,7 @@ fun CivoraNavHost(
         // 17. My Passport Detail
         composable(Screen.PassportDetail.route) {
             PassportDetailScreen(
+                userRepository = container.userRepository,
                 onBackClick = { navController.popBackStack() }
             )
         }

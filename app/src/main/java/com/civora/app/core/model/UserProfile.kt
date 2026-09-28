@@ -56,7 +56,15 @@ data class UserProfile(
     val visaNumber: String = "",
     val visaType: String = "",
     val visaExitDate: String = "",
+    // Passport specific
+    val passportNumber: String = "EM0962248",
+    val passportType: String = "Normal",
+    val passportIssueDate: String = "07/01/2025",
+    val passportExpiryDate: String = "06/01/2030",
+    val passportIssuingCity: String = "دكا",
+    val passportStatus: String = "Valid",
     // Driving License specific
+    val hasDrivingLicense: Boolean = true,
     val licenseTypeEn: String = "Private",
     val licenseTypeAr: String = "خصوصي",
     val licenseIssueDateEn: String = "10/03/2026",

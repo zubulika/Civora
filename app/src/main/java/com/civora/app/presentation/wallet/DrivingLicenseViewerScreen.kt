@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
@@ -33,9 +35,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.civora.app.R
 import com.civora.app.core.components.DynamicDrivingLicenseCard
+import com.civora.app.core.designsystem.AppLanguage
 import com.civora.app.core.designsystem.LanguageState
 import com.civora.app.data.mock.CivoraMockDataSource
 import com.civora.app.data.repository.UserRepository
@@ -97,81 +102,116 @@ fun DrivingLicenseViewerScreen(
                 }
             }
 
-            // 2. Vertical Pager: Page 0 = Rotated Driving License Card | Page 1 = Rotated QR Code Card
-            VerticalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) { page ->
-                BoxWithConstraints(
+            if (!user.hasDrivingLicense) {
+                Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 6.dp, vertical = 4.dp),
+                        .fillMaxWidth()
+                        .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    val availableW = maxWidth
-                    val availableH = maxHeight
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(24.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_driver_license),
+                            contentDescription = "No Driving License",
+                            tint = Color.White.copy(alpha = 0.4f),
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = if (currentLanguage == AppLanguage.ARABIC) "لا تتوفر رخصة قيادة لهذا المستخدم" else "No driving license available for this user",
+                            color = Color.White,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = if (currentLanguage == AppLanguage.ARABIC) "يرجى التقديم على اصدار رخصة قيادة عبر منصة ابشر" else "Please apply for a driving license via Absher platform",
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            } else {
+                // 2. Vertical Pager: Page 0 = Rotated Driving License Card | Page 1 = Rotated QR Code Card
+                VerticalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) { page ->
+                    BoxWithConstraints(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 6.dp, vertical = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val availableW = maxWidth
+                        val availableH = maxHeight
 
-                    // Both the License Card and QR Card share identical dimensions and 90° vertical rotation.
-                    // Scale matches the digital resident ID document viewer exactly.
-                    val maxHFromWidth = availableW * 0.90f
-                    val maxHFromHeight = (availableH - 8.dp) / 1.586f
-                    val cardH = minOf(maxHFromWidth, maxHFromHeight)
-                    val cardW = cardH * 1.586f
+                        // Both the License Card and QR Card share identical dimensions and 90° vertical rotation.
+                        // Scale matches the digital resident ID document viewer exactly.
+                        val maxHFromWidth = availableW * 0.90f
+                        val maxHFromHeight = (availableH - 8.dp) / 1.586f
+                        val cardH = minOf(maxHFromWidth, maxHFromHeight)
+                        val cardW = cardH * 1.586f
 
-                    when (page) {
-                        0 -> {
-                            // Page 0: Rotated Saudi Driving License Card
-                            Box(
-                                modifier = Modifier
-                                    .size(width = cardH, height = cardW)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        coroutineScope.launch {
-                                            pagerState.animateScrollToPage(1, animationSpec = tween(380))
-                                        }
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                DynamicDrivingLicenseCard(
-                                    user = user,
-                                    language = currentLanguage,
+                        when (page) {
+                            0 -> {
+                                // Page 0: Rotated Saudi Driving License Card
+                                Box(
                                     modifier = Modifier
-                                        .requiredSize(width = cardW, height = cardH)
-                                        .graphicsLayer {
-                                            rotationZ = 90f
-                                        }
-                                )
+                                        .size(width = cardH, height = cardW)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                            coroutineScope.launch {
+                                                pagerState.animateScrollToPage(1, animationSpec = tween(380))
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    DynamicDrivingLicenseCard(
+                                        user = user,
+                                        language = currentLanguage,
+                                        modifier = Modifier
+                                            .requiredSize(width = cardW, height = cardH)
+                                            .graphicsLayer {
+                                                rotationZ = 90f
+                                            }
+                                    )
+                                }
                             }
-                        }
-                        1 -> {
-                            // Page 1: Rotated QR Code Card (Following card rotation exactly)
-                            Box(
-                                modifier = Modifier
-                                    .size(width = cardH, height = cardW)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        coroutineScope.launch {
-                                            pagerState.animateScrollToPage(0, animationSpec = tween(380))
-                                        }
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                RotatedQrCard(
-                                    user = user,
-                                    cardW = cardW,
-                                    cardH = cardH,
+                            1 -> {
+                                // Page 1: Rotated QR Code Card (Following card rotation exactly)
+                                Box(
                                     modifier = Modifier
-                                        .requiredSize(width = cardW, height = cardH)
-                                        .graphicsLayer {
-                                            rotationZ = 90f
-                                        }
-                                )
+                                        .size(width = cardH, height = cardW)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                            coroutineScope.launch {
+                                                pagerState.animateScrollToPage(0, animationSpec = tween(380))
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    RotatedQrCard(
+                                        user = user,
+                                        cardW = cardW,
+                                        cardH = cardH,
+                                        modifier = Modifier
+                                            .requiredSize(width = cardW, height = cardH)
+                                            .graphicsLayer {
+                                                rotationZ = 90f
+                                            }
+                                    )
+                                }
                             }
                         }
                     }

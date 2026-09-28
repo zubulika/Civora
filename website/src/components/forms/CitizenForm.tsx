@@ -16,7 +16,11 @@ import {
   RefreshCw,
   HeartPulse,
   Moon,
-  Plane
+  Plane,
+  BookOpen,
+  Search,
+  X,
+  Filter
 } from 'lucide-react';
 
 interface CitizenFormProps {
@@ -58,7 +62,7 @@ export default function CitizenForm({
   isSubmitting = false 
 }: CitizenFormProps) {
   const [formData, setFormData] = useState<UserProfile>({
-    id: initialData?.id || `usr_${Date.now()}`,
+    id: initialData?.id || 'usr_new',
     nationalId: initialData?.nationalId ?? '',
     appPassword: initialData?.appPassword || '',
     accountStatus: initialData?.accountStatus || 'ACTIVE',
@@ -130,6 +134,20 @@ export default function CitizenForm({
     return null;
   });
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+
+  const isSectionVisible = (sectionKey: string, sectionTitle: string, keywords: string[] = []) => {
+    if (selectedCategory !== 'ALL' && selectedCategory !== sectionKey) {
+      return false;
+    }
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    if (sectionKey.toLowerCase().includes(q)) return true;
+    if (sectionTitle.toLowerCase().includes(q)) return true;
+    return keywords.some(k => k.toLowerCase().includes(q));
+  };
+
   const prevInitialDataJson = React.useRef<string>('');
   useEffect(() => {
     if (!initialData) return;
@@ -140,7 +158,13 @@ export default function CitizenForm({
   }, [initialData]);
 
   const generateRandomPassword = () => {
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    const array = new Uint32Array(1);
+    if (typeof window !== 'undefined' && window.crypto) {
+      window.crypto.getRandomValues(array);
+    } else {
+      array[0] = 5432;
+    }
+    const randomNum = 1000 + (array[0] % 9000);
     const newPass = `Absher#${randomNum}!`;
     handleChange('appPassword', newPass);
   };
@@ -180,7 +204,72 @@ export default function CitizenForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* ── Section Search Bar & Category Filter ── */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs space-y-3 sticky top-3 z-20 backdrop-blur-md bg-white/95">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search form sections or fields (e.g. Passport, Driving License, Resident ID, Sponsor, Hijri, Insurance, Visa...)"
+              className="w-full pl-10 pr-9 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-xs font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-md cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            ) : null}
+          </div>
+          {searchQuery || selectedCategory !== 'ALL' ? (
+            <button
+              type="button"
+              onClick={() => { setSearchQuery(''); setSelectedCategory('ALL'); }}
+              className="px-3 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer shrink-0"
+            >
+              Reset Filter
+            </button>
+          ) : null}
+        </div>
+
+        {/* Category Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+          <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-0.5 mr-1" />
+          {[
+            { id: 'ALL', label: 'All Sections (9)' },
+            { id: 'PERSONAL', label: 'Personal Details' },
+            { id: 'CREDENTIALS', label: 'App Login' },
+            { id: 'SPONSOR', label: 'Profession & Sponsor' },
+            { id: 'RESIDENT_ID', label: 'Resident ID' },
+            { id: 'DRIVING_LICENSE', label: 'Driving License' },
+            { id: 'PASSPORT', label: 'Passport' },
+            { id: 'INSURANCE', label: 'Insurance' },
+            { id: 'HAJJ', label: 'Hajj' },
+            { id: 'VISA', label: 'Visa Details' },
+          ].map(cat => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => { setSelectedCategory(cat.id); setSearchQuery(''); }}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 cursor-pointer ${
+                selectedCategory === cat.id && !searchQuery
+                  ? 'bg-emerald-700 text-white shadow-xs scale-[1.02]'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200/80 border border-slate-200/80'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* 1. Personal Identity */}
+      {isSectionVisible('PERSONAL', 'Personal Details', ['national id', 'iqama', 'full name', 'arabic', 'english', 'nationality', 'date of birth', 'gregorian', 'hijri', 'place of birth', 'birth city', 'birth country', 'marital status', 'sponsorship transfers', 'single', 'married', 'divorced', 'widowed', 'religion']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
@@ -411,11 +500,12 @@ export default function CitizenForm({
                 type="text"
                 value={formData.sponsorshipTransfers || ''}
                 onChange={(e) => handleChange('sponsorshipTransfers', e.target.value)}
-                placeholder="Transfers count (e.g. 0)"
+                placeholder="Transfers count (e.g. 2)"
                 className={INPUT_CLASSES}
               />
             </div>
           </div>
+
 
           {/* Religion */}
           <div>
@@ -475,8 +565,10 @@ export default function CitizenForm({
           </div>
         </div>
       </div>
+      )}
 
       {/* 2. Mobile App Login Credentials */}
+      {isSectionVisible('CREDENTIALS', 'Mobile App Login Credentials', ['app password', 'mobile login', 'account status', 'active', 'suspended', 'password']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
@@ -564,10 +656,10 @@ export default function CitizenForm({
           </div>
         </div>
       </div>
-
-
+      )}
 
       {/* 5. Employment & Sponsor Information */}
+      {isSectionVisible('SPONSOR', 'Document — Profession & Sponsorship', ['profession', 'sponsor id', 'sponsor name', 'work place', 'travel status', 'establishment status', 'green', 'inside kingdom']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
@@ -702,8 +794,10 @@ export default function CitizenForm({
           </div>
         </div>
       </div>
+      )}
 
       {/* ── Resident ID Card Document Fields ── */}
+      {isSectionVisible('RESIDENT_ID', 'Document — Resident ID', ['resident id', 'issuing place', 'issue place', 'expiry date', 'version number', 'issuing date', 'digits', 'barcode']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold border border-amber-100/80">
@@ -804,113 +898,227 @@ export default function CitizenForm({
           </div>
         </div>
       </div>
+      )}
 
       {/* ── Driving License Document Fields ── */}
+      {isSectionVisible('DRIVING_LICENSE', 'Document — Driving License', ['driving license', 'license type', 'private', 'commercial', 'blood type', 'issue date', 'expiry date', 'status']) && (
+      <div className={CARD_CLASSES}>
+        <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold border border-blue-100/80">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900 text-sm">Document — Driving License (رخصة القيادة)</h3>
+              <p className="text-xs text-slate-500">License type, dates and blood type printed on the Driving License card</p>
+            </div>
+          </div>
+          <label className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors shrink-0 select-none">
+            <input
+              type="checkbox"
+              checked={formData.hasDrivingLicense !== false}
+              onChange={(e) => handleChange('hasDrivingLicense', e.target.checked)}
+              className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300 cursor-pointer"
+            />
+            <span className={`text-xs font-bold ${formData.hasDrivingLicense !== false ? 'text-emerald-700' : 'text-slate-500'}`}>
+              {formData.hasDrivingLicense !== false ? '✓ License Active (متاحة)' : '✕ License Disabled (غير متاحة)'}
+            </span>
+          </label>
+        </div>
+
+        {formData.hasDrivingLicense === false ? (
+          <div className="p-4 rounded-xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs font-medium flex items-center gap-2">
+            <span className="font-bold">⚠️ Driving License Status:</span>
+            <span>Disabled for this citizen. The mobile app will display &quot;No driving license available&quot; when accessed.</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+            {/* License Type */}
+            <div>
+              <label className={LABEL_CLASSES}>License Type — English</label>
+              <input
+                type="text"
+                value={formData.licenseTypeEn || ''}
+                onChange={(e) => handleChange('licenseTypeEn', e.target.value)}
+                placeholder="e.g. PRIVATE  /  COMMERCIAL"
+                className={INPUT_CLASSES}
+              />
+            </div>
+            <div>
+              <label className={LABEL_CLASSES}>License Type — Arabic (نوع الرخصة)</label>
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.licenseTypeAr || ''}
+                onChange={(e) => handleChange('licenseTypeAr', e.target.value)}
+                placeholder="مثال: خاصة  /  تجارية"
+                className={`${INPUT_CLASSES} font-bold`}
+              />
+            </div>
+
+            {/* License Issue Date */}
+            <div>
+              <label className={LABEL_CLASSES}>License Issue Date — English (تاريخ الإصدار)</label>
+              <input
+                type="text"
+                value={formData.licenseIssueDateEn || ''}
+                onChange={(e) => handleChange('licenseIssueDateEn', e.target.value)}
+                placeholder="DD/MM/YYYY  (e.g. 01/10/2020)"
+                className={`${INPUT_CLASSES} font-mono`}
+              />
+            </div>
+            <div>
+              <label className={LABEL_CLASSES}>License Issue Date — Arabic (بالأرقام العربية)</label>
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.licenseIssueDateAr || ''}
+                onChange={(e) => handleChange('licenseIssueDateAr', e.target.value)}
+                placeholder="٠١/١٠/١٤٤٢  (Eastern-Arabic digits)"
+                className={`${INPUT_CLASSES} font-mono font-bold`}
+              />
+            </div>
+
+            {/* License Expiry Date */}
+            <div>
+              <label className={LABEL_CLASSES}>License Expiry Date — English (تاريخ الانتهاء)</label>
+              <input
+                type="text"
+                value={formData.licenseExpiryDateEn || ''}
+                onChange={(e) => handleChange('licenseExpiryDateEn', e.target.value)}
+                placeholder="DD/MM/YYYY  (e.g. 01/10/2030)"
+                className={`${INPUT_CLASSES} font-mono`}
+              />
+            </div>
+            <div>
+              <label className={LABEL_CLASSES}>License Expiry Date — Arabic (بالأرقام العربية)</label>
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.licenseExpiryDateAr || ''}
+                onChange={(e) => handleChange('licenseExpiryDateAr', e.target.value)}
+                placeholder="٠١/١٠/١٤٥٢  (Eastern-Arabic digits)"
+                className={`${INPUT_CLASSES} font-mono font-bold`}
+              />
+            </div>
+
+            {/* Blood Type */}
+            <div className="md:col-span-2">
+              <label className={LABEL_CLASSES}>Blood Type (فصيلة الدم)</label>
+              <select
+                value={formData.bloodType || ''}
+                onChange={(e) => handleChange('bloodType', e.target.value)}
+                className={SELECT_CLASSES}
+              >
+                <option value="">— Select blood type —</option>
+                <option value="A+">A+ (أ موجب)</option>
+                <option value="A-">A− (أ سالب)</option>
+                <option value="B+">B+ (ب موجب)</option>
+                <option value="B-">B− (ب سالب)</option>
+                <option value="AB+">AB+ (أب موجب)</option>
+                <option value="AB-">AB− (أب سالب)</option>
+                <option value="O+">O+ (و موجب)</option>
+                <option value="O-">O− (و سالب)</option>
+              </select>
+            </div>
+          </div>
+        )}
+      </div>
+      )}
+
+      {/* Document — Passport */}
+      {isSectionVisible('PASSPORT', 'Document — Passport', ['passport', 'passport number', 'passport type', 'normal', 'issuing city', 'dhaka', 'status', 'valid']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold border border-blue-100/80">
-            <ShieldCheck className="w-4 h-4" />
+          <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold border border-amber-100/80">
+            <BookOpen className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Document — Driving License (رخصة القيادة)</h3>
-            <p className="text-xs text-slate-500">License type, dates and blood type printed on the Driving License card</p>
+            <h3 className="font-bold text-slate-900 text-sm">Document — Passport (جواز السفر)</h3>
+            <p className="text-xs text-slate-500 font-medium">Official biometric passport details shown in My Passport screen</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-          {/* License Type */}
+          {/* Passport Number */}
           <div>
-            <label className={LABEL_CLASSES}>License Type — English</label>
+            <label className={LABEL_CLASSES}>Passport Number (رقم جواز السفر)</label>
             <input
               type="text"
-              value={formData.licenseTypeEn || ''}
-              onChange={(e) => handleChange('licenseTypeEn', e.target.value)}
-              placeholder="e.g. PRIVATE  /  COMMERCIAL"
+              value={formData.passportNumber || ''}
+              onChange={(e) => handleChange('passportNumber', e.target.value.toUpperCase())}
+              placeholder="e.g. EM0962248"
+              className={`${INPUT_CLASSES} font-mono font-bold tracking-wider uppercase`}
+            />
+          </div>
+
+          {/* Passport Type */}
+          <div>
+            <label className={LABEL_CLASSES}>Passport Type (نوع الجواز)</label>
+            <input
+              type="text"
+              value={formData.passportType || 'Normal'}
+              onChange={(e) => handleChange('passportType', e.target.value)}
+              placeholder="e.g. Normal / عادية"
               className={INPUT_CLASSES}
             />
           </div>
-          <div>
-            <label className={LABEL_CLASSES}>License Type — Arabic (نوع الرخصة)</label>
-            <input
-              type="text"
-              dir="rtl"
-              value={formData.licenseTypeAr || ''}
-              onChange={(e) => handleChange('licenseTypeAr', e.target.value)}
-              placeholder="مثال: خاصة  /  تجارية"
-              className={`${INPUT_CLASSES} font-bold`}
-            />
-          </div>
 
-          {/* License Issue Date */}
+          {/* Passport Issuing Date */}
           <div>
-            <label className={LABEL_CLASSES}>License Issue Date — English (تاريخ الإصدار)</label>
+            <label className={LABEL_CLASSES}>Issuing Date (تاريخ الإصدار)</label>
             <input
               type="text"
-              value={formData.licenseIssueDateEn || ''}
-              onChange={(e) => handleChange('licenseIssueDateEn', e.target.value)}
-              placeholder="DD/MM/YYYY  (e.g. 01/10/2020)"
+              value={formData.passportIssueDate || ''}
+              onChange={(e) => handleChange('passportIssueDate', e.target.value)}
+              placeholder="e.g. 07/01/2025"
               className={`${INPUT_CLASSES} font-mono`}
             />
           </div>
-          <div>
-            <label className={LABEL_CLASSES}>License Issue Date — Arabic (بالأرقام العربية)</label>
-            <input
-              type="text"
-              dir="rtl"
-              value={formData.licenseIssueDateAr || ''}
-              onChange={(e) => handleChange('licenseIssueDateAr', e.target.value)}
-              placeholder="٠١/١٠/١٤٤٢  (Eastern-Arabic digits)"
-              className={`${INPUT_CLASSES} font-mono font-bold`}
-            />
-          </div>
 
-          {/* License Expiry Date */}
+          {/* Passport Expiry Date */}
           <div>
-            <label className={LABEL_CLASSES}>License Expiry Date — English (تاريخ الانتهاء)</label>
+            <label className={LABEL_CLASSES}>Expiry Date (تاريخ الانتهاء)</label>
             <input
               type="text"
-              value={formData.licenseExpiryDateEn || ''}
-              onChange={(e) => handleChange('licenseExpiryDateEn', e.target.value)}
-              placeholder="DD/MM/YYYY  (e.g. 01/10/2030)"
+              value={formData.passportExpiryDate || ''}
+              onChange={(e) => handleChange('passportExpiryDate', e.target.value)}
+              placeholder="e.g. 06/01/2030"
               className={`${INPUT_CLASSES} font-mono`}
             />
           </div>
+
+          {/* Issuing City */}
           <div>
-            <label className={LABEL_CLASSES}>License Expiry Date — Arabic (بالأرقام العربية)</label>
+            <label className={LABEL_CLASSES}>Issuing City (مكان الإصدار)</label>
             <input
               type="text"
               dir="rtl"
-              value={formData.licenseExpiryDateAr || ''}
-              onChange={(e) => handleChange('licenseExpiryDateAr', e.target.value)}
-              placeholder="٠١/١٠/١٤٥٢  (Eastern-Arabic digits)"
-              className={`${INPUT_CLASSES} font-mono font-bold`}
+              value={formData.passportIssuingCity || ''}
+              onChange={(e) => handleChange('passportIssuingCity', e.target.value)}
+              placeholder="مكان الإصدار (مثال: دكا)"
+              className={INPUT_CLASSES}
             />
           </div>
 
-          {/* Blood Type */}
-          <div className="md:col-span-2">
-            <label className={LABEL_CLASSES}>Blood Type (فصيلة الدم)</label>
-            <select
-              value={formData.bloodType || ''}
-              onChange={(e) => handleChange('bloodType', e.target.value)}
-              className={SELECT_CLASSES}
-            >
-              <option value="">— Select blood type —</option>
-              <option value="A+">A+ (أ موجب)</option>
-              <option value="A-">A− (أ سالب)</option>
-              <option value="B+">B+ (ب موجب)</option>
-              <option value="B-">B− (ب سالب)</option>
-              <option value="AB+">AB+ (أب موجب)</option>
-              <option value="AB-">AB− (أب سالب)</option>
-              <option value="O+">O+ (و موجب)</option>
-              <option value="O-">O− (و سالب)</option>
-            </select>
+          {/* Passport Status */}
+          <div>
+            <label className={LABEL_CLASSES}>Status (الحالة)</label>
+            <input
+              type="text"
+              value={formData.passportStatus || 'Valid'}
+              onChange={(e) => handleChange('passportStatus', e.target.value)}
+              placeholder="e.g. Valid / -"
+              className={INPUT_CLASSES}
+            />
           </div>
         </div>
       </div>
+      )}
 
       {/* 6. Health Insurance */}
+      {isSectionVisible('INSURANCE', 'Health Insurance', ['health insurance', 'insurance company', 'policy', 'bupa', 'status', 'valid', 'expiry', 'issuing date']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
@@ -979,8 +1187,10 @@ export default function CitizenForm({
           </div>
         </div>
       </div>
+      )}
 
       {/* 7. Hajj Details */}
+      {isSectionVisible('HAJJ', 'Hajj Details', ['hajj', 'hajj eligibility', 'eligible', 'last hajj year']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
@@ -1016,8 +1226,10 @@ export default function CitizenForm({
           </div>
         </div>
       </div>
+      )}
 
       {/* 8. Visa Details */}
+      {isSectionVisible('VISA', 'Visa Details', ['visa', 'visa number', 'visa type', 'exit date', 'entry']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold border border-blue-100/80">
@@ -1061,6 +1273,7 @@ export default function CitizenForm({
           </div>
         </div>
       </div>
+      )}
 
       {/* Submit Action */}
       <div className="flex justify-end gap-3 pt-3">

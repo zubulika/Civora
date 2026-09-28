@@ -61,11 +61,24 @@ import com.civora.app.core.designsystem.AbsherTextMuted
 import com.civora.app.core.designsystem.AppThemeMode
 import com.civora.app.core.designsystem.LocalThemeMode
 
+import androidx.compose.runtime.collectAsState
+import com.civora.app.data.mock.CivoraMockDataSource
+import com.civora.app.data.repository.UserRepository
+
 @Composable
 fun PassportDetailScreen(
+    userRepository: UserRepository? = null,
     onBackClick: () -> Unit
 ) {
     val themeMode = LocalThemeMode.current
+    val userProfileState = userRepository?.userProfile?.collectAsState(initial = CivoraMockDataSource.currentUser)
+    val user = userProfileState?.value ?: CivoraMockDataSource.currentUser
+    val passNum = user.passportNumber.ifBlank { "EM0962248" }
+    val passType = user.passportType.ifBlank { "Normal Passport" }
+    val passIssue = user.passportIssueDate.ifBlank { "07/01/2025" }
+    val passExpiry = user.passportExpiryDate.ifBlank { "06/01/2030" }
+    val passCity = user.passportIssuingCity.ifBlank { "دكا" }
+    val passStatus = user.passportStatus.ifBlank { "-" }
     val systemDark = isSystemInDarkTheme()
     val isDark = when (themeMode) {
         AppThemeMode.LIGHT -> false
@@ -214,13 +227,13 @@ fun PassportDetailScreen(
                                 Column {
                                     Text(text = "Passport Number", color = textMuted, fontSize = 12.sp)
                                     Spacer(modifier = Modifier.height(2.dp))
-                                    Text(text = "EM0962248", color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
+                                    Text(text = passNum, color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
                                 }
                                 IconButton(
                                     onClick = {
                                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                        clipboard.setPrimaryClip(ClipData.newPlainText("Passport Number", "EM0962248"))
-                                        Toast.makeText(context, "Copied EM0962248", Toast.LENGTH_SHORT).show()
+                                        clipboard.setPrimaryClip(ClipData.newPlainText("Passport Number", passNum))
+                                        Toast.makeText(context, "Copied $passNum", Toast.LENGTH_SHORT).show()
                                     },
                                     modifier = Modifier.size(36.dp)
                                 ) {
@@ -237,35 +250,35 @@ fun PassportDetailScreen(
                             Column {
                                 Text(text = "Type", color = textMuted, fontSize = 12.sp)
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Text(text = "Normal", color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
+                                Text(text = passType, color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
                             }
 
                             // Issuing Date
                             Column {
                                 Text(text = "Issuing Date", color = textMuted, fontSize = 12.sp)
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Text(text = "07/01/2025", color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
+                                Text(text = passIssue, color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
                             }
 
                             // Expiry Date
                             Column {
                                 Text(text = "Expiry Date", color = textMuted, fontSize = 12.sp)
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Text(text = "06/01/2030", color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
+                                Text(text = passExpiry, color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
                             }
 
                             // Issuing City
                             Column {
                                 Text(text = "Issuing City", color = textMuted, fontSize = 12.sp)
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Text(text = "دكا", color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
+                                Text(text = passCity, color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
                             }
 
                             // Status
                             Column {
                                 Text(text = "Status", color = textMuted, fontSize = 12.sp)
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Text(text = "-", color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
+                                Text(text = passStatus, color = textMuted.copy(alpha = 0.85f), fontSize = 15.sp)
                             }
                         }
                     }

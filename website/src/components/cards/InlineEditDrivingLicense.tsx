@@ -278,6 +278,15 @@ export default function InlineEditDrivingLicense({
           boxShadow: '0 12px 32px -4px rgba(12,61,46,0.18), 0 4px 12px -2px rgba(0,0,0,0.08)',
         }}
       >
+        {user.hasDrivingLicense === false && (
+          <div className="absolute inset-0 z-30 bg-slate-900/85 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-2 border border-amber-500/40">
+              <ShieldCheck className="w-6 h-6 opacity-60" />
+            </div>
+            <h4 className="text-white font-bold text-sm">Driving License Disabled (غير متاحة)</h4>
+            <p className="text-slate-300 text-xs mt-1 max-w-xs">This citizen currently has no active driving license. Toggle ON in the Driving License form section to enable.</p>
+          </div>
+        )}
         {!showQrBack ? (
           <div className="absolute inset-0">
             {/* Photo */}

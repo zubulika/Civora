@@ -51,12 +51,18 @@ import com.civora.app.core.model.DocumentType
 @Composable
 fun WalletScreen(
     viewModel: WalletViewModel,
+    userRepository: com.civora.app.data.repository.UserRepository? = null,
     onNavigateToNotifications: () -> Unit,
     onNavigateToDrivingLicense: () -> Unit = {},
     onNavigateToDigitalId: () -> Unit = {}
 ) {
     val documents by viewModel.documents.collectAsState()
     val selectedId by viewModel.selectedDocumentId.collectAsState()
+
+    val userProfileState = userRepository?.userProfile?.collectAsState(initial = com.civora.app.data.mock.CivoraMockDataSource.currentUser)
+    val user = userProfileState?.value ?: com.civora.app.data.mock.CivoraMockDataSource.currentUser
+
+    val displayedDocuments = if (user.hasDrivingLicense) documents else documents.filter { it.type != DocumentType.DRIVING_LICENSE }
 
     Column(
         modifier = Modifier
@@ -87,7 +93,7 @@ fun WalletScreen(
                 )
             }
 
-            items(documents, key = { it.id }) { doc ->
+            items(displayedDocuments, key = { it.id }) { doc ->
                 val isExpanded = selectedId == doc.id
                 DigitalDocumentCard(
                     document = doc,

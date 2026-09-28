@@ -35,6 +35,7 @@ export interface UserProfile {
   expiryDateDigits: string; // e.g. "081026"
   issueDateDigits: string; // e.g. "070926"
   photoUrl?: string;
+  hasDrivingLicense?: boolean;
   licenseTypeEn?: string;
   licenseTypeAr?: string;
   licenseIssueDateEn?: string;
@@ -44,6 +45,13 @@ export interface UserProfile {
   bloodType?: string;
   // Resident ID specific
   residentIdIssuingDate?: string;
+  // Passport specific
+  passportNumber?: string;
+  passportType?: string;
+  passportIssueDate?: string;
+  passportExpiryDate?: string;
+  passportIssuingCity?: string;
+  passportStatus?: string;
   // Visa specific
   visaNumber?: string;
   visaType?: string;

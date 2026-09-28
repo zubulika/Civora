@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.sp
 import com.civora.app.R
 import com.civora.app.core.components.UserAvatarImage
 import com.civora.app.core.components.DynamicMuqeemCard
-import com.civora.app.core.components.AbsherCornerPattern
 import com.civora.app.core.designsystem.AbsherCardBg
 import com.civora.app.core.designsystem.AbsherCardBorder
 import com.civora.app.core.designsystem.AbsherDarkSection
@@ -74,6 +73,8 @@ import com.civora.app.core.designsystem.AbsherMint
 import com.civora.app.core.designsystem.AbsherMintFAB
 import com.civora.app.core.designsystem.AbsherSearchBg
 import com.civora.app.core.designsystem.AbsherTextMuted
+import com.civora.app.core.designsystem.AppLanguage
+import com.civora.app.core.designsystem.LanguageState
 import com.civora.app.core.designsystem.AppThemeMode
 import com.civora.app.core.designsystem.ThemeState
 
@@ -212,6 +213,7 @@ fun DashboardScreen(
                         ) {
                             DynamicMuqeemCard(
                                 user = state.user,
+                                language = LanguageState.currentLanguage,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
@@ -226,15 +228,6 @@ fun DashboardScreen(
                             .background(quickAccessBg)
                             .padding(horizontal = 16.dp, vertical = 16.dp)
                     ) {
-                        AbsherCornerPattern(
-                            isDark = isDark,
-                            modifier = Modifier
-                                .fillMaxWidth(0.55f)
-                                // Keep the login pattern inside the Quick Access
-                                // header strip; it must not continue behind cards.
-                                .height(78.dp)
-                                .align(Alignment.TopStart)
-                        )
                         if (!isDark) {
                             Box(
                                 modifier = Modifier

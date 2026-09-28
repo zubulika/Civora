@@ -187,8 +187,8 @@ export default function CitizenForm({
             <User className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Personal Information</h3>
-            <p className="text-xs text-slate-500">Citizen & Resident demographics and official identity</p>
+            <h3 className="font-bold text-slate-900 text-sm">Personal Details</h3>
+            <p className="text-xs text-slate-500">Citizen &amp; Resident demographics and official identity</p>
           </div>
         </div>
 
@@ -574,8 +574,8 @@ export default function CitizenForm({
             <Briefcase className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Profession & Sponsorship</h3>
-            <p className="text-xs text-slate-500">Official Labor & Establishment data appearing on the card</p>
+            <h3 className="font-bold text-slate-900 text-sm">Document — Profession &amp; Sponsorship</h3>
+            <p className="text-xs text-slate-500">Official Labor &amp; Establishment data appearing on the Resident ID card</p>
           </div>
         </div>
 
@@ -699,6 +699,213 @@ export default function CitizenForm({
                 className={INPUT_CLASSES}
               />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Resident ID Card Document Fields ── */}
+      <div className={CARD_CLASSES}>
+        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
+          <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold border border-amber-100/80">
+            <FileText className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900 text-sm">Document — Resident ID (هوية مقيم)</h3>
+            <p className="text-xs text-slate-500">Date, version and identifier fields printed on the Resident ID card</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          {/* Expiry Date */}
+          <div>
+            <label className={LABEL_CLASSES}>Expiry Date — English (تاريخ الانتهاء)</label>
+            <input
+              type="text"
+              value={formData.expiryDateEn}
+              onChange={(e) => handleChange('expiryDateEn', e.target.value)}
+              placeholder="YYYY/MM/DD  (e.g. 2026/10/08)"
+              className={`${INPUT_CLASSES} font-mono`}
+            />
+          </div>
+
+          <div>
+            <label className={LABEL_CLASSES}>Expiry Date — Arabic (تاريخ الانتهاء بالأرقام العربية)</label>
+            <input
+              type="text"
+              dir="rtl"
+              value={formData.expiryDateAr}
+              onChange={(e) => handleChange('expiryDateAr', e.target.value)}
+              placeholder="١٤٤٨/٠٤/١٢  (Hijri, Eastern-Arabic digits)"
+              className={`${INPUT_CLASSES} font-mono font-bold`}
+            />
+          </div>
+
+          {/* Date of Birth — Arabic digits variant */}
+          <div>
+            <label className={LABEL_CLASSES}>Date of Birth — Arabic digits (تاريخ الميلاد بالأرقام العربية)</label>
+            <input
+              type="text"
+              dir="rtl"
+              value={formData.dateOfBirthAr}
+              onChange={(e) => handleChange('dateOfBirthAr', e.target.value)}
+              placeholder="١٤٠٨/١٠/١٨  (Eastern-Arabic digits)"
+              className={`${INPUT_CLASSES} font-mono font-bold`}
+            />
+          </div>
+
+          {/* Version Number */}
+          <div>
+            <label className={LABEL_CLASSES}>Card Version Number (رقم النسخة)</label>
+            <input
+              type="text"
+              dir="rtl"
+              value={formData.versionNumber}
+              onChange={(e) => handleChange('versionNumber', e.target.value)}
+              placeholder="٢  (Eastern-Arabic, e.g. ١، ٢، ٣)"
+              className={`${INPUT_CLASSES} font-bold`}
+            />
+          </div>
+
+          {/* Expiry Date Digits — 6-digit barcode format */}
+          <div>
+            <label className={LABEL_CLASSES}>Expiry Date — 6-digit barcode (DDMMYY)</label>
+            <input
+              type="text"
+              value={formData.expiryDateDigits}
+              onChange={(e) => handleChange('expiryDateDigits', e.target.value)}
+              placeholder="e.g. 081026  →  08 Oct 2026"
+              className={`${INPUT_CLASSES} font-mono`}
+            />
+          </div>
+
+          {/* Issue Date Digits — 6-digit barcode format */}
+          <div>
+            <label className={LABEL_CLASSES}>Issue Date — 6-digit barcode (DDMMYY)</label>
+            <input
+              type="text"
+              value={formData.issueDateDigits}
+              onChange={(e) => handleChange('issueDateDigits', e.target.value)}
+              placeholder="e.g. 070926  →  07 Sep 2026"
+              className={`${INPUT_CLASSES} font-mono`}
+            />
+          </div>
+
+          {/* Resident ID Issuing Date */}
+          <div className="md:col-span-2">
+            <label className={LABEL_CLASSES}>Resident ID Card — Issuing Date (تاريخ إصدار البطاقة)</label>
+            <input
+              type="text"
+              value={formData.residentIdIssuingDate || ''}
+              onChange={(e) => handleChange('residentIdIssuingDate', e.target.value)}
+              placeholder="DD/MM/YYYY  (e.g. 07/09/2026)"
+              className={`${INPUT_CLASSES} font-mono`}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Driving License Document Fields ── */}
+      <div className={CARD_CLASSES}>
+        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
+          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold border border-blue-100/80">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900 text-sm">Document — Driving License (رخصة القيادة)</h3>
+            <p className="text-xs text-slate-500">License type, dates and blood type printed on the Driving License card</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          {/* License Type */}
+          <div>
+            <label className={LABEL_CLASSES}>License Type — English</label>
+            <input
+              type="text"
+              value={formData.licenseTypeEn || ''}
+              onChange={(e) => handleChange('licenseTypeEn', e.target.value)}
+              placeholder="e.g. PRIVATE  /  COMMERCIAL"
+              className={INPUT_CLASSES}
+            />
+          </div>
+          <div>
+            <label className={LABEL_CLASSES}>License Type — Arabic (نوع الرخصة)</label>
+            <input
+              type="text"
+              dir="rtl"
+              value={formData.licenseTypeAr || ''}
+              onChange={(e) => handleChange('licenseTypeAr', e.target.value)}
+              placeholder="مثال: خاصة  /  تجارية"
+              className={`${INPUT_CLASSES} font-bold`}
+            />
+          </div>
+
+          {/* License Issue Date */}
+          <div>
+            <label className={LABEL_CLASSES}>License Issue Date — English (تاريخ الإصدار)</label>
+            <input
+              type="text"
+              value={formData.licenseIssueDateEn || ''}
+              onChange={(e) => handleChange('licenseIssueDateEn', e.target.value)}
+              placeholder="DD/MM/YYYY  (e.g. 01/10/2020)"
+              className={`${INPUT_CLASSES} font-mono`}
+            />
+          </div>
+          <div>
+            <label className={LABEL_CLASSES}>License Issue Date — Arabic (بالأرقام العربية)</label>
+            <input
+              type="text"
+              dir="rtl"
+              value={formData.licenseIssueDateAr || ''}
+              onChange={(e) => handleChange('licenseIssueDateAr', e.target.value)}
+              placeholder="٠١/١٠/١٤٤٢  (Eastern-Arabic digits)"
+              className={`${INPUT_CLASSES} font-mono font-bold`}
+            />
+          </div>
+
+          {/* License Expiry Date */}
+          <div>
+            <label className={LABEL_CLASSES}>License Expiry Date — English (تاريخ الانتهاء)</label>
+            <input
+              type="text"
+              value={formData.licenseExpiryDateEn || ''}
+              onChange={(e) => handleChange('licenseExpiryDateEn', e.target.value)}
+              placeholder="DD/MM/YYYY  (e.g. 01/10/2030)"
+              className={`${INPUT_CLASSES} font-mono`}
+            />
+          </div>
+          <div>
+            <label className={LABEL_CLASSES}>License Expiry Date — Arabic (بالأرقام العربية)</label>
+            <input
+              type="text"
+              dir="rtl"
+              value={formData.licenseExpiryDateAr || ''}
+              onChange={(e) => handleChange('licenseExpiryDateAr', e.target.value)}
+              placeholder="٠١/١٠/١٤٥٢  (Eastern-Arabic digits)"
+              className={`${INPUT_CLASSES} font-mono font-bold`}
+            />
+          </div>
+
+          {/* Blood Type */}
+          <div className="md:col-span-2">
+            <label className={LABEL_CLASSES}>Blood Type (فصيلة الدم)</label>
+            <select
+              value={formData.bloodType || ''}
+              onChange={(e) => handleChange('bloodType', e.target.value)}
+              className={SELECT_CLASSES}
+            >
+              <option value="">— Select blood type —</option>
+              <option value="A+">A+ (أ موجب)</option>
+              <option value="A-">A− (أ سالب)</option>
+              <option value="B+">B+ (ب موجب)</option>
+              <option value="B-">B− (ب سالب)</option>
+              <option value="AB+">AB+ (أب موجب)</option>
+              <option value="AB-">AB− (أب سالب)</option>
+              <option value="O+">O+ (و موجب)</option>
+              <option value="O-">O− (و سالب)</option>
+            </select>
           </div>
         </div>
       </div>

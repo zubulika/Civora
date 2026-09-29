@@ -104,9 +104,17 @@ fun AbsherLoginFormScreen(
         focusManager.clearFocus()
         showStayLoggedInDialog = false
         if (viewModel != null) {
-            viewModel.login(username, password, keepSession = true)
+            viewModel.login(
+                identifier = username,
+                password = password,
+                keepSession = true,
+                onSuccess = {
+                    onLoginSubmit()
+                }
+            )
+        } else {
+            onLoginSubmit()
         }
-        onLoginSubmit()
     }
 
     if (showStayLoggedInDialog) {

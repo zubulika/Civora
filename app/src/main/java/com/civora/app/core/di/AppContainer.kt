@@ -13,7 +13,10 @@ import com.civora.app.domain.usecase.SubmitServiceRequestUseCase
 
 class AppContainer(context: Context? = null) {
     val authRepository = AuthRepository(context = context)
-    val userRepository = UserRepository(initialIdentifier = authRepository.savedUserIdentifier)
+    val userRepository = UserRepository(
+        context = context,
+        initialIdentifier = authRepository.savedUserIdentifier
+    )
     val documentRepository = DocumentRepository()
     val serviceRepository = ServiceRepository()
     val requestRepository = RequestRepository()

@@ -143,14 +143,7 @@ class AuthRepository(
             }
 
             if (matchedDoc == null) {
-                val mock = CivoraMockDataSource.currentUser.copy(
-                    nationalId = if (cleanId.isNotBlank()) cleanId else CivoraMockDataSource.currentUser.nationalId
-                )
-                if (keepSession) {
-                    saveLocalSession(cleanId, mock.id)
-                    saveRememberedCredentials(cleanId, password)
-                }
-                return Result.success(mock)
+                return Result.failure(Exception("Citizen record not found. Please verify your National ID / Iqama."))
             }
 
             // Check account status
@@ -176,15 +169,7 @@ class AuthRepository(
 
             Result.success(profile)
         } catch (e: Exception) {
-            val cleanId = identifier.trim()
-            val mock = CivoraMockDataSource.currentUser.copy(
-                nationalId = if (cleanId.isNotBlank()) cleanId else CivoraMockDataSource.currentUser.nationalId
-            )
-            if (keepSession) {
-                saveLocalSession(cleanId, mock.id)
-                saveRememberedCredentials(cleanId, password)
-            }
-            Result.success(mock)
+            Result.failure(Exception(e.localizedMessage ?: "Authentication failed. Please verify your network and credentials."))
         }
     }
 

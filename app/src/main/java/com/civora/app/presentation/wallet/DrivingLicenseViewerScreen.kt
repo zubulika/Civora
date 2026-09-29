@@ -59,8 +59,8 @@ fun DrivingLicenseViewerScreen(
 ) {
     val currentLanguage = LanguageState.currentLanguage
 
-    val userProfileState = userRepository?.userProfile?.collectAsState(initial = CivoraMockDataSource.currentUser)
-    val user = userProfileState?.value ?: CivoraMockDataSource.currentUser
+    val userProfileState = userRepository?.userProfile?.collectAsState(initial = userRepository.currentUserProfile)
+    val user = userProfileState?.value ?: userRepository?.currentUserProfile ?: CivoraMockDataSource.currentUser
 
     if (!user.hasDrivingLicense) {
         val muted = MaterialTheme.colorScheme.onSurfaceVariant

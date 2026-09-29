@@ -239,7 +239,10 @@ fun CivoraNavHost(
         // 1. Dashboard
         composable(Screen.Dashboard.route) {
             val viewModel: DashboardViewModel = viewModel(
-                factory = DashboardViewModel.provideFactory(container.getDashboardDataUseCase)
+                factory = DashboardViewModel.provideFactory(
+                    container.getDashboardDataUseCase,
+                    container.userRepository
+                )
             )
             DashboardScreen(
                 viewModel = viewModel,
@@ -352,6 +355,7 @@ fun CivoraNavHost(
                 onNavigateToDrivingLicense = { navController.navigate(Screen.DrivingLicenseViewer.route) },
                 onLogoutClick = {
                     container.authRepository.signOut()
+                    container.userRepository.clearUser()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -392,6 +396,7 @@ fun CivoraNavHost(
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
                     container.authRepository.signOut()
+                    container.userRepository.clearUser()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }

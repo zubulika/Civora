@@ -70,8 +70,8 @@ fun DigitalIdViewerScreen(
 ) {
     val currentLanguage = LanguageState.currentLanguage
 
-    val userProfileState = userRepository?.userProfile?.collectAsState(initial = CivoraMockDataSource.currentUser)
-    val user = userProfileState?.value ?: CivoraMockDataSource.currentUser
+    val userProfileState = userRepository?.userProfile?.collectAsState(initial = userRepository.currentUserProfile)
+    val user = userProfileState?.value ?: userRepository?.currentUserProfile ?: CivoraMockDataSource.currentUser
 
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()

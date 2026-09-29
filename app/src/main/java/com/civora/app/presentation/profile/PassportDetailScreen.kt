@@ -71,8 +71,8 @@ fun PassportDetailScreen(
     onBackClick: () -> Unit
 ) {
     val themeMode = LocalThemeMode.current
-    val userProfileState = userRepository?.userProfile?.collectAsState(initial = CivoraMockDataSource.currentUser)
-    val user = userProfileState?.value ?: CivoraMockDataSource.currentUser
+    val userProfileState = userRepository?.userProfile?.collectAsState(initial = userRepository.currentUserProfile)
+    val user = userProfileState?.value ?: userRepository?.currentUserProfile ?: CivoraMockDataSource.currentUser
     val passNum = user.passportNumber.ifBlank { "EM0962248" }
     val passType = user.passportType.ifBlank { "Normal Passport" }
     val passIssue = user.passportIssueDate.ifBlank { "07/01/2025" }

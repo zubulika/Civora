@@ -20,7 +20,7 @@ class ProfileViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = CivoraMockDataSource.currentUser
+            initialValue = userRepository.currentUserProfile
         )
 
     fun updateProfile(updated: UserProfile) {

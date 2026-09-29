@@ -26,6 +26,12 @@ class AuthViewModel(
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
+    val savedUsername: String
+        get() = authRepository.savedUsername
+
+    val savedPassword: String
+        get() = authRepository.savedPassword
+
     init {
         // Observe currentUser
         viewModelScope.launch {
@@ -42,7 +48,12 @@ class AuthViewModel(
         }
     }
 
-    fun login(identifier: String, password: String, onSuccess: () -> Unit) {
+    fun login(
+        identifier: String,
+        password: String,
+        keepSession: Boolean = false,
+        onSuccess: (() -> Unit)? = null
+    ) {
         if (identifier.isBlank()) {
             _uiState.value = _uiState.value.copy(errorMessage = "Please enter your National ID or username.")
             return
@@ -55,7 +66,7 @@ class AuthViewModel(
         _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
         viewModelScope.launch {
-            val result = authRepository.signIn(identifier, password)
+            val result = authRepository.signIn(identifier, password, keepSession)
             result.onSuccess { profile ->
                 userRepository?.setCurrentUser(profile)
                 _uiState.value = _uiState.value.copy(
@@ -64,7 +75,7 @@ class AuthViewModel(
                     identifier = profile.nationalId,
                     errorMessage = null
                 )
-                onSuccess()
+                onSuccess?.invoke()
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,

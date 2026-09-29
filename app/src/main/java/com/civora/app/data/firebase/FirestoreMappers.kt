@@ -57,6 +57,7 @@ object FirestoreMappers {
                 activeRequestsCount = doc.getLong("activeRequestsCount")?.toInt() ?: 0,
                 unreadNotificationsCount = doc.getLong("unreadNotificationsCount")?.toInt() ?: 0,
                 birthCity = doc.getString("birthCity") ?: "-",
+                birthCountry = doc.getString("birthCountry") ?: "Bangladesh",
                 maritalStatus = doc.getString("maritalStatus") ?: "SINGLE",
                 sponsorshipTransfers = doc.getString("sponsorshipTransfers") ?: "2",
                 workPermit = doc.getString("workPermit") ?: "-",

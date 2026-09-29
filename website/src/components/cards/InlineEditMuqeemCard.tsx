@@ -210,7 +210,7 @@ export default function InlineEditMuqeemCard({
       <div className="w-full flex items-center justify-between mb-2 px-1">
         <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2.5 py-1 rounded-full">
           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-          Resident ID — Click any field to edit
+          Digital Document / E-CAMA Card — Click any field to edit
         </span>
         <div className="flex items-center gap-1.5">
           <button
@@ -241,7 +241,7 @@ export default function InlineEditMuqeemCard({
                 <Sparkles className="w-3.5 h-3.5 text-violet-600" />
                 On-Device OCR Scan
               </h4>
-              <p className="text-[11px] text-violet-600 mt-0.5">Upload a photo of the Resident ID (هوية مقيم). Processed entirely on your device.</p>
+              <p className="text-[11px] text-violet-600 mt-0.5">Upload a photo of the Digital Document / E-CAMA Card (هوية مقيم). Processed entirely on your device.</p>
             </div>
             <button type="button" onClick={() => setShowOcrPanel(false)} className="text-violet-400 hover:text-violet-700 cursor-pointer">
               <X className="w-4 h-4" />

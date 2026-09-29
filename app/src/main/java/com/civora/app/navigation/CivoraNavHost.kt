@@ -252,7 +252,8 @@ fun CivoraNavHost(
                 onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
-                onNavigateToIdViewer = { navController.navigate(Screen.DigitalIdViewer.route) }
+                onNavigateToIdViewer = { navController.navigate(Screen.DigitalIdViewer.route) },
+                onNavigateToDrivingLicense = { navController.navigate(Screen.DrivingLicenseViewer.route) }
             )
         }
 
@@ -420,7 +421,7 @@ fun CivoraNavHost(
             AbsherLoginFormScreen(
                 onBackClick = { navController.popBackStack() },
                 onLoginSubmit = {
-                    navController.navigate(Screen.Otp.route)
+                    navController.navigate(Screen.Loading.route)
                 },
                 viewModel = authViewModel
             )
@@ -431,7 +432,13 @@ fun CivoraNavHost(
             AbsherOtpScreen(
                 onBackClick = { navController.popBackStack() },
                 onOtpVerified = {
-                    navController.navigate(Screen.Loading.route)
+                    val activeId = container.authRepository.savedUserIdentifier
+                    if (!activeId.isNullOrBlank()) {
+                        container.userRepository.loadUserByIdentifier(activeId)
+                    }
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }
@@ -440,16 +447,8 @@ fun CivoraNavHost(
         composable(Screen.Loading.route) {
             AbsherLoadingScreen(
                 onLoadingFinished = {
-                    val activeId = container.authRepository.savedUserIdentifier
-                    if (!activeId.isNullOrBlank()) {
-                        container.userRepository.loadUserByIdentifier(activeId)
-                        navController.navigate(Screen.Dashboard.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
-                    } else {
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                    navController.navigate(Screen.Otp.route) {
+                        popUpTo(Screen.LoginForm.route) { inclusive = false }
                     }
                 }
             )

@@ -22,8 +22,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -36,9 +38,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.civora.app.R
+import com.civora.app.core.components.CivoraTopBar
 import com.civora.app.core.components.DynamicDrivingLicenseCard
 import com.civora.app.core.designsystem.AppLanguage
 import com.civora.app.core.designsystem.LanguageState
@@ -57,6 +61,52 @@ fun DrivingLicenseViewerScreen(
 
     val userProfileState = userRepository?.userProfile?.collectAsState(initial = CivoraMockDataSource.currentUser)
     val user = userProfileState?.value ?: CivoraMockDataSource.currentUser
+
+    if (!user.hasDrivingLicense) {
+        val muted = MaterialTheme.colorScheme.onSurfaceVariant
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            CivoraTopBar(
+                title = "Driving License",
+                showBackButton = true,
+                onBackClick = onBackClick
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Layers,
+                    contentDescription = null,
+                    tint = muted.copy(alpha = 0.6f),
+                    modifier = Modifier.size(72.dp)
+                )
+                Spacer(modifier = Modifier.height(18.dp))
+                Text(
+                    text = "No services available",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Driving License will be available here soon.",
+                    color = muted,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        return
+    }
 
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
@@ -102,47 +152,13 @@ fun DrivingLicenseViewerScreen(
                 }
             }
 
-            if (!user.hasDrivingLicense) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(24.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_driver_license),
-                            contentDescription = "No Driving License",
-                            tint = Color.White.copy(alpha = 0.4f),
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = if (currentLanguage == AppLanguage.ARABIC) "لا تتوفر رخصة قيادة لهذا المستخدم" else "No driving license available for this user",
-                            color = Color.White,
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = if (currentLanguage == AppLanguage.ARABIC) "يرجى التقديم على اصدار رخصة قيادة عبر منصة ابشر" else "Please apply for a driving license via Absher platform",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 13.sp
-                        )
-                    }
-                }
-            } else {
-                // 2. Vertical Pager: Page 0 = Rotated Driving License Card | Page 1 = Rotated QR Code Card
-                VerticalPager(
-                    state = pagerState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) { page ->
+            // 2. Vertical Pager: Page 0 = Rotated Driving License Card | Page 1 = Rotated QR Code Card
+            VerticalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) { page ->
                     BoxWithConstraints(
                         modifier = Modifier
                             .fillMaxSize()
@@ -217,7 +233,6 @@ fun DrivingLicenseViewerScreen(
                     }
                 }
             }
-        }
 
         // 3. Bottom indicator dot
         Box(

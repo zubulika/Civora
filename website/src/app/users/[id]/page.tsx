@@ -11,7 +11,7 @@ import InlineEditMuqeemCard from '@/components/cards/InlineEditMuqeemCard';
 import { fetchCitizenById, saveCitizen } from '@/lib/firestoreService';
 import { UserProfile } from '@/types';
 import {
-  ArrowLeft, CheckCircle2, AlertCircle, Car, CreditCard, Save, Layers
+  ArrowLeft, CheckCircle2, AlertCircle, Car, CreditCard, Save
 } from 'lucide-react';
 
 export default function EditCitizenPage() {
@@ -19,7 +19,7 @@ export default function EditCitizenPage() {
   const router = useRouter();
   const citizenId = params.id as string;
 
-  const [activeDocTab, setActiveDocTab] = useState<'license' | 'resident' | 'both'>('license');
+  const [activeDocTab, setActiveDocTab] = useState<'resident' | 'license'>('resident');
   const [citizen, setCitizen] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState<Partial<UserProfile>>({});
   const [loading, setLoading] = useState(true);
@@ -177,9 +177,8 @@ export default function EditCitizenPage() {
                 {/* Tab switcher */}
                 <div className="flex bg-slate-50 border-b border-slate-200">
                   {([
+                    { key: 'resident', label: 'Digital Document / E-CAMA Card', icon: CreditCard },
                     { key: 'license', label: 'Driving License', icon: Car },
-                    { key: 'resident', label: 'Resident ID', icon: CreditCard },
-                    { key: 'both', label: 'Both', icon: Layers },
                   ] as const).map(({ key, label, icon: Icon }) => (
                     <button
                       key={key}
@@ -199,36 +198,15 @@ export default function EditCitizenPage() {
 
                 {/* Card content */}
                 <div className="p-5 space-y-6">
-                  {(activeDocTab === 'license' || activeDocTab === 'both') && (
-                    <div>
-                      {activeDocTab === 'both' && (
-                        <p className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5 mb-3">
-                          <Car className="w-3.5 h-3.5 text-blue-600" />
-                          Saudi Driving License (رخصة القيادة)
-                        </p>
-                      )}
-                      <InlineEditDrivingLicense
-                        user={formData}
-                        onChange={handleCardChange}
-                      />
-                    </div>
-                  )}
-
-                  {activeDocTab === 'both' && (
-                    <div className="border-t border-slate-200 pt-5">
-                      <p className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5 mb-3">
-                        <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                        Resident ID / Muqeem (هوية مقيم)
-                      </p>
-                      <InlineEditMuqeemCard
-                        user={formData}
-                        onChange={handleCardChange}
-                      />
-                    </div>
-                  )}
-
                   {activeDocTab === 'resident' && (
                     <InlineEditMuqeemCard
+                      user={formData}
+                      onChange={handleCardChange}
+                    />
+                  )}
+
+                  {activeDocTab === 'license' && (
+                    <InlineEditDrivingLicense
                       user={formData}
                       onChange={handleCardChange}
                     />

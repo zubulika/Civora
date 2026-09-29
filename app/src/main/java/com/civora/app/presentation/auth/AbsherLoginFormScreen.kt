@@ -5,7 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +27,6 @@ import androidx.compose.foundation.verticalScroll
 import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -56,6 +54,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.civora.app.R
 import com.civora.app.core.components.AbsherHeaderBranding
 import androidx.compose.material3.CircularProgressIndicator
@@ -83,9 +83,12 @@ fun AbsherLoginFormScreen(
     val context = LocalContext.current
     val authState = viewModel?.uiState?.collectAsState()?.value
 
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var keepMeLoggedIn by remember { mutableStateOf(true) }
+    val savedUsername = remember { viewModel?.savedUsername.orEmpty() }
+    val savedPassword = remember { viewModel?.savedPassword.orEmpty() }
+
+    var username by remember { mutableStateOf(savedUsername) }
+    var password by remember { mutableStateOf(savedPassword) }
+    var showStayLoggedInDialog by remember { mutableStateOf(false) }
 
     // Validation threshold: username not blank and password has at least 4 characters
     val isFormValid = username.isNotBlank() && password.length >= 4 && (authState?.isLoading != true)
@@ -96,6 +99,78 @@ fun AbsherLoginFormScreen(
     val inputBorderColor = if (isDark) Color(0xFF2E3A33) else Color(0xFFD6E3DC)
     val activeBorderColor = AbsherGreenHeader
     val inputBg = if (isDark) AbsherCardBg else Color.White
+
+    fun confirmLogin() {
+        focusManager.clearFocus()
+        showStayLoggedInDialog = false
+        if (viewModel != null) {
+            viewModel.login(username, password, keepSession = true)
+        }
+        onLoginSubmit()
+    }
+
+    if (showStayLoggedInDialog) {
+        Dialog(
+            onDismissRequest = { showStayLoggedInDialog = false },
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = false,
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(if (isDark) Color(0xFF26332C) else Color.White)
+                    .padding(horizontal = 26.dp, vertical = 26.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "Stay Logged In",
+                        color = textPrimary,
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(
+                        text = "By logging in now, you accept you'll stay logged in and won't need to enter credentials every time. You can log out in Settings at any time.",
+                        color = textMuted,
+                        fontSize = 15.sp,
+                        lineHeight = 22.sp
+                    )
+                    Spacer(modifier = Modifier.height(26.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            color = AbsherGreenHeader,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { showStayLoggedInDialog = false }
+                                .padding(horizontal = 14.dp, vertical = 10.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Stay signed in",
+                            color = AbsherGreenHeader,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { confirmLogin() }
+                                .padding(horizontal = 14.dp, vertical = 10.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -187,60 +262,11 @@ fun AbsherLoginFormScreen(
                 onDone = {
                     if (isFormValid) {
                         focusManager.clearFocus()
-                        if (viewModel != null) {
-                            viewModel.login(username, password) {
-                                onLoginSubmit()
-                            }
-                        }
+                        showStayLoggedInDialog = true
                     }
                 }
             )
         )
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        // 5. Keep me logged in Checkbox
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) {
-                    keepMeLoggedIn = !keepMeLoggedIn
-                },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(if (keepMeLoggedIn) AbsherGreenHeader else Color.Transparent)
-                    .border(
-                        width = 1.5.dp,
-                        color = if (keepMeLoggedIn) AbsherGreenHeader else textMuted,
-                        shape = RoundedCornerShape(4.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                if (keepMeLoggedIn) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Checked",
-                        tint = Color.White,
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Text(
-                text = "Keep me logged in",
-                color = textPrimary.copy(alpha = 0.85f),
-                fontSize = 14.sp
-            )
-        }
 
         if (authState?.errorMessage != null) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -272,13 +298,7 @@ fun AbsherLoginFormScreen(
         Button(
             onClick = {
                 focusManager.clearFocus()
-                if (viewModel != null) {
-                    viewModel.login(username, password) {
-                        onLoginSubmit()
-                    }
-                } else {
-                    onLoginSubmit()
-                }
+                showStayLoggedInDialog = true
             },
             enabled = isFormValid,
             shape = RoundedCornerShape(12.dp),

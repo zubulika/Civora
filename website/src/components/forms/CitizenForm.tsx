@@ -2,22 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserProfile } from '@/types';
-import { compressAvatarImage } from '@/lib/imageCompressor';
 import { 
+  KeyRound,
   User, 
   Briefcase, 
-  FileText, 
+  HeartPulse,
+  Moon,
+  BookOpen,
+  FileText,
+  Plane,
   ShieldCheck, 
   Save, 
-  Upload,
-  KeyRound,
   Eye,
   EyeOff,
   RefreshCw,
-  HeartPulse,
-  Moon,
-  Plane,
-  BookOpen,
   Search,
   X,
   Filter
@@ -35,24 +33,17 @@ const LABEL_CLASSES = "block text-xs font-bold text-slate-800 mb-1.5 tracking-ti
 const INPUT_CLASSES = "w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-xs font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal shadow-2xs transition-all outline-none";
 const SELECT_CLASSES = "w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 focus:bg-white border border-slate-300 hover:border-slate-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-xs font-semibold text-slate-900 shadow-2xs transition-all outline-none cursor-pointer";
 
-const NATIONALITY_PRESETS = [
-  { en: 'Saudi Arabia', ar: 'المملكة العربية السعودية' },
-  { en: 'Egypt', ar: 'مصر' },
-  { en: 'Yemen', ar: 'اليمن' },
-  { en: 'Bangladesh', ar: 'بنجلاديش' },
-  { en: 'India', ar: 'الهند' },
-  { en: 'Pakistan', ar: 'باكستان' },
-  { en: 'Philippines', ar: 'الفلبين' },
-];
-
-const PROFESSION_PRESETS = [
-  { en: 'Driver', ar: 'سائق خاص' },
-  { en: 'Laundry Worker', ar: 'عامل غسيل ملابس' },
-  { en: 'General Laborer', ar: 'عامل عادي' },
-  { en: 'Software Engineer', ar: 'مهندس برمجيات' },
-  { en: 'Accountant', ar: 'محاسب عام' },
-  { en: 'Electrical Technician', ar: 'فني كهرباء' },
-  { en: 'Pharmacist', ar: 'صيدلي' }
+const CATEGORIES = [
+  { id: 'ALL', label: 'All Sections (9)' },
+  { id: 'CREDENTIALS', label: '1. App Login' },
+  { id: 'PERSONAL', label: '2. Personal Details' },
+  { id: 'SPONSOR', label: '3. Sponsor Details' },
+  { id: 'INSURANCE', label: '4. Health Insurance' },
+  { id: 'HAJJ', label: '5. Hajj Details' },
+  { id: 'PASSPORT', label: '6. My Passport' },
+  { id: 'RESIDENT_ID', label: '7. My Resident ID' },
+  { id: 'VISA', label: '8. My Visa' },
+  { id: 'DRIVING_LICENSE', label: '9. Driving License' },
 ];
 
 export default function CitizenForm({ 
@@ -107,6 +98,7 @@ export default function CitizenForm({
     expiryDateDigits: initialData?.expiryDateDigits ?? '',
     issueDateDigits: initialData?.issueDateDigits ?? '',
     photoUrl: initialData?.photoUrl ?? '',
+    hasDrivingLicense: initialData?.hasDrivingLicense !== false,
     licenseTypeEn: initialData?.licenseTypeEn ?? '',
     licenseTypeAr: initialData?.licenseTypeAr ?? '',
     licenseIssueDateEn: initialData?.licenseIssueDateEn ?? '',
@@ -114,6 +106,12 @@ export default function CitizenForm({
     licenseExpiryDateEn: initialData?.licenseExpiryDateEn ?? '',
     licenseExpiryDateAr: initialData?.licenseExpiryDateAr ?? '',
     residentIdIssuingDate: initialData?.residentIdIssuingDate ?? '',
+    passportNumber: initialData?.passportNumber ?? '',
+    passportType: initialData?.passportType ?? '',
+    passportIssueDate: initialData?.passportIssueDate ?? '',
+    passportExpiryDate: initialData?.passportExpiryDate ?? '',
+    passportIssuingCity: initialData?.passportIssuingCity ?? '',
+    passportStatus: initialData?.passportStatus ?? '',
     visaNumber: initialData?.visaNumber ?? '',
     visaType: initialData?.visaType ?? '',
     visaExitDate: initialData?.visaExitDate ?? '',
@@ -125,15 +123,6 @@ export default function CitizenForm({
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [compressingPhoto, setCompressingPhoto] = useState(false);
-  const [photoSizeKb, setPhotoSizeKb] = useState<number | null>(() => {
-    if (formData.photoUrl && formData.photoUrl.startsWith('data:image')) {
-      const b64 = formData.photoUrl.split(',')[1] || '';
-      return Math.round((b64.length * 3) / 4 / 1024);
-    }
-    return null;
-  });
-
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
@@ -175,28 +164,6 @@ export default function CitizenForm({
     onChange?.(updated);
   };
 
-  const handleChanges = (changes: Partial<UserProfile>) => {
-    const updated = { ...formData, ...changes };
-    setFormData(updated);
-    onChange?.(updated);
-  };
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        setCompressingPhoto(true);
-        const result = await compressAvatarImage(file);
-        handleChange('photoUrl', result.dataUrl);
-        setPhotoSizeKb(result.sizeKb);
-      } catch (err) {
-        console.error('Failed to compress avatar image:', err);
-      } finally {
-        setCompressingPhoto(false);
-      }
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onSubmit(formData);
@@ -213,7 +180,7 @@ export default function CitizenForm({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search form sections or fields (e.g. Passport, Driving License, Resident ID, Sponsor, Hijri, Insurance, Visa...)"
+              placeholder="Search form sections or fields (e.g. Login, Personal, Sponsor, Insurance, Hajj, Passport, Resident ID, Visa, Driving License...)"
               className="w-full pl-10 pr-9 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-xs font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-all"
             />
             {searchQuery ? (
@@ -230,7 +197,7 @@ export default function CitizenForm({
             <button
               type="button"
               onClick={() => { setSearchQuery(''); setSelectedCategory('ALL'); }}
-              className="px-3 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer shrink-0"
+              className="px-3 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors shrink-0 cursor-pointer"
             >
               Reset Filter
             </button>
@@ -240,18 +207,7 @@ export default function CitizenForm({
         {/* Category Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
           <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-0.5 mr-1" />
-          {[
-            { id: 'ALL', label: 'All Sections (9)' },
-            { id: 'PERSONAL', label: 'Personal Details' },
-            { id: 'CREDENTIALS', label: 'App Login' },
-            { id: 'SPONSOR', label: 'Profession & Sponsor' },
-            { id: 'RESIDENT_ID', label: 'Resident ID' },
-            { id: 'DRIVING_LICENSE', label: 'Driving License' },
-            { id: 'PASSPORT', label: 'Passport' },
-            { id: 'INSURANCE', label: 'Insurance' },
-            { id: 'HAJJ', label: 'Hajj' },
-            { id: 'VISA', label: 'Visa Details' },
-          ].map(cat => (
+          {CATEGORIES.map(cat => (
             <button
               key={cat.id}
               type="button"
@@ -268,24 +224,33 @@ export default function CitizenForm({
         </div>
       </div>
 
-      {/* 1. Personal Identity */}
-      {isSectionVisible('PERSONAL', 'Personal Details', ['national id', 'iqama', 'full name', 'arabic', 'english', 'nationality', 'date of birth', 'gregorian', 'hijri', 'place of birth', 'birth city', 'birth country', 'marital status', 'sponsorship transfers', 'single', 'married', 'divorced', 'widowed', 'religion']) && (
+      {/* ── 1. Mobile App Login Credentials ── */}
+      {isSectionVisible('CREDENTIALS', '1. Mobile App Login Credentials', ['app login', 'user id', 'national id', 'iqama', 'app password', 'mobile login', 'account status', 'active', 'suspended', 'password']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
-            <User className="w-4 h-4" />
+            <KeyRound className="w-4 h-4" />
           </div>
-          <div>
-            <h3 className="font-bold text-slate-900 text-sm">Personal Details</h3>
-            <p className="text-xs text-slate-500">Citizen &amp; Resident demographics and official identity</p>
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 text-sm">1. Mobile App Login Credentials</h3>
+              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                formData.accountStatus === 'SUSPENDED'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              }`}>
+                {formData.accountStatus === 'SUSPENDED' ? 'Access Suspended' : 'Mobile Access Active'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500">User ID and password credentials required for the user to log into the mobile app</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* National / Iqama ID */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* User ID / National ID */}
           <div>
             <label className={LABEL_CLASSES}>
-              National ID / Iqama Number (10 digits) <span className="text-rose-500">*</span>
+              User ID / National ID Number (10 digits) <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -298,307 +263,8 @@ export default function CitizenForm({
               placeholder="Enter 10-digit ID (e.g. 2xxxxxxxxx)"
               className={`${INPUT_CLASSES} font-mono font-bold tracking-wider`}
             />
-          </div>
-
-          {/* Photo Selector */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className={LABEL_CLASSES}>Portrait Photo (File or URL)</label>
-              {compressingPhoto && (
-                <span className="text-[11px] font-semibold text-amber-600 animate-pulse">
-                  Compressing WebP...
-                </span>
-              )}
-              {!compressingPhoto && photoSizeKb !== null && (
-                <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
-                  ✓ {photoSizeKb} KB Ready
-                </span>
-              )}
-            </div>
-            <div className="flex gap-2 items-center">
-              {formData.photoUrl ? (
-                <img
-                  src={formData.photoUrl}
-                  alt="Avatar Preview"
-                  className="w-10 h-10 rounded-xl object-cover border border-slate-300 shadow-2xs shrink-0"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-              ) : null}
-              <input
-                type="text"
-                value={formData.photoUrl}
-                onChange={(e) => {
-                  handleChange('photoUrl', e.target.value);
-                  setPhotoSizeKb(null);
-                }}
-                placeholder="Paste image URL or upload local file"
-                className={INPUT_CLASSES}
-              />
-              <label className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl cursor-pointer text-xs font-bold text-slate-700 flex items-center gap-1.5 transition-colors shrink-0 shadow-2xs">
-                <Upload className="w-3.5 h-3.5 text-slate-600" />
-                <span>{compressingPhoto ? 'Compressing...' : 'Upload'}</span>
-                <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={compressingPhoto} className="hidden" />
-              </label>
-            </div>
-          </div>
-
-          {/* Arabic Full Name */}
-          <div>
-            <label className={LABEL_CLASSES}>
-              Full Name in Arabic (الاسم الكامل بالعربية) <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              dir="rtl"
-              value={formData.fullNameAr}
-              onChange={(e) => handleChange('fullNameAr', e.target.value)}
-              placeholder="الاسم الكامل بالعربية"
-              className={`${INPUT_CLASSES} font-bold`}
-            />
-          </div>
-
-          {/* English Full Name */}
-          <div>
-            <label className={LABEL_CLASSES}>
-              Full Name in English (Official Passport format) <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.fullNameEn}
-              onChange={(e) => handleChange('fullNameEn', e.target.value.toUpperCase())}
-              placeholder="FULL NAME IN ENGLISH (PASSPORT)"
-              className={`${INPUT_CLASSES} font-bold uppercase`}
-            />
-          </div>
-
-          {/* Nationality with Presets */}
-          <div>
-            <label className={LABEL_CLASSES}>Nationality (English & Arabic)</label>
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              <input
-                type="text"
-                value={formData.nationality}
-                onChange={(e) => handleChange('nationality', e.target.value)}
-                placeholder="English (e.g. Saudi Arabia)"
-                className={INPUT_CLASSES}
-              />
-              <input
-                type="text"
-                dir="rtl"
-                value={formData.nationalityAr}
-                onChange={(e) => handleChange('nationalityAr', e.target.value)}
-                placeholder="العربية (المملكة العربية السعودية)"
-                className={INPUT_CLASSES}
-              />
-            </div>
-            {/* Quick preset chips */}
-            <div className="flex flex-wrap gap-1.5">
-              {NATIONALITY_PRESETS.map((p) => (
-                <button
-                  key={p.en}
-                  type="button"
-                  onClick={() => handleChanges({
-                    nationality: p.en,
-                    nationalityAr: p.ar,
-                    placeOfBirthAr: p.ar,
-                  })}
-                  className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 text-slate-700 font-medium border border-slate-200 transition-colors cursor-pointer"
-                >
-                  {p.en}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Date of Birth */}
-          <div>
-            <label className={LABEL_CLASSES}>Date of Birth (Gregorian & Hijri)</label>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <input
-                  type="text"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => handleChange('dateOfBirth', e.target.value)}
-                  placeholder="Gregorian: YYYY/MM/DD"
-                  className={`${INPUT_CLASSES} font-mono`}
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  value={formData.dateOfBirthHijri}
-                  onChange={(e) => handleChange('dateOfBirthHijri', e.target.value)}
-                  placeholder="Hijri: YYYY/MM/DD"
-                  className={`${INPUT_CLASSES} font-mono`}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Place of Birth */}
-          <div>
-            <label className={LABEL_CLASSES}>Place of Birth (English & Arabic)</label>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="text"
-                value={formData.placeOfBirthEn || ''}
-                onChange={(e) => handleChange('placeOfBirthEn', e.target.value)}
-                placeholder="English (e.g. Riyadh)"
-                className={INPUT_CLASSES}
-              />
-              <input
-                type="text"
-                dir="rtl"
-                value={formData.placeOfBirthAr || ''}
-                onChange={(e) => handleChange('placeOfBirthAr', e.target.value)}
-                placeholder="العربية (مثال: الرياض)"
-                className={INPUT_CLASSES}
-              />
-            </div>
-          </div>
-
-          {/* Birth City & Country */}
-          <div>
-            <label className={LABEL_CLASSES}>Birth City & Birth Country</label>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="text"
-                value={formData.birthCity || ''}
-                onChange={(e) => handleChange('birthCity', e.target.value)}
-                placeholder="City (e.g. Dhaka)"
-                className={INPUT_CLASSES}
-              />
-              <input
-                type="text"
-                value={formData.birthCountry || ''}
-                onChange={(e) => handleChange('birthCountry', e.target.value)}
-                placeholder="Country (e.g. Saudi Arabia)"
-                className={INPUT_CLASSES}
-              />
-            </div>
-          </div>
-
-          {/* Marital Status & Sponsorship Transfers */}
-          <div>
-            <label className={LABEL_CLASSES}>Marital Status & Sponsorship Transfers</label>
-            <div className="grid grid-cols-2 gap-2">
-              <select
-                value={formData.maritalStatus || 'SINGLE'}
-                onChange={(e) => handleChange('maritalStatus', e.target.value)}
-                className={SELECT_CLASSES}
-              >
-                <option value="SINGLE">SINGLE (أعزب)</option>
-                <option value="MARRIED">MARRIED (متزوج)</option>
-                <option value="DIVORCED">DIVORCED (مطلق)</option>
-                <option value="WIDOWED">WIDOWED (أرمل)</option>
-              </select>
-              <input
-                type="text"
-                value={formData.sponsorshipTransfers || ''}
-                onChange={(e) => handleChange('sponsorshipTransfers', e.target.value)}
-                placeholder="Transfers count (e.g. 2)"
-                className={INPUT_CLASSES}
-              />
-            </div>
-          </div>
-
-
-          {/* Religion */}
-          <div>
-            <label className={LABEL_CLASSES}>Religion (English & Arabic)</label>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="text"
-                value={formData.religionEn || ''}
-                onChange={(e) => handleChange('religionEn', e.target.value)}
-                placeholder="English (e.g. Islam)"
-                className={INPUT_CLASSES}
-              />
-              <input
-                type="text"
-                dir="rtl"
-                value={formData.religionAr || ''}
-                onChange={(e) => handleChange('religionAr', e.target.value)}
-                placeholder="العربية (مثال: الإسلام)"
-                className={INPUT_CLASSES}
-              />
-            </div>
-          </div>
-
-          {/* Work Permit & Biometrics */}
-          <div>
-            <label className={LABEL_CLASSES}>Work Permit & Biometrics Collected</label>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="text"
-                value={formData.workPermit || ''}
-                onChange={(e) => handleChange('workPermit', e.target.value)}
-                placeholder="Work Permit (e.g. Valid / -)"
-                className={INPUT_CLASSES}
-              />
-              <select
-                value={formData.biometricsCollected || 'Yes'}
-                onChange={(e) => handleChange('biometricsCollected', e.target.value)}
-                className={SELECT_CLASSES}
-              >
-                <option value="Yes">Yes (نعم - مكتملة)</option>
-                <option value="No">No (لا - غير مكتملة)</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Travel Status */}
-          <div>
-            <label className={LABEL_CLASSES}>Travel Status (حالة السفر)</label>
-            <select
-              value={formData.travelStatus || 'Inside Kingdom'}
-              onChange={(e) => handleChange('travelStatus', e.target.value)}
-              className={SELECT_CLASSES}
-            >
-              <option value="Inside Kingdom">Inside Kingdom (داخل المملكة)</option>
-              <option value="Outside Kingdom">Outside Kingdom (خارج المملكة)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      )}
-
-      {/* 2. Mobile App Login Credentials */}
-      {isSectionVisible('CREDENTIALS', 'Mobile App Login Credentials', ['app password', 'mobile login', 'account status', 'active', 'suspended', 'password']) && (
-      <div className={CARD_CLASSES}>
-        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
-            <KeyRound className="w-4 h-4" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 text-sm">Mobile App Login Credentials</h3>
-              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
-                formData.accountStatus === 'SUSPENDED'
-                  ? 'bg-rose-50 text-rose-700 border-rose-200'
-                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-              }`}>
-                {formData.accountStatus === 'SUSPENDED' ? 'Access Suspended' : 'Mobile Access Active'}
-              </span>
-            </div>
-            <p className="text-xs text-slate-500">Credentials required for the citizen to log into the Absher mobile app</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Mobile Login Username / National ID */}
-          <div>
-            <label className={LABEL_CLASSES}>Login Username (National ID)</label>
-            <div className="px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-900 flex items-center justify-between">
-              <span>{formData.nationalId || '—'}</span>
-              <span className="text-[10px] text-slate-500 font-sans font-semibold">Auto-Synced</span>
-            </div>
             <p className="text-[11px] text-slate-500 mt-1.5">
-              Automatically synchronized with National ID above.
+              Unique Saudi National / Iqama ID used as mobile login username.
             </p>
           </div>
 
@@ -635,7 +301,7 @@ export default function CitizenForm({
               </button>
             </div>
             <p className="text-[11px] text-slate-500 mt-1.5">
-              Password for citizen login on Android / iOS application.
+              Password for citizen login on Android mobile application.
             </p>
           </div>
 
@@ -658,384 +324,311 @@ export default function CitizenForm({
       </div>
       )}
 
-      {/* 5. Employment & Sponsor Information */}
-      {isSectionVisible('SPONSOR', 'Document — Profession & Sponsorship', ['profession', 'sponsor id', 'sponsor name', 'work place', 'travel status', 'establishment status', 'green', 'inside kingdom']) && (
+      {/* ── 2. Personal Details ── */}
+      {isSectionVisible('PERSONAL', '2. Personal Details', ['personal details', 'name', 'full name', 'birth city', 'birth country', 'date of birth', 'marital status', 'sponsorship transfers', 'work permit', 'biometrics collected', 'travel status']) && (
+      <div className={CARD_CLASSES}>
+        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
+            <User className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900 text-sm">2. Personal Details</h3>
+            <p className="text-xs text-slate-500">Citizen demographics and personal identity details matching the application</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Name (English) */}
+          <div>
+            <label className={LABEL_CLASSES}>
+              Name (Full Name in English) <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.fullNameEn}
+              onChange={(e) => handleChange('fullNameEn', e.target.value.toUpperCase())}
+              placeholder="FULL NAME IN ENGLISH (PASSPORT)"
+              className={`${INPUT_CLASSES} font-bold uppercase`}
+            />
+          </div>
+
+          {/* Name (Arabic) */}
+          <div>
+            <label className={LABEL_CLASSES}>
+              Name in Arabic (الاسم الكامل بالعربية) <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              dir="rtl"
+              value={formData.fullNameAr}
+              onChange={(e) => handleChange('fullNameAr', e.target.value)}
+              placeholder="الاسم الكامل بالعربية"
+              className={`${INPUT_CLASSES} font-bold`}
+            />
+          </div>
+
+          {/* Birth City */}
+          <div>
+            <label className={LABEL_CLASSES}>Birth City</label>
+            <input
+              type="text"
+              value={formData.birthCity || ''}
+              onChange={(e) => handleChange('birthCity', e.target.value)}
+              placeholder="Birth City (e.g. Dhaka / -)"
+              className={INPUT_CLASSES}
+            />
+          </div>
+
+          {/* Birth Country */}
+          <div>
+            <label className={LABEL_CLASSES}>Birth Country</label>
+            <input
+              type="text"
+              value={formData.birthCountry || ''}
+              onChange={(e) => handleChange('birthCountry', e.target.value)}
+              placeholder="Birth Country (e.g. Bangladesh / Saudi Arabia)"
+              className={INPUT_CLASSES}
+            />
+          </div>
+
+          {/* Date of Birth */}
+          <div>
+            <label className={LABEL_CLASSES}>Date of Birth (Gregorian & Hijri)</label>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={formData.dateOfBirth}
+                onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+                placeholder="Gregorian: YYYY/MM/DD"
+                className={`${INPUT_CLASSES} font-mono`}
+              />
+              <input
+                type="text"
+                value={formData.dateOfBirthHijri}
+                onChange={(e) => handleChange('dateOfBirthHijri', e.target.value)}
+                placeholder="Hijri: YYYY/MM/DD"
+                className={`${INPUT_CLASSES} font-mono`}
+              />
+            </div>
+          </div>
+
+          {/* Marital Status */}
+          <div>
+            <label className={LABEL_CLASSES}>Marital Status</label>
+            <select
+              value={formData.maritalStatus || 'SINGLE'}
+              onChange={(e) => handleChange('maritalStatus', e.target.value)}
+              className={SELECT_CLASSES}
+            >
+              <option value="SINGLE">SINGLE (أعزب)</option>
+              <option value="MARRIED">MARRIED (متزوج)</option>
+              <option value="DIVORCED">DIVORCED (مطلق)</option>
+              <option value="WIDOWED">WIDOWED (أرمل)</option>
+            </select>
+          </div>
+
+          {/* Number of sponsorship transfers */}
+          <div>
+            <label className={LABEL_CLASSES}>Number of sponsorship transfers</label>
+            <input
+              type="text"
+              value={formData.sponsorshipTransfers || ''}
+              onChange={(e) => handleChange('sponsorshipTransfers', e.target.value)}
+              placeholder="Transfers count (e.g. 2)"
+              className={INPUT_CLASSES}
+            />
+          </div>
+
+          {/* Village on work permit / Work Permit */}
+          <div>
+            <label className={LABEL_CLASSES}>Village on work permit / Work Permit</label>
+            <input
+              type="text"
+              value={formData.workPermit || ''}
+              onChange={(e) => handleChange('workPermit', e.target.value)}
+              placeholder="Work Permit (e.g. Valid / -)"
+              className={INPUT_CLASSES}
+            />
+          </div>
+
+          {/* Biometrics Collected */}
+          <div>
+            <label className={LABEL_CLASSES}>Biometric Collected</label>
+            <select
+              value={formData.biometricsCollected || 'Yes'}
+              onChange={(e) => handleChange('biometricsCollected', e.target.value)}
+              className={SELECT_CLASSES}
+            >
+              <option value="Yes">Yes (نعم - مكتملة)</option>
+              <option value="No">No (لا - غير مكتملة)</option>
+            </select>
+          </div>
+
+          {/* Travel Status */}
+          <div>
+            <label className={LABEL_CLASSES}>Travel Status</label>
+            <select
+              value={formData.travelStatus || 'Inside Kingdom'}
+              onChange={(e) => handleChange('travelStatus', e.target.value)}
+              className={SELECT_CLASSES}
+            >
+              <option value="Inside Kingdom">Inside Kingdom (داخل المملكة)</option>
+              <option value="Outside Kingdom">Outside Kingdom (خارج المملكة)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      )}
+
+      {/* ── 3. Sponsor Details ── */}
+      {isSectionVisible('SPONSOR', '3. Sponsor Details', ['sponsor details', 'sponsor name', 'sponsor id']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
             <Briefcase className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Document — Profession &amp; Sponsorship</h3>
-            <p className="text-xs text-slate-500">Official Labor &amp; Establishment data appearing on the Resident ID card</p>
+            <h3 className="font-bold text-slate-900 text-sm">3. Sponsor Details</h3>
+            <p className="text-xs text-slate-500">Official sponsor name and sponsor ID number as configured in the mobile application</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Profession */}
-          <div className="md:col-span-2">
-            <label className={LABEL_CLASSES}>Profession (المهنة)</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
-              <input
-                type="text"
-                dir="rtl"
-                value={formData.professionAr}
-                onChange={(e) => handleChange('professionAr', e.target.value)}
-                placeholder="المهنة بالعربية (مثال: سائق خاص)"
-                className={`${INPUT_CLASSES} font-bold`}
-              />
-              <input
-                type="text"
-                value={formData.professionEn}
-                onChange={(e) => handleChange('professionEn', e.target.value)}
-                placeholder="Profession in English (e.g. Private Driver)"
-                className={INPUT_CLASSES}
-              />
-            </div>
-            {/* Profession Chips */}
-            <div className="flex flex-wrap gap-1.5">
-              {PROFESSION_PRESETS.map((p) => (
-                <button
-                  key={p.en}
-                  type="button"
-                  onClick={() => handleChanges({
-                    professionEn: p.en,
-                    professionAr: p.ar,
-                  })}
-                  className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 text-slate-700 font-medium border border-slate-200 transition-colors cursor-pointer"
-                >
-                  {p.en}
-                </button>
-              ))}
-            </div>
+          {/* Sponsor Name */}
+          <div>
+            <label className={LABEL_CLASSES}>Sponsor Name</label>
+            <input
+              type="text"
+              value={formData.sponsorName || ''}
+              onChange={(e) => handleChange('sponsorName', e.target.value)}
+              placeholder="Sponsor Name (e.g. مغاسل درر نجاح للملابس / Durrat Najah Laundry)"
+              className={`${INPUT_CLASSES} font-bold`}
+            />
           </div>
 
           {/* Sponsor ID */}
           <div>
-            <label className={LABEL_CLASSES}>Sponsor / Establishment ID (700xxxxxxx)</label>
+            <label className={LABEL_CLASSES}>Sponsor ID Number</label>
             <input
               type="text"
-              value={formData.sponsorId}
+              value={formData.sponsorId || ''}
               onChange={(e) => handleChange('sponsorId', e.target.value)}
-              placeholder="700xxxxxxx (e.g. 7034884309)"
+              placeholder="Sponsor ID (e.g. 7034884309)"
               className={`${INPUT_CLASSES} font-mono font-bold`}
             />
-          </div>
-
-          {/* Establishment Status */}
-          <div>
-            <label className={LABEL_CLASSES}>Establishment Status (حالة المنشأة)</label>
-            <input
-              type="text"
-              value={formData.establishmentStatus || ''}
-              onChange={(e) => handleChange('establishmentStatus', e.target.value)}
-              placeholder="e.g. Active (Green) / نشطة (أخضر)"
-              className={INPUT_CLASSES}
-            />
-          </div>
-
-          {/* Sponsor Name Arabic */}
-          <div>
-            <label className={LABEL_CLASSES}>Sponsor Name in Arabic (اسم صاحب العمل)</label>
-            <input
-              type="text"
-              dir="rtl"
-              value={formData.sponsorName}
-              onChange={(e) => handleChange('sponsorName', e.target.value)}
-              placeholder="اسم صاحب العمل أو المنشأة بالعربية"
-              className={`${INPUT_CLASSES} font-bold`}
-            />
-          </div>
-
-          {/* Sponsor Name English */}
-          <div>
-            <label className={LABEL_CLASSES}>Sponsor Name in English</label>
-            <input
-              type="text"
-              value={formData.sponsorNameEn || ''}
-              onChange={(e) => handleChange('sponsorNameEn', e.target.value)}
-              placeholder="Sponsor or company name in English"
-              className={INPUT_CLASSES}
-            />
-          </div>
-
-          {/* Workplace & Issue Place */}
-          <div>
-            <label className={LABEL_CLASSES}>Workplace (مكان العمل)</label>
-            <input
-              type="text"
-              dir="rtl"
-              value={formData.workPlaceAr}
-              onChange={(e) => handleChange('workPlaceAr', e.target.value)}
-              placeholder="مكان العمل (مثال: منطقة الرياض)"
-              className={INPUT_CLASSES}
-            />
-          </div>
-
-          <div>
-            <label className={LABEL_CLASSES}>Issuance Place (مكان الإصدار)</label>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="text"
-                dir="rtl"
-                value={formData.issuePlace}
-                onChange={(e) => handleChange('issuePlace', e.target.value)}
-                placeholder="العربية (مثال: شركة العلم)"
-                className={INPUT_CLASSES}
-              />
-              <input
-                type="text"
-                value={formData.issuePlaceEn || ''}
-                onChange={(e) => handleChange('issuePlaceEn', e.target.value)}
-                placeholder="English (e.g. Elm)"
-                className={INPUT_CLASSES}
-              />
-            </div>
           </div>
         </div>
       </div>
       )}
 
-      {/* ── Resident ID Card Document Fields ── */}
-      {isSectionVisible('RESIDENT_ID', 'Document — Resident ID', ['resident id', 'issuing place', 'issue place', 'expiry date', 'version number', 'issuing date', 'digits', 'barcode']) && (
+      {/* ── 4. Health Insurance ── */}
+      {isSectionVisible('INSURANCE', '4. Health Insurance', ['health insurance', 'insurance', 'issuing date', 'expiry date', 'blood type']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
-          <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold border border-amber-100/80">
-            <FileText className="w-4 h-4" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
+            <HeartPulse className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Document — Resident ID (هوية مقيم)</h3>
-            <p className="text-xs text-slate-500">Date, version and identifier fields printed on the Resident ID card</p>
+            <h3 className="font-bold text-slate-900 text-sm">4. Health Insurance</h3>
+            <p className="text-xs text-slate-500">Official health coverage details shown in the citizen profile</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div>
+            <label className={LABEL_CLASSES}>Issuing Date (تاريخ الإصدار)</label>
+            <input
+              type="text"
+              value={formData.insuranceIssuingDate || ''}
+              onChange={(e) => handleChange('insuranceIssuingDate', e.target.value)}
+              placeholder="DD/MM/YYYY (e.g. -)"
+              className={`${INPUT_CLASSES} font-mono`}
+            />
+          </div>
+
+          <div>
+            <label className={LABEL_CLASSES}>Expiry Date (تاريخ الانتهاء)</label>
+            <input
+              type="text"
+              value={formData.insuranceExpiry || ''}
+              onChange={(e) => handleChange('insuranceExpiry', e.target.value)}
+              placeholder="DD/MM/YYYY (e.g. 14/04/2026)"
+              className={`${INPUT_CLASSES} font-mono`}
+            />
+          </div>
+
+          <div>
+            <label className={LABEL_CLASSES}>Blood Type (فصيلة الدم)</label>
+            <select
+              value={formData.bloodType || ''}
+              onChange={(e) => handleChange('bloodType', e.target.value)}
+              className={SELECT_CLASSES}
+            >
+              <option value="">— Select blood type —</option>
+              <option value="A+">A+ (أ موجب)</option>
+              <option value="A-">A− (أ سالب)</option>
+              <option value="B+">B+ (ب موجب)</option>
+              <option value="B-">B− (ب سالب)</option>
+              <option value="AB+">AB+ (أب موجب)</option>
+              <option value="AB-">AB− (أب سالب)</option>
+              <option value="O+">O+ (و موجب)</option>
+              <option value="O-">O− (و سالب)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      )}
+
+      {/* ── 5. Hajj Details ── */}
+      {isSectionVisible('HAJJ', '5. Hajj Details', ['hajj', 'hajj eligibility', 'hodge', 'eligible', 'last hajj year']) && (
+      <div className={CARD_CLASSES}>
+        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
+            <Moon className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900 text-sm">5. Hajj Details</h3>
+            <p className="text-xs text-slate-500">Pilgrimage eligibility and official history</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-          {/* Expiry Date */}
           <div>
-            <label className={LABEL_CLASSES}>Expiry Date — English (تاريخ الانتهاء)</label>
+            <label className={LABEL_CLASSES}>Hajj Status / Eligibility (حالة الحج)</label>
             <input
               type="text"
-              value={formData.expiryDateEn}
-              onChange={(e) => handleChange('expiryDateEn', e.target.value)}
-              placeholder="YYYY/MM/DD  (e.g. 2026/10/08)"
-              className={`${INPUT_CLASSES} font-mono`}
+              value={formData.hajjEligibility || ''}
+              onChange={(e) => handleChange('hajjEligibility', e.target.value)}
+              placeholder="e.g. Eligible for Hajj / مستحق لأداء الحج"
+              className={INPUT_CLASSES}
             />
           </div>
 
           <div>
-            <label className={LABEL_CLASSES}>Expiry Date — Arabic (تاريخ الانتهاء بالأرقام العربية)</label>
+            <label className={LABEL_CLASSES}>Last Hajj Year (آخر سنة أداء للحج)</label>
             <input
               type="text"
-              dir="rtl"
-              value={formData.expiryDateAr}
-              onChange={(e) => handleChange('expiryDateAr', e.target.value)}
-              placeholder="١٤٤٨/٠٤/١٢  (Hijri, Eastern-Arabic digits)"
-              className={`${INPUT_CLASSES} font-mono font-bold`}
-            />
-          </div>
-
-          {/* Date of Birth — Arabic digits variant */}
-          <div>
-            <label className={LABEL_CLASSES}>Date of Birth — Arabic digits (تاريخ الميلاد بالأرقام العربية)</label>
-            <input
-              type="text"
-              dir="rtl"
-              value={formData.dateOfBirthAr}
-              onChange={(e) => handleChange('dateOfBirthAr', e.target.value)}
-              placeholder="١٤٠٨/١٠/١٨  (Eastern-Arabic digits)"
-              className={`${INPUT_CLASSES} font-mono font-bold`}
-            />
-          </div>
-
-          {/* Version Number */}
-          <div>
-            <label className={LABEL_CLASSES}>Card Version Number (رقم النسخة)</label>
-            <input
-              type="text"
-              dir="rtl"
-              value={formData.versionNumber}
-              onChange={(e) => handleChange('versionNumber', e.target.value)}
-              placeholder="٢  (Eastern-Arabic, e.g. ١، ٢، ٣)"
-              className={`${INPUT_CLASSES} font-bold`}
-            />
-          </div>
-
-          {/* Expiry Date Digits — 6-digit barcode format */}
-          <div>
-            <label className={LABEL_CLASSES}>Expiry Date — 6-digit barcode (DDMMYY)</label>
-            <input
-              type="text"
-              value={formData.expiryDateDigits}
-              onChange={(e) => handleChange('expiryDateDigits', e.target.value)}
-              placeholder="e.g. 081026  →  08 Oct 2026"
-              className={`${INPUT_CLASSES} font-mono`}
-            />
-          </div>
-
-          {/* Issue Date Digits — 6-digit barcode format */}
-          <div>
-            <label className={LABEL_CLASSES}>Issue Date — 6-digit barcode (DDMMYY)</label>
-            <input
-              type="text"
-              value={formData.issueDateDigits}
-              onChange={(e) => handleChange('issueDateDigits', e.target.value)}
-              placeholder="e.g. 070926  →  07 Sep 2026"
-              className={`${INPUT_CLASSES} font-mono`}
-            />
-          </div>
-
-          {/* Resident ID Issuing Date */}
-          <div className="md:col-span-2">
-            <label className={LABEL_CLASSES}>Resident ID Card — Issuing Date (تاريخ إصدار البطاقة)</label>
-            <input
-              type="text"
-              value={formData.residentIdIssuingDate || ''}
-              onChange={(e) => handleChange('residentIdIssuingDate', e.target.value)}
-              placeholder="DD/MM/YYYY  (e.g. 07/09/2026)"
-              className={`${INPUT_CLASSES} font-mono`}
+              value={formData.lastHajjYear || ''}
+              onChange={(e) => handleChange('lastHajjYear', e.target.value)}
+              placeholder="e.g. 1445 or - (لم يؤد الحج)"
+              className={INPUT_CLASSES}
             />
           </div>
         </div>
       </div>
       )}
 
-      {/* ── Driving License Document Fields ── */}
-      {isSectionVisible('DRIVING_LICENSE', 'Document — Driving License', ['driving license', 'license type', 'private', 'commercial', 'blood type', 'issue date', 'expiry date', 'status']) && (
-      <div className={CARD_CLASSES}>
-        <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold border border-blue-100/80">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-sm">Document — Driving License (رخصة القيادة)</h3>
-              <p className="text-xs text-slate-500">License type, dates and blood type printed on the Driving License card</p>
-            </div>
-          </div>
-          <label className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors shrink-0 select-none">
-            <input
-              type="checkbox"
-              checked={formData.hasDrivingLicense !== false}
-              onChange={(e) => handleChange('hasDrivingLicense', e.target.checked)}
-              className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300 cursor-pointer"
-            />
-            <span className={`text-xs font-bold ${formData.hasDrivingLicense !== false ? 'text-emerald-700' : 'text-slate-500'}`}>
-              {formData.hasDrivingLicense !== false ? '✓ License Active (متاحة)' : '✕ License Disabled (غير متاحة)'}
-            </span>
-          </label>
-        </div>
-
-        {formData.hasDrivingLicense === false ? (
-          <div className="p-4 rounded-xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs font-medium flex items-center gap-2">
-            <span className="font-bold">⚠️ Driving License Status:</span>
-            <span>Disabled for this citizen. The mobile app will display &quot;No driving license available&quot; when accessed.</span>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-            {/* License Type */}
-            <div>
-              <label className={LABEL_CLASSES}>License Type — English</label>
-              <input
-                type="text"
-                value={formData.licenseTypeEn || ''}
-                onChange={(e) => handleChange('licenseTypeEn', e.target.value)}
-                placeholder="e.g. PRIVATE  /  COMMERCIAL"
-                className={INPUT_CLASSES}
-              />
-            </div>
-            <div>
-              <label className={LABEL_CLASSES}>License Type — Arabic (نوع الرخصة)</label>
-              <input
-                type="text"
-                dir="rtl"
-                value={formData.licenseTypeAr || ''}
-                onChange={(e) => handleChange('licenseTypeAr', e.target.value)}
-                placeholder="مثال: خاصة  /  تجارية"
-                className={`${INPUT_CLASSES} font-bold`}
-              />
-            </div>
-
-            {/* License Issue Date */}
-            <div>
-              <label className={LABEL_CLASSES}>License Issue Date — English (تاريخ الإصدار)</label>
-              <input
-                type="text"
-                value={formData.licenseIssueDateEn || ''}
-                onChange={(e) => handleChange('licenseIssueDateEn', e.target.value)}
-                placeholder="DD/MM/YYYY  (e.g. 01/10/2020)"
-                className={`${INPUT_CLASSES} font-mono`}
-              />
-            </div>
-            <div>
-              <label className={LABEL_CLASSES}>License Issue Date — Arabic (بالأرقام العربية)</label>
-              <input
-                type="text"
-                dir="rtl"
-                value={formData.licenseIssueDateAr || ''}
-                onChange={(e) => handleChange('licenseIssueDateAr', e.target.value)}
-                placeholder="٠١/١٠/١٤٤٢  (Eastern-Arabic digits)"
-                className={`${INPUT_CLASSES} font-mono font-bold`}
-              />
-            </div>
-
-            {/* License Expiry Date */}
-            <div>
-              <label className={LABEL_CLASSES}>License Expiry Date — English (تاريخ الانتهاء)</label>
-              <input
-                type="text"
-                value={formData.licenseExpiryDateEn || ''}
-                onChange={(e) => handleChange('licenseExpiryDateEn', e.target.value)}
-                placeholder="DD/MM/YYYY  (e.g. 01/10/2030)"
-                className={`${INPUT_CLASSES} font-mono`}
-              />
-            </div>
-            <div>
-              <label className={LABEL_CLASSES}>License Expiry Date — Arabic (بالأرقام العربية)</label>
-              <input
-                type="text"
-                dir="rtl"
-                value={formData.licenseExpiryDateAr || ''}
-                onChange={(e) => handleChange('licenseExpiryDateAr', e.target.value)}
-                placeholder="٠١/١٠/١٤٥٢  (Eastern-Arabic digits)"
-                className={`${INPUT_CLASSES} font-mono font-bold`}
-              />
-            </div>
-
-            {/* Blood Type */}
-            <div className="md:col-span-2">
-              <label className={LABEL_CLASSES}>Blood Type (فصيلة الدم)</label>
-              <select
-                value={formData.bloodType || ''}
-                onChange={(e) => handleChange('bloodType', e.target.value)}
-                className={SELECT_CLASSES}
-              >
-                <option value="">— Select blood type —</option>
-                <option value="A+">A+ (أ موجب)</option>
-                <option value="A-">A− (أ سالب)</option>
-                <option value="B+">B+ (ب موجب)</option>
-                <option value="B-">B− (ب سالب)</option>
-                <option value="AB+">AB+ (أب موجب)</option>
-                <option value="AB-">AB− (أب سالب)</option>
-                <option value="O+">O+ (و موجب)</option>
-                <option value="O-">O− (و سالب)</option>
-              </select>
-            </div>
-          </div>
-        )}
-      </div>
-      )}
-
-      {/* Document — Passport */}
-      {isSectionVisible('PASSPORT', 'Document — Passport', ['passport', 'passport number', 'passport type', 'normal', 'issuing city', 'dhaka', 'status', 'valid']) && (
+      {/* ── 6. My Passport ── */}
+      {isSectionVisible('PASSPORT', '6. My Passport', ['passport', 'passport number', 'passport type', 'normal', 'issuing city', 'status', 'valid']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold border border-amber-100/80">
             <BookOpen className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Document — Passport (جواز السفر)</h3>
+            <h3 className="font-bold text-slate-900 text-sm">6. My Passport</h3>
             <p className="text-xs text-slate-500 font-medium">Official biometric passport details shown in My Passport screen</p>
           </div>
         </div>
@@ -1094,10 +687,9 @@ export default function CitizenForm({
             <label className={LABEL_CLASSES}>Issuing City (مكان الإصدار)</label>
             <input
               type="text"
-              dir="rtl"
               value={formData.passportIssuingCity || ''}
               onChange={(e) => handleChange('passportIssuingCity', e.target.value)}
-              placeholder="مكان الإصدار (مثال: دكا)"
+              placeholder="مكان الإصدار (مثال: دكا / Dhaka)"
               className={INPUT_CLASSES}
             />
           </div>
@@ -1117,129 +709,81 @@ export default function CitizenForm({
       </div>
       )}
 
-      {/* 6. Health Insurance */}
-      {isSectionVisible('INSURANCE', 'Health Insurance', ['health insurance', 'insurance company', 'policy', 'bupa', 'status', 'valid', 'expiry', 'issuing date']) && (
+      {/* ── 7. My Resident ID ── */}
+      {isSectionVisible('RESIDENT_ID', '7. My Resident ID', ['my resident id', 'resident id', 'id version', 'version number', 'issuing date', 'expiry date']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
-            <HeartPulse className="w-4 h-4" />
+            <FileText className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Health Insurance</h3>
-            <p className="text-xs text-slate-500">Official health coverage details shown in citizen profile</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div>
-            <label className={LABEL_CLASSES}>Issuing Date (تاريخ الإصدار)</label>
-            <input
-              type="text"
-              value={formData.insuranceIssuingDate || ''}
-              onChange={(e) => handleChange('insuranceIssuingDate', e.target.value)}
-              placeholder="DD/MM/YYYY"
-              className={`${INPUT_CLASSES} font-mono`}
-            />
-          </div>
-
-          <div>
-            <label className={LABEL_CLASSES}>Expiry Date (تاريخ الانتهاء)</label>
-            <input
-              type="text"
-              value={formData.insuranceExpiry || ''}
-              onChange={(e) => handleChange('insuranceExpiry', e.target.value)}
-              placeholder="DD/MM/YYYY"
-              className={`${INPUT_CLASSES} font-mono`}
-            />
-          </div>
-
-          <div>
-            <label className={LABEL_CLASSES}>Insurance Company</label>
-            <input
-              type="text"
-              value={formData.insuranceCompany || ''}
-              onChange={(e) => handleChange('insuranceCompany', e.target.value)}
-              placeholder="e.g. Bupa Arabia / Tawuniya"
-              className={INPUT_CLASSES}
-            />
-          </div>
-
-          <div>
-            <label className={LABEL_CLASSES}>Policy Number</label>
-            <input
-              type="text"
-              value={formData.insurancePolicyNo || ''}
-              onChange={(e) => handleChange('insurancePolicyNo', e.target.value)}
-              placeholder="e.g. POL-9842144"
-              className={`${INPUT_CLASSES} font-mono`}
-            />
-          </div>
-
-          <div>
-            <label className={LABEL_CLASSES}>Policy Status</label>
-            <input
-              type="text"
-              value={formData.insuranceStatus || ''}
-              onChange={(e) => handleChange('insuranceStatus', e.target.value)}
-              placeholder="e.g. Valid & Active (سارية)"
-              className={INPUT_CLASSES}
-            />
-          </div>
-        </div>
-      </div>
-      )}
-
-      {/* 7. Hajj Details */}
-      {isSectionVisible('HAJJ', 'Hajj Details', ['hajj', 'hajj eligibility', 'eligible', 'last hajj year']) && (
-      <div className={CARD_CLASSES}>
-        <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold border border-emerald-100/80">
-            <Moon className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-900 text-sm">Hajj Details</h3>
-            <p className="text-xs text-slate-500">Pilgrimage eligibility and official history</p>
+            <h3 className="font-bold text-slate-900 text-sm">7. My Resident ID</h3>
+            <p className="text-xs text-slate-500">Official Resident ID profile card details shown in My Resident ID screen</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Resident ID Number (Synced with National ID) */}
           <div>
-            <label className={LABEL_CLASSES}>Hajj Status (حالة الحج)</label>
+            <label className={LABEL_CLASSES}>Resident ID Number</label>
+            <div className="px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-900 flex items-center justify-between">
+              <span>{formData.nationalId || '—'}</span>
+              <span className="text-[10px] text-slate-500 font-sans font-semibold">Synced with Login ID</span>
+            </div>
+          </div>
+
+          {/* ID Version */}
+          <div>
+            <label className={LABEL_CLASSES}>ID Version (رقم النسخة)</label>
             <input
               type="text"
-              value={formData.hajjEligibility || ''}
-              onChange={(e) => handleChange('hajjEligibility', e.target.value)}
-              placeholder="e.g. Eligible for Hajj / مستحق لأداء الحج"
-              className={INPUT_CLASSES}
+              value={formData.versionNumber || '٢'}
+              onChange={(e) => handleChange('versionNumber', e.target.value)}
+              placeholder="e.g. ٢ or 2"
+              className={`${INPUT_CLASSES} font-bold`}
             />
           </div>
 
+          {/* Issuing Date */}
           <div>
-            <label className={LABEL_CLASSES}>Last Hajj Year (آخر سنة أداء للحج)</label>
+            <label className={LABEL_CLASSES}>Issuing Date (تاريخ الإصدار)</label>
             <input
               type="text"
-              value={formData.lastHajjYear || ''}
-              onChange={(e) => handleChange('lastHajjYear', e.target.value)}
-              placeholder="e.g. 1445 or - (لم يؤد الحج)"
-              className={INPUT_CLASSES}
+              value={formData.residentIdIssuingDate || ''}
+              onChange={(e) => handleChange('residentIdIssuingDate', e.target.value)}
+              placeholder="DD/MM/YYYY (e.g. 28/03/2021)"
+              className={`${INPUT_CLASSES} font-mono`}
+            />
+          </div>
+
+          {/* Expiry Date */}
+          <div>
+            <label className={LABEL_CLASSES}>Expiry Date (تاريخ الانتهاء)</label>
+            <input
+              type="text"
+              value={formData.expiryDateEn || ''}
+              onChange={(e) => handleChange('expiryDateEn', e.target.value)}
+              placeholder="YYYY/MM/DD (e.g. 2026/10/08)"
+              className={`${INPUT_CLASSES} font-mono`}
             />
           </div>
         </div>
       </div>
       )}
 
-      {/* 8. Visa Details */}
-      {isSectionVisible('VISA', 'Visa Details', ['visa', 'visa number', 'visa type', 'exit date', 'entry']) && (
+      {/* ── 8. My Visa ── */}
+      {isSectionVisible('VISA', '8. My Visa', ['visa', 'my visa', 'visa number', 'visa type', 'exit date', 'entry']) && (
       <div className={CARD_CLASSES}>
         <div className="flex items-center gap-2.5 pb-4 mb-5 border-b border-slate-100">
           <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold border border-blue-100/80">
             <Plane className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Visa Details</h3>
+            <h3 className="font-bold text-slate-900 text-sm">8. My Visa</h3>
             <p className="text-xs text-slate-500">Visa number, category, and exit authorization date</p>
           </div>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
             <label className={LABEL_CLASSES}>Visa Number</label>
@@ -1272,6 +816,132 @@ export default function CitizenForm({
             />
           </div>
         </div>
+      </div>
+      )}
+
+      {/* ── 9. Driving License ── */}
+      {isSectionVisible('DRIVING_LICENSE', '9. Driving License', ['driving license', 'license type', 'private', 'commercial', 'blood type', 'issue date', 'expiry date', 'status']) && (
+      <div className={CARD_CLASSES}>
+        <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold border border-blue-100/80">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900 text-sm">9. Driving License</h3>
+              <p className="text-xs text-slate-500">License type, dates and blood type shown in Driving License viewer</p>
+            </div>
+          </div>
+          <label className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors shrink-0 select-none">
+            <input
+              type="checkbox"
+              checked={formData.hasDrivingLicense !== false}
+              onChange={(e) => handleChange('hasDrivingLicense', e.target.checked)}
+              className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300 cursor-pointer"
+            />
+            <span className={`text-xs font-bold ${formData.hasDrivingLicense !== false ? 'text-emerald-700' : 'text-slate-500'}`}>
+              {formData.hasDrivingLicense !== false ? '✓ License Active (متاحة)' : '✕ License Disabled (غير متاحة)'}
+            </span>
+          </label>
+        </div>
+
+        {formData.hasDrivingLicense === false ? (
+          <div className="p-4 rounded-xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs font-medium flex items-center gap-2">
+            <span className="font-bold">⚠️ Driving License Status:</span>
+            <span>Disabled for this citizen. The mobile app will display &quot;No driving license available&quot; when accessed.</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* License Type */}
+            <div>
+              <label className={LABEL_CLASSES}>License Type — English</label>
+              <input
+                type="text"
+                value={formData.licenseTypeEn || ''}
+                onChange={(e) => handleChange('licenseTypeEn', e.target.value)}
+                placeholder="e.g. PRIVATE  /  COMMERCIAL"
+                className={INPUT_CLASSES}
+              />
+            </div>
+            <div>
+              <label className={LABEL_CLASSES}>License Type — Arabic (نوع الرخصة)</label>
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.licenseTypeAr || ''}
+                onChange={(e) => handleChange('licenseTypeAr', e.target.value)}
+                placeholder="مثال: خاصة  /  تجارية"
+                className={`${INPUT_CLASSES} font-bold`}
+              />
+            </div>
+
+            {/* License Issue Date */}
+            <div>
+              <label className={LABEL_CLASSES}>License Issue Date — English (تاريخ الإصدار)</label>
+              <input
+                type="text"
+                value={formData.licenseIssueDateEn || ''}
+                onChange={(e) => handleChange('licenseIssueDateEn', e.target.value)}
+                placeholder="DD/MM/YYYY  (e.g. 10/03/2026)"
+                className={`${INPUT_CLASSES} font-mono`}
+              />
+            </div>
+            <div>
+              <label className={LABEL_CLASSES}>License Issue Date — Arabic (بالأرقام العربية)</label>
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.licenseIssueDateAr || ''}
+                onChange={(e) => handleChange('licenseIssueDateAr', e.target.value)}
+                placeholder="١٠/٠٣/١٤٤٧  (Eastern-Arabic digits)"
+                className={`${INPUT_CLASSES} font-mono font-bold`}
+              />
+            </div>
+
+            {/* License Expiry Date */}
+            <div>
+              <label className={LABEL_CLASSES}>License Expiry Date — English (تاريخ الانتهاء)</label>
+              <input
+                type="text"
+                value={formData.licenseExpiryDateEn || ''}
+                onChange={(e) => handleChange('licenseExpiryDateEn', e.target.value)}
+                placeholder="DD/MM/YYYY  (e.g. 21/11/2035)"
+                className={`${INPUT_CLASSES} font-mono`}
+              />
+            </div>
+            <div>
+              <label className={LABEL_CLASSES}>License Expiry Date — Arabic (بالأرقام العربية)</label>
+              <input
+                type="text"
+                dir="rtl"
+                value={formData.licenseExpiryDateAr || ''}
+                onChange={(e) => handleChange('licenseExpiryDateAr', e.target.value)}
+                placeholder="٢١/١١/١٤٥٧  (Eastern-Arabic digits)"
+                className={`${INPUT_CLASSES} font-mono font-bold`}
+              />
+            </div>
+
+            {/* Blood Type */}
+            <div className="md:col-span-2">
+              <label className={LABEL_CLASSES}>Blood Type (فصيلة الدم)</label>
+              <select
+                value={formData.bloodType || ''}
+                onChange={(e) => handleChange('bloodType', e.target.value)}
+                className={SELECT_CLASSES}
+              >
+                <option value="">— Select blood type —</option>
+                <option value="A+">A+ (أ موجب)</option>
+                <option value="A-">A− (أ سالب)</option>
+                <option value="B+">B+ (ب موجب)</option>
+                <option value="B-">B− (ب سالب)</option>
+                <option value="AB+">AB+ (أب موجب)</option>
+                <option value="AB-">AB− (أب سالب)</option>
+                <option value="O+">O+ (و موجب)</option>
+                <option value="O-">O− (و سالب)</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
       )}
 

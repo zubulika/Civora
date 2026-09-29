@@ -55,8 +55,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.civora.app.R
-import com.civora.app.core.components.UserAvatarImage
+import com.civora.app.core.components.AbsherCornerPattern
+import com.civora.app.core.components.DynamicDrivingLicenseCard
 import com.civora.app.core.components.DynamicMuqeemCard
+import com.civora.app.core.components.UserAvatarImage
 import com.civora.app.core.designsystem.AbsherCardBg
 import com.civora.app.core.designsystem.AbsherCardBorder
 import com.civora.app.core.designsystem.AbsherDarkSection
@@ -88,7 +90,8 @@ fun DashboardScreen(
     onNavigateToNotifications: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToIdViewer: () -> Unit = onNavigateToWallet
+    onNavigateToIdViewer: () -> Unit = onNavigateToWallet,
+    onNavigateToDrivingLicense: () -> Unit = onNavigateToWallet
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -195,9 +198,10 @@ fun DashboardScreen(
                             }
                         }
 
-                        // My Digital Documents Header
+                        // My Digital Documents / Resident ID Header
+                        val docTitle = if (state.user.hasDrivingLicense) "Resident ID" else "My Digital Documents"
                         Text(
-                            text = "My Digital Documents",
+                            text = docTitle,
                             color = textPrimary,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
@@ -217,6 +221,30 @@ fun DashboardScreen(
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
+
+                        // Driving License Card Preview (when enabled, stacked vertically below Resident ID card)
+                        if (state.user.hasDrivingLicense) {
+                            Spacer(modifier = Modifier.height(14.dp))
+                            Text(
+                                text = "Driving License",
+                                color = textPrimary,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 8.dp)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 2.dp)
+                                    .clickable { onNavigateToDrivingLicense() }
+                            ) {
+                                DynamicDrivingLicenseCard(
+                                    user = state.user,
+                                    language = LanguageState.currentLanguage,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -226,8 +254,16 @@ fun DashboardScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(quickAccessBg)
-                            .padding(horizontal = 16.dp, vertical = 16.dp)
                     ) {
+                        // Authentic Absher Guilloche Watermark Pattern behind Quick Access Header
+                        AbsherCornerPattern(
+                            isDark = isDark,
+                            modifier = Modifier
+                                .fillMaxWidth(0.55f)
+                                .height(150.dp)
+                                .align(Alignment.TopStart)
+                        )
+
                         if (!isDark) {
                             Box(
                                 modifier = Modifier
@@ -235,7 +271,11 @@ fun DashboardScreen(
                                     .background(Color(0xFFD9EEE9).copy(alpha = 0.32f))
                             )
                         }
-                        Column(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 16.dp)
+                        ) {
                             Text(
                                 text = "Quick Access",
                                 color = quickAccessHeaderColor,

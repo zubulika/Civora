@@ -56,6 +56,7 @@ import com.civora.app.core.designsystem.AppLanguage
 import com.civora.app.core.designsystem.LanguageState
 import com.civora.app.core.model.UserProfile
 import com.civora.app.core.util.OfficialQrGenerator
+import kotlin.math.min
 
 private val CardLabelTextColor = Color.White
 private val CardLabelStrokeColor = Color(0xFF111111)
@@ -77,6 +78,47 @@ private data class DrivingLicenseField(
     val labelAr: String,
     val valueAr: String
 )
+
+@Composable
+private fun ResponsiveSingleLineText(
+    text: String,
+    color: Color,
+    baseFontSize: TextUnit,
+    minFontSize: TextUnit,
+    fontWeight: FontWeight,
+    fontFamily: FontFamily,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified
+) {
+    BoxWithConstraints(modifier = modifier) {
+        val availableWidth = maxWidth.value.coerceAtLeast(1f)
+        val baseSize = baseFontSize.value
+        val minSize = minFontSize.value
+        val estimatedTextWidth = text.length.coerceAtLeast(1) * baseSize * 0.58f
+        val fittedSize = if (estimatedTextWidth > availableWidth) {
+            (baseSize * availableWidth / estimatedTextWidth).coerceAtLeast(minSize)
+        } else {
+            baseSize
+        }
+
+        Text(
+            text = text,
+            color = color,
+            fontSize = fittedSize.sp,
+            lineHeight = (fittedSize * 1.15f).sp,
+            fontWeight = fontWeight,
+            fontFamily = fontFamily,
+            textAlign = textAlign,
+            letterSpacing = letterSpacing,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
 
 /**
  * 4-Line Arabic Official Security Disclaimer rendered with authentic Noto Kufi Arabic Black typography,
@@ -259,8 +301,12 @@ fun DynamicDrivingLicenseCard(
             val cardWidth = maxWidth
             val cardHeight = maxHeight
 
-            // Proportional scaling multiplier based on reference width (360dp) with dynamic responsive adaptation
-            val scale = (cardWidth / 360.dp).coerceIn(0.5f, 2.0f)
+            // Proportional scaling multiplier based on the complete card bounds.
+            // This keeps the license readable and prevents row overlap on narrow/small devices.
+            val widthScale = cardWidth / 360.dp
+            val heightScale = cardHeight / 227.dp
+            val scale = min(widthScale, heightScale).coerceIn(0.46f, 1.75f)
+            val fieldTextScale = scale.coerceIn(0.50f, 1.25f)
 
             // 1. Template Background: Scaled slightly and clipped to eliminate any scan outline and outer artifacts
             Image(
@@ -375,40 +421,34 @@ fun DynamicDrivingLicenseCard(
             // 4. Holder Name Section (Prominent size, crisp bold typography matching reference image)
             Column(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
                     .offset(
-                        x = -(cardWidth * 0.050f),
-                        y = cardHeight * 0.258f
-                    ),
+                        x = cardWidth * 0.326f,
+                        y = cardHeight * 0.246f
+                    )
+                    .width(cardWidth * 0.635f),
                 horizontalAlignment = Alignment.End
             ) {
-                Text(
+                ResponsiveSingleLineText(
                     text = user.fullNameAr.ifEmpty { "محمد بالا مد حسين أوسين" },
-                    fontFamily = CardTextFont,
-                    fontSize = (16.5f * scale).sp,
-                    lineHeight = (18.5f * scale).sp,
                     color = CardNameArColor,
+                    baseFontSize = (14.2f * scale).sp,
+                    minFontSize = (9.5f * scale).sp,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.End,
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = TextOverflow.Ellipsis,
-                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
-                )
-                Spacer(modifier = Modifier.height(2.dp * scale))
-                Text(
-                    text = user.fullNameEn.ifEmpty { "MD BALAL HOSSAIN" }.uppercase(),
                     fontFamily = CardTextFont,
-                    fontSize = (11.5f * scale).sp,
-                    lineHeight = (13.5f * scale).sp,
-                    color = CardNameEnColor,
-                    fontWeight = FontWeight.Medium,
-                    letterSpacing = (0.35f * scale).sp,
                     textAlign = TextAlign.End,
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = TextOverflow.Ellipsis,
-                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(1.5.dp * scale))
+                ResponsiveSingleLineText(
+                    text = user.fullNameEn.ifEmpty { "MD BALAL HOSSAIN" }.uppercase(),
+                    color = CardNameEnColor,
+                    baseFontSize = (10.2f * scale).sp,
+                    minFontSize = (7.0f * scale).sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = CardTextFont,
+                    letterSpacing = (0.3f * scale).sp,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
@@ -463,11 +503,11 @@ fun DynamicDrivingLicenseCard(
             Column(
                 modifier = Modifier
                     .offset(
-                        x = cardWidth * 0.332f,
-                        y = cardHeight * 0.430f
+                        x = cardWidth * 0.326f,
+                        y = cardHeight * 0.425f
                     )
-                    .width(cardWidth * 0.620f)
-                    .height(cardHeight * 0.505f),
+                    .width(cardWidth * 0.635f)
+                    .height(cardHeight * 0.512f),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 fields.forEach { field ->
@@ -475,36 +515,36 @@ fun DynamicDrivingLicenseCard(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Left sub-column: English label (Feathered stroke placeholder) + value (Crisp solid bold)
+                        // Left sub-column: English label + stronger adaptive value.
                         Row(
-                            modifier = Modifier.weight(0.50f),
+                            modifier = Modifier.weight(0.53f),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Start
                         ) {
                             FeatheredStrokeLabel(
                                 text = field.labelEn,
-                                fontSize = (8.4f * scale).sp,
-                                scale = scale,
+                                fontSize = (8.0f * fieldTextScale).sp,
+                                scale = fieldTextScale,
                                 fontFamily = CardTextFont,
                                 fontWeight = FontWeight.Bold
                             )
-                            Spacer(modifier = Modifier.width(3.dp * scale))
-                            Text(
+                            Spacer(modifier = Modifier.width(2.2.dp * fieldTextScale))
+                            ResponsiveSingleLineText(
                                 text = field.valueEn,
                                 color = CardValueColor,
-                                fontSize = (9.2f * scale).sp,
-                                fontWeight = FontWeight.Bold,
+                                baseFontSize = (9.35f * fieldTextScale).sp,
+                                minFontSize = (6.6f * fieldTextScale).sp,
+                                fontWeight = FontWeight.ExtraBold,
                                 fontFamily = CardTextFont,
-                                maxLines = 1,
-                                softWrap = false,
-                                overflow = TextOverflow.Ellipsis,
-                                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                                modifier = Modifier.weight(1f)
                             )
                         }
 
-                        // Right sub-column: Arabic label (Feathered stroke placeholder with Tajawal) + value (Crisp solid bold)
+                        Spacer(modifier = Modifier.width(2.dp * fieldTextScale))
+
+                        // Right sub-column: Arabic label + adaptive value.
                         Box(
-                            modifier = Modifier.weight(0.50f),
+                            modifier = Modifier.weight(0.47f),
                             contentAlignment = Alignment.CenterEnd
                         ) {
                             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -515,22 +555,21 @@ fun DynamicDrivingLicenseCard(
                                 ) {
                                     FeatheredStrokeLabel(
                                         text = field.labelAr,
-                                        fontSize = (8.8f * scale).sp,
-                                        scale = scale,
+                                        fontSize = (8.45f * fieldTextScale).sp,
+                                        scale = fieldTextScale,
                                         fontFamily = CardArabicLabelFont,
                                         fontWeight = FontWeight.ExtraBold
                                     )
-                                    Spacer(modifier = Modifier.width(3.dp * scale))
-                                    Text(
+                                    Spacer(modifier = Modifier.width(2.2.dp * fieldTextScale))
+                                    ResponsiveSingleLineText(
                                         text = field.valueAr,
                                         color = CardValueColor,
-                                        fontSize = (9.6f * scale).sp,
+                                        baseFontSize = (9.45f * fieldTextScale).sp,
+                                        minFontSize = (6.8f * fieldTextScale).sp,
                                         fontWeight = FontWeight.Black,
                                         fontFamily = CardTextFont,
-                                        maxLines = 1,
-                                        softWrap = false,
-                                        overflow = TextOverflow.Ellipsis,
-                                        style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
+                                        modifier = Modifier.weight(1f),
+                                        textAlign = TextAlign.Start
                                     )
                                 }
                             }

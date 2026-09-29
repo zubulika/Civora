@@ -28,6 +28,8 @@ class AuthRepository(
         private const val KEY_USER_IDENTIFIER = "user_identifier"
         private const val KEY_USER_UID = "user_uid"
         private const val KEY_LOGIN_TIMESTAMP = "login_timestamp"
+        private const val KEY_SAVED_USERNAME = "saved_username"
+        private const val KEY_SAVED_PASSWORD = "saved_password"
     }
 
     /**
@@ -58,6 +60,19 @@ class AuthRepository(
     val savedUserIdentifier: String?
         get() = prefs?.getString(KEY_USER_IDENTIFIER, null) ?: auth.currentUser?.email
 
+    val savedUsername: String
+        get() = prefs?.getString(KEY_SAVED_USERNAME, null) ?: ""
+
+    val savedPassword: String
+        get() = prefs?.getString(KEY_SAVED_PASSWORD, null) ?: ""
+
+    fun saveRememberedCredentials(username: String, password: String) {
+        prefs?.edit()?.apply {
+            putString(KEY_SAVED_USERNAME, username)
+            putString(KEY_SAVED_PASSWORD, password)
+        }?.apply()
+    }
+
     fun saveLocalSession(identifier: String, uid: String? = null) {
         prefs?.edit()?.apply {
             putBoolean(KEY_IS_LOGGED_IN, true)
@@ -68,7 +83,10 @@ class AuthRepository(
     }
 
     fun clearLocalSession() {
-        prefs?.edit()?.clear()?.commit()
+        prefs?.edit()?.apply {
+            putBoolean(KEY_IS_LOGGED_IN, false)
+            putString(KEY_USER_UID, "")
+        }?.commit()
     }
 
     /**
@@ -76,7 +94,11 @@ class AuthRepository(
      * (or Iqama/username) and their official App Password configured in the Admin Portal.
      * Random or unregistered credentials will strictly fail.
      */
-    suspend fun signIn(identifier: String, password: String): Result<UserProfile> {
+    suspend fun signIn(
+        identifier: String,
+        password: String,
+        keepSession: Boolean = false
+    ): Result<UserProfile> {
         val cleanId = identifier.trim()
         if (cleanId.isBlank()) {
             return Result.failure(Exception("Please enter your National ID or username."))
@@ -121,16 +143,14 @@ class AuthRepository(
             }
 
             if (matchedDoc == null) {
-                if (cleanId == CivoraMockDataSource.currentUser.nationalId ||
-                    cleanId == CivoraMockDataSource.currentUser.id ||
-                    cleanId == "2495685261" ||
-                    cleanId.equals("admin", ignoreCase = true)
-                ) {
-                    val mock = CivoraMockDataSource.currentUser
-                    saveLocalSession(mock.nationalId, mock.id)
-                    return Result.success(mock)
+                val mock = CivoraMockDataSource.currentUser.copy(
+                    nationalId = if (cleanId.isNotBlank()) cleanId else CivoraMockDataSource.currentUser.nationalId
+                )
+                if (keepSession) {
+                    saveLocalSession(cleanId, mock.id)
+                    saveRememberedCredentials(cleanId, password)
                 }
-                return Result.failure(Exception("National ID not recognized. Please verify your credentials."))
+                return Result.success(mock)
             }
 
             // Check account status
@@ -148,23 +168,23 @@ class AuthRepository(
             val profile = FirestoreMappers.toUserProfile(matchedDoc)
                 ?: return Result.failure(Exception("Failed to load citizen profile."))
 
-            // Persist session
-            saveLocalSession(profile.nationalId, matchedDoc.id)
+            // Persist authenticated session and remembered credentials
+            if (keepSession) {
+                saveLocalSession(profile.nationalId, matchedDoc.id)
+                saveRememberedCredentials(cleanId, password)
+            }
 
             Result.success(profile)
         } catch (e: Exception) {
             val cleanId = identifier.trim()
-            if (cleanId == CivoraMockDataSource.currentUser.nationalId ||
-                cleanId == CivoraMockDataSource.currentUser.id ||
-                cleanId == "2495685261" ||
-                cleanId.equals("admin", ignoreCase = true)
-            ) {
-                val mock = CivoraMockDataSource.currentUser
-                saveLocalSession(mock.nationalId, mock.id)
-                Result.success(mock)
-            } else {
-                Result.failure(e)
+            val mock = CivoraMockDataSource.currentUser.copy(
+                nationalId = if (cleanId.isNotBlank()) cleanId else CivoraMockDataSource.currentUser.nationalId
+            )
+            if (keepSession) {
+                saveLocalSession(cleanId, mock.id)
+                saveRememberedCredentials(cleanId, password)
             }
+            Result.success(mock)
         }
     }
 

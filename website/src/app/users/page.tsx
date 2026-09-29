@@ -26,7 +26,7 @@ export default function UsersDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedNationality, setSelectedNationality] = useState('ALL');
   const [previewCitizen, setPreviewCitizen] = useState<UserProfile | null>(null);
-  const [modalCardTab, setModalCardTab] = useState<'license' | 'resident'>('license');
+  const [modalCardTab, setModalCardTab] = useState<'resident' | 'license'>('resident');
 
   const loadCitizens = useCallback(async () => {
     setLoading(true);
@@ -266,6 +266,18 @@ export default function UsersDirectoryPage() {
               <div className="flex bg-slate-100 p-1 rounded-xl mb-4 border border-slate-200">
                 <button
                   type="button"
+                  onClick={() => setModalCardTab('resident')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    modalCardTab === 'resident'
+                      ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Digital Document / E-CAMA Card</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setModalCardTab('license')}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                     modalCardTab === 'license'
@@ -276,25 +288,13 @@ export default function UsersDirectoryPage() {
                   <Car className="w-3.5 h-3.5" />
                   <span>Driving License (رخصة القيادة)</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setModalCardTab('resident')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                    modalCardTab === 'resident'
-                      ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
-                      : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>Resident ID (هوية مقيم)</span>
-                </button>
               </div>
 
               <div className="py-2">
-                {modalCardTab === 'license' ? (
-                  <DrivingLicensePreview user={previewCitizen} />
-                ) : (
+                {modalCardTab === 'resident' ? (
                   <MuqeemCardPreview user={previewCitizen} />
+                ) : (
+                  <DrivingLicensePreview user={previewCitizen} />
                 )}
               </div>
 

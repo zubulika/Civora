@@ -94,8 +94,52 @@ class UserRepository(
                             }
                     }
                 }
+        }
+    }
+
+    suspend fun refresh(): Boolean = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
+        try {
+            val db = FirebaseFirestore.getInstance()
+            val current = _userState.value
+            val docId = current.id.ifEmpty { "usr_${current.nationalId}" }
+
+            db.collection("users").document(docId).get(com.google.firebase.firestore.Source.SERVER)
+                .addOnSuccessListener { snap ->
+                    if (snap != null && snap.exists()) {
+                        FirestoreMappers.toUserProfile(snap)?.let {
+                            _userState.value = it
+                            saveCachedProfile(it)
+                            listenToUserDocument(snap.id)
+                        }
+                        if (continuation.isActive) continuation.resume(true) {}
+                    } else {
+                        val natId = current.nationalId
+                        if (natId.isNotBlank()) {
+                            db.collection("users").whereEqualTo("nationalId", natId).limit(1).get(com.google.firebase.firestore.Source.SERVER)
+                                .addOnSuccessListener { qSnap ->
+                                    if (qSnap != null && !qSnap.isEmpty) {
+                                        val doc = qSnap.documents[0]
+                                        FirestoreMappers.toUserProfile(doc)?.let {
+                                            _userState.value = it
+                                            saveCachedProfile(it)
+                                            listenToUserDocument(doc.id)
+                                        }
+                                    }
+                                    if (continuation.isActive) continuation.resume(true) {}
+                                }
+                                .addOnFailureListener {
+                                    if (continuation.isActive) continuation.resume(false) {}
+                                }
+                        } else {
+                            if (continuation.isActive) continuation.resume(true) {}
+                        }
+                    }
+                }
+                .addOnFailureListener {
+                    if (continuation.isActive) continuation.resume(false) {}
+                }
         } catch (_: Exception) {
-            // Graceful offline fallback
+            if (continuation.isActive) continuation.resume(false) {}
         }
     }
 

@@ -376,11 +376,11 @@ async function renderDrivingLicenseCanvas(user: Partial<UserProfile>): Promise<H
   }
 
   // 2. Holder Photo (Positioned precisely to cover the template's pre-printed photo frame)
-  const photoX = W * 0.040;
-  const photoY = H * 0.235;
-  const photoW = W * 0.274;
-  const photoH = H * 0.482;
-  const photoRadius = 22;
+  const photoX = W * 0.026;
+  const photoY = H * 0.227;
+  const photoW = W * 0.282;
+  const photoH = H * 0.496;
+  const photoRadius = 44;
 
   ctx.save();
   roundRect(ctx, photoX, photoY, photoW, photoH, photoRadius);
@@ -397,11 +397,11 @@ async function renderDrivingLicenseCanvas(user: Partial<UserProfile>): Promise<H
   ctx.restore();
 
   // 3. Verification Box (QR Code with Centered Absher Emblem + 4-Line Arabic Disclaimer)
-  const boxX = W * 0.040;
-  const boxY = H * 0.728;
-  const boxW = W * 0.274;
-  const boxH = H * 0.158;
-  const boxRadius = 10;
+  const boxX = W * 0.026;
+  const boxY = H * 0.735;
+  const boxW = W * 0.282;
+  const boxH = H * 0.163;
+  const boxRadius = 13;
 
   ctx.save();
   ctx.fillStyle = '#FFFFFF';
@@ -452,21 +452,21 @@ async function renderDrivingLicenseCanvas(user: Partial<UserProfile>): Promise<H
   ctx.restore();
 
   // 4. Holder Names Header: Standard Sans-Serif (Inter/Segoe UI)
-  const nameRight = W * 0.961;
+  const nameRight = W * 0.965;
   const nameTop = H * 0.275;
 
   ctx.save();
   ctx.fillStyle = '#222222';
-  ctx.font = 'bold 46px "Inter", "Segoe UI", Arial, sans-serif';
+  ctx.font = 'bold 62px "Inter", "Segoe UI", Arial, sans-serif';
   ctx.textAlign = 'right';
   ctx.direction = 'rtl';
   ctx.fillText(user.fullNameAr || '', nameRight, nameTop);
 
   ctx.fillStyle = '#222222';
-  ctx.font = '600 32px "Inter", "Segoe UI", Arial, sans-serif';
+  ctx.font = '600 45px "Inter", "Segoe UI", Arial, sans-serif';
   ctx.textAlign = 'right';
   ctx.direction = 'ltr';
-  ctx.fillText((user.fullNameEn || '').toUpperCase(), nameRight, nameTop + 42);
+  ctx.fillText((user.fullNameEn || '').toUpperCase(), nameRight, nameTop + 52);
   ctx.restore();
 
   // 5. 7 Bilingual License Credentials Rows
@@ -517,28 +517,28 @@ async function renderDrivingLicenseCanvas(user: Partial<UserProfile>): Promise<H
 
   const rowStartY = H * 0.448;
   const rowH = (H * 0.512) / 6.4;
-  const colLeftX = W * 0.326;
-  const colRightX = W * 0.961;
+  const colLeftX = W * 0.325;
+  const colRightX = W * 0.965;
 
   fields.forEach((field, i) => {
     const y = rowStartY + i * rowH;
 
     // English sub-column (Left side): Pre-printed Label (SansSerif) + Much Bolder Dynamic English Value (SansSerif Black)
-    drawFeatheredStrokeLabel(ctx, field.labelEn, colLeftX, y, 26, 'left');
+    drawFeatheredStrokeLabel(ctx, field.labelEn, colLeftX, y, 35, 'left');
     ctx.save();
-    ctx.font = '900 30px "Inter", "Segoe UI", Arial, sans-serif';
+    ctx.font = '900 43px "Inter", "Segoe UI", Arial, sans-serif';
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'left';
-    ctx.fillText(field.valEn, colLeftX + 175, y);
+    ctx.fillText(field.valEn, colLeftX + 220, y);
     ctx.restore();
 
     // Arabic sub-column (Right side): Pre-printed Label (Tajawal) + Much Bolder Dynamic Arabic Value (SansSerif Black)
-    drawFeatheredStrokeLabel(ctx, field.labelAr, colRightX, y, 26, 'right');
+    drawFeatheredStrokeLabel(ctx, field.labelAr, colRightX, y, 37, 'right');
     ctx.save();
-    ctx.font = '900 30px "Inter", "Segoe UI", Arial, sans-serif';
+    ctx.font = '900 43px "Inter", "Segoe UI", Arial, sans-serif';
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'right';
-    ctx.fillText(field.valAr, colRightX - 165, y);
+    ctx.fillText(field.valAr, colRightX - 220, y);
     ctx.restore();
   });
 

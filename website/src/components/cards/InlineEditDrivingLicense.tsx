@@ -39,9 +39,10 @@ function InlineField({ value, placeholder, arLabel, enLabel, onChange, mono, arL
   };
 
   return (
-    <div className="flex items-center justify-between text-black font-black text-[12px] leading-tight font-sans">
-      <div className="flex items-center gap-2">
-        <span className="font-bold tracking-tight select-none" style={enLabelStyle}>{enLabel}</span>
+    <div className="flex items-center justify-between w-full">
+      {/* English sub-column (Left side): flex 0.53 */}
+      <div className="flex-[0.53] flex items-center gap-[0.6cqw]">
+        <span className="font-bold tracking-tight select-none shrink-0" style={enLabelStyle}>{enLabel}</span>
         {editing ? (
           <input
             ref={inputRef}
@@ -49,23 +50,42 @@ function InlineField({ value, placeholder, arLabel, enLabel, onChange, mono, arL
             onChange={e => onChange(e.target.value)}
             onBlur={() => setEditing(false)}
             placeholder={placeholder}
-            className={`bg-white/95 border-2 border-emerald-500 rounded-md px-2 py-0.5 text-[11.5px] font-black text-black outline-none shadow-lg ${mono ? 'font-mono' : ''}`}
-            style={{ minWidth: 90, maxWidth: 130 }}
+            className={`bg-white/95 border-2 border-emerald-500 rounded px-1 py-0 font-black text-black outline-none shadow-lg ${mono ? 'font-mono' : 'font-sans'}`}
+            style={{
+              fontSize: '2.72cqw',
+              lineHeight: '3.1cqw',
+              minWidth: '10cqw',
+              maxWidth: '22cqw',
+            }}
           />
         ) : (
           <button
             type="button"
             onClick={open}
             title={`Click to edit — ${placeholder}`}
-            className={`font-black text-black hover:bg-white/60 hover:text-emerald-900 px-1 py-0.5 rounded cursor-pointer transition-colors min-w-[40px] text-left border border-transparent hover:border-emerald-400 ${mono ? 'font-mono' : ''}`}
+            className={`font-black text-black hover:bg-white/60 hover:text-emerald-900 px-0.5 py-0 rounded cursor-pointer transition-colors text-left border border-transparent hover:border-emerald-400 truncate flex-1 ${mono ? 'font-mono' : 'font-sans'}`}
+            style={{
+              fontSize: '2.72cqw',
+              lineHeight: '3.1cqw',
+            }}
           >
-            {value || <span className="text-gray-400/70 italic font-normal text-[10px]">{placeholder}</span>}
+            {value || <span className="text-gray-400/70 italic font-normal text-[2.0cqw]">{placeholder}</span>}
           </button>
         )}
       </div>
-      <div className="flex items-center gap-2" dir="rtl">
-        <span className="font-bold tracking-tight select-none" style={arLabelStyle}>{arLabel}</span>
-        <span className="font-black text-black font-sans">
+
+      <div style={{ width: '0.55cqw' }} />
+
+      {/* Arabic sub-column (Right side): flex 0.47, dir RTL */}
+      <div className="flex-[0.47] flex items-center gap-[0.6cqw]" dir="rtl">
+        <span className="font-extrabold tracking-tight select-none shrink-0" style={arLabelStyle}>{arLabel}</span>
+        <span
+          className="font-black text-black font-sans truncate flex-1 text-right"
+          style={{
+            fontSize: '2.72cqw',
+            lineHeight: '3.1cqw',
+          }}
+        >
           {value ? toArabicNumerals(value) : ''}
         </span>
       </div>
@@ -78,10 +98,11 @@ interface NameFieldProps {
   onChange: (v: string) => void;
   placeholder: string;
   className: string;
+  style?: React.CSSProperties;
   dir: 'ltr' | 'rtl';
 }
 
-function NameInlineField({ value, onChange, placeholder, className, dir }: NameFieldProps) {
+function NameInlineField({ value, onChange, placeholder, className, style, dir }: NameFieldProps) {
   const [editing, setEditing] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
 
@@ -96,8 +117,8 @@ function NameInlineField({ value, onChange, placeholder, className, dir }: NameF
         onBlur={() => setEditing(false)}
         placeholder={placeholder}
         dir={dir}
-        className={`bg-white/95 border-2 border-emerald-500 rounded-md px-2 py-0.5 outline-none shadow-lg text-slate-900 w-full max-w-[260px] ${className}`}
-        style={{ fontSize: 'inherit' }}
+        className={`bg-white/95 border-2 border-emerald-500 rounded px-1 py-0 outline-none shadow-lg text-slate-900 w-full ${className}`}
+        style={style}
       />
     );
   }
@@ -107,9 +128,10 @@ function NameInlineField({ value, onChange, placeholder, className, dir }: NameF
       type="button"
       onClick={open}
       title={`Click to edit — ${placeholder}`}
-      className={`${className} hover:bg-white/40 rounded-md px-1 py-0.5 cursor-pointer border border-transparent hover:border-emerald-400 transition-colors text-left`}
+      className={`${className} hover:bg-white/40 rounded px-1 py-0 cursor-pointer border border-transparent hover:border-emerald-400 transition-colors text-right w-full truncate`}
+      style={style}
     >
-      {value || <span className="text-gray-400/60 italic font-normal" style={{ fontSize: '12px' }}>{placeholder}</span>}
+      {value || <span className="text-gray-400/60 italic font-normal text-[2.2cqw]">{placeholder}</span>}
     </button>
   );
 }
@@ -135,18 +157,22 @@ export default function InlineEditDrivingLicense({
 
   const labelStrokeStyleAr: React.CSSProperties = {
     color: '#ffffff',
-    WebkitTextStroke: '0.6px #111111',
+    WebkitTextStroke: '0.36cqw #111111',
     textShadow:
-      '-0.6px -0.6px 0 #111, 0.6px -0.6px 0 #111, -0.6px 0.6px 0 #111, 0.6px 0.6px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.5)',
+      '-0.12cqw -0.12cqw 0 #111, 0.12cqw -0.12cqw 0 #111, -0.12cqw 0.12cqw 0 #111, 0.12cqw 0.12cqw 0 #111, 0 0.28cqw 0.44cqw rgba(0, 0, 0, 0.45)',
     fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif',
+    fontSize: '2.35cqw',
+    lineHeight: '2.72cqw',
   };
 
   const labelStrokeStyleEn: React.CSSProperties = {
     color: '#ffffff',
-    WebkitTextStroke: '0.6px #111111',
+    WebkitTextStroke: '0.36cqw #111111',
     textShadow:
-      '-0.6px -0.6px 0 #111, 0.6px -0.6px 0 #111, -0.6px 0.6px 0 #111, 0.6px 0.6px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.5)',
+      '-0.12cqw -0.12cqw 0 #111, 0.12cqw -0.12cqw 0 #111, -0.12cqw 0.12cqw 0 #111, 0.12cqw 0.12cqw 0 #111, 0 0.28cqw 0.44cqw rgba(0, 0, 0, 0.45)',
     fontFamily: 'var(--font-sans), "Inter", "Segoe UI", Arial, sans-serif',
+    fontSize: '2.22cqw',
+    lineHeight: '2.72cqw',
   };
 
   // Direct photo upload handler
@@ -291,12 +317,13 @@ export default function InlineEditDrivingLicense({
 
       {/* Card */}
       <div
-        className="w-full aspect-[1.586/1] rounded-2xl shadow-xl border-2 border-white overflow-hidden relative"
+        className="w-full aspect-[1.586/1] rounded-2xl shadow-xl border-2 border-white overflow-hidden relative @container"
         style={{
           backgroundImage: 'url(/bg_driving_license.webp)',
           backgroundSize: '100% 100%',
           backgroundPosition: 'center',
           boxShadow: '0 12px 32px -4px rgba(12,61,46,0.18), 0 4px 12px -2px rgba(0,0,0,0.08)',
+          containerType: 'inline-size',
         }}
       >
         {user.hasDrivingLicense === false && (
@@ -312,8 +339,8 @@ export default function InlineEditDrivingLicense({
           <div className="absolute inset-0">
             {/* Photo (Positioned precisely to completely cover the template's pre-printed photo frame cutout) */}
             <div
-              className="absolute overflow-hidden rounded-[12px] bg-[#E8EEF4] border border-gray-300 shadow-2xs cursor-pointer group"
-              style={{ left: '4.0%', top: '23.5%', width: '27.4%', height: '48.2%' }}
+              className="absolute overflow-hidden rounded-[2.77cqw] bg-[#E8EEF4] border border-gray-300 shadow-2xs cursor-pointer group"
+              style={{ left: '2.6%', top: '22.7%', width: '28.2%', height: '49.6%' }}
               onClick={() => photoInputRef.current?.click()}
               title="Click to upload photo"
             >
@@ -338,32 +365,80 @@ export default function InlineEditDrivingLicense({
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 group-hover:bg-slate-200 transition-colors">
                   <Camera className="w-6 h-6 text-gray-400 group-hover:text-emerald-600 transition-colors" />
-                  <span className="text-[8px] text-gray-400 mt-1">Tap to upload photo</span>
+                  <span className="text-[1.8cqw] text-gray-400 mt-1">Tap to upload photo</span>
                 </div>
               )}
             </div>
 
             {/* QR box */}
-            <div className="absolute bg-white/95 rounded-[4px] border border-gray-300 px-1 py-0.5 flex items-center justify-between" style={{ left: '4.0%', top: '72.8%', width: '27.4%', height: '15.8%' }}>
+            <div
+              className="absolute bg-white/95 rounded-[0.83cqw] border border-gray-300 px-[0.3cqw] py-0 flex items-center justify-between"
+              style={{ left: '2.6%', top: '73.5%', width: '28.2%', height: '16.3%' }}
+            >
               <div className="relative flex items-center justify-center" style={{ width: '44%', height: '90%' }}>
                 <img src={qrImageUrl} alt="QR" onError={() => setQrSrcIndex(p => p + 1)} className="w-full h-full object-contain" />
-                <div className="absolute w-[30%] h-[30%] bg-white rounded-2xs p-0.5 shadow-2xs flex items-center justify-center">
+                <div className="absolute w-[30%] h-[30%] bg-white rounded-[0.25cqw] p-[0.15cqw] shadow-xs flex items-center justify-center">
                   <img src="/ic_absher_qr_emblem.png" alt="Absher" className="w-full h-full object-contain" />
                 </div>
               </div>
-              <div className="text-right text-[#2b2b2b] font-black flex-1 pr-1.5 py-0.5 flex flex-col justify-between h-full select-none font-[family-name:var(--font-kufi)]" style={{ fontSize: '4.8px', lineHeight: '5.6px' }} dir="rtl">
+              <div
+                className="text-right text-[#2B2B2B] font-black flex-1 pr-[0.4cqw] py-[0.25cqw] flex flex-col justify-between h-full select-none font-[family-name:var(--font-kufi)]"
+                style={{
+                  fontSize: '1.33cqw',
+                  lineHeight: '1.55cqw',
+                  fontFamily: 'var(--font-kufi), "Noto Kufi Arabic", sans-serif',
+                }}
+                dir="rtl"
+              >
                 <div>يجب التحقق</div><div>من الرمز السريع</div><div>قبل اعتماد</div><div>التعامل مع الهوية</div>
               </div>
             </div>
 
-            {/* Names: Dynamic names use standard SansSerif */}
-            <div className="absolute flex flex-col items-end text-right" style={{ right: '5.0%', top: '27.2%', maxWidth: '65%' }}>
-              <NameInlineField value={user.fullNameAr || ''} onChange={v => onChange({ fullNameAr: v })} placeholder="الاسم بالعربية" className="font-bold text-[#222222] leading-tight text-[18px] font-sans" dir="rtl" />
-              <NameInlineField value={user.fullNameEn || ''} onChange={v => onChange({ fullNameEn: v.toUpperCase() })} placeholder="ENGLISH NAME" className="font-semibold tracking-wide text-[#222222] uppercase mt-0.5 text-[13px] font-sans" dir="ltr" />
+            {/* Names: Dynamic names using standard SansSerif (1:1 Android Alignment) */}
+            <div
+              className="absolute flex flex-col items-end text-right"
+              style={{
+                left: '32.5%',
+                top: '24.0%',
+                width: '64.0%',
+              }}
+            >
+              <NameInlineField
+                value={user.fullNameAr || ''}
+                onChange={v => onChange({ fullNameAr: v })}
+                placeholder="الاسم بالعربية"
+                className="font-bold text-[#222222] font-sans"
+                style={{
+                  fontSize: '3.94cqw',
+                  lineHeight: '4.4cqw',
+                }}
+                dir="rtl"
+              />
+              <div style={{ height: '0.4cqw' }} />
+              <NameInlineField
+                value={user.fullNameEn || ''}
+                onChange={v => onChange({ fullNameEn: v.toUpperCase() })}
+                placeholder="ENGLISH NAME"
+                className="font-semibold text-[#222222] uppercase font-sans"
+                style={{
+                  fontSize: '2.83cqw',
+                  lineHeight: '3.2cqw',
+                  letterSpacing: '0.08cqw',
+                }}
+                dir="ltr"
+              />
             </div>
 
             {/* Data rows: Pre-printed Arabic labels use Tajawal, English labels use SansSerif, dynamic values use SansSerif Black */}
-            <div className="absolute flex flex-col justify-between" style={{ left: '33.2%', top: '44.0%', width: '62.0%', height: '49.0%' }}>
+            <div
+              className="absolute flex flex-col justify-between"
+              style={{
+                left: '32.5%',
+                top: '42.2%',
+                width: '64.0%',
+                height: '52.0%',
+              }}
+            >
               <InlineField enLabel="ID Number:" arLabel="رقم الهوية:" value={user.nationalId || ''} onChange={v => onChange({ nationalId: v.replace(/\D/g, '') })} placeholder="10-digit National ID" mono enLabelStyle={labelStrokeStyleEn} arLabelStyle={labelStrokeStyleAr} />
               <InlineField enLabel="License Type:" arLabel="نوع الرخصة:" value={user.licenseTypeEn || ''} onChange={v => onChange({ licenseTypeEn: v, licenseTypeAr: v === 'Private' ? 'خصوصي' : v === 'Public' ? 'عمومي' : v })} placeholder="Private / Public / Motorcycle" enLabelStyle={labelStrokeStyleEn} arLabelStyle={labelStrokeStyleAr} />
               <InlineField enLabel="Issue Date:" arLabel="تاريخ الإصدار:" value={user.licenseIssueDateEn || ''} onChange={v => onChange({ licenseIssueDateEn: v, licenseIssueDateAr: toArabicNumerals(v) })} placeholder="DD/MM/YYYY" mono enLabelStyle={labelStrokeStyleEn} arLabelStyle={labelStrokeStyleAr} />

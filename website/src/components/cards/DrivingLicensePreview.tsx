@@ -70,18 +70,22 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
   // Pre-printed permanent labels: Tajawal for Arabic, SansSerif for English
   const labelStrokeStyleAr: React.CSSProperties = {
     color: '#ffffff',
-    WebkitTextStroke: '0.6px #111111',
+    WebkitTextStroke: '0.36cqw #111111',
     textShadow:
-      '-0.6px -0.6px 0 #111, 0.6px -0.6px 0 #111, -0.6px 0.6px 0 #111, 0.6px 0.6px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.5)',
+      '-0.12cqw -0.12cqw 0 #111, 0.12cqw -0.12cqw 0 #111, -0.12cqw 0.12cqw 0 #111, 0.12cqw 0.12cqw 0 #111, 0 0.28cqw 0.44cqw rgba(0, 0, 0, 0.45)',
     fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif',
+    fontSize: '2.35cqw',
+    lineHeight: '2.72cqw',
   };
 
   const labelStrokeStyleEn: React.CSSProperties = {
     color: '#ffffff',
-    WebkitTextStroke: '0.6px #111111',
+    WebkitTextStroke: '0.36cqw #111111',
     textShadow:
-      '-0.6px -0.6px 0 #111, 0.6px -0.6px 0 #111, -0.6px 0.6px 0 #111, 0.6px 0.6px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.5)',
+      '-0.12cqw -0.12cqw 0 #111, 0.12cqw -0.12cqw 0 #111, -0.12cqw 0.12cqw 0 #111, 0.12cqw 0.12cqw 0 #111, 0 0.28cqw 0.44cqw rgba(0, 0, 0, 0.45)',
     fontFamily: 'var(--font-sans), "Inter", "Segoe UI", Arial, sans-serif',
+    fontSize: '2.22cqw',
+    lineHeight: '2.72cqw',
   };
 
   return (
@@ -113,13 +117,14 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
 
       {/* Card Container (Aspect Ratio 1.586 standard ID card matching Android) */}
       <div
-        className="w-full max-w-[540px] aspect-[1.586/1] rounded-2xl shadow-xl border-2 border-white overflow-hidden relative select-none"
+        className="w-full max-w-[540px] aspect-[1.586/1] rounded-2xl shadow-xl border-2 border-white overflow-hidden relative select-none @container"
         style={{
           backgroundColor: '#FFFFFF',
           backgroundImage: 'url(/bg_driving_license.webp)',
           backgroundSize: '100% 100%',
           backgroundPosition: 'center',
           boxShadow: '0 12px 32px -4px rgba(12, 61, 46, 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.08)',
+          containerType: 'inline-size',
         }}
       >
         {!showQrBack ? (
@@ -127,12 +132,12 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
           <div className="absolute inset-0">
             {/* 1. Holder Photo (Positioned precisely to cover the template's pre-printed photo frame cutout) */}
             <div
-              className="absolute overflow-hidden rounded-[12px] bg-[#E8EEF4] border border-gray-300 shadow-2xs"
+              className="absolute overflow-hidden rounded-[2.77cqw] bg-[#E8EEF4] border border-gray-300 shadow-2xs"
               style={{
-                left: '4.0%',
-                top: '23.5%',
-                width: '27.4%',
-                height: '48.2%',
+                left: '2.6%',
+                top: '22.7%',
+                width: '28.2%',
+                height: '49.6%',
               }}
             >
               {user.photoUrl ? (
@@ -144,19 +149,19 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-slate-100">
                   <User className="w-7 h-7 text-gray-300" />
-                  <span className="text-[8px] font-medium text-gray-400 mt-1">No Photo</span>
+                  <span className="text-[1.8cqw] font-medium text-gray-400 mt-1">No Photo</span>
                 </div>
               )}
             </div>
 
             {/* 2. Verification Box: Scannable QR + 4-Line Arabic Disclaimer */}
             <div
-              className="absolute bg-white/95 rounded-[4px] border border-gray-300 px-1 py-0.5 flex items-center justify-between"
+              className="absolute bg-white/95 rounded-[0.83cqw] border border-gray-300 px-[0.3cqw] py-0 flex items-center justify-between"
               style={{
-                left: '4.0%',
-                top: '72.8%',
-                width: '27.4%',
-                height: '15.8%',
+                left: '2.6%',
+                top: '73.5%',
+                width: '28.2%',
+                height: '16.3%',
               }}
             >
               {/* QR Container with Centered Absher Logo */}
@@ -167,7 +172,7 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
                   onError={() => setQrSrcIndex((prev) => prev + 1)}
                   className="w-full h-full object-contain"
                 />
-                <div className="absolute w-[30%] h-[30%] bg-white rounded-2xs p-0.5 shadow-2xs flex items-center justify-center">
+                <div className="absolute w-[30%] h-[30%] bg-white rounded-[0.25cqw] p-[0.15cqw] shadow-xs flex items-center justify-center">
                   <img
                     src="/ic_absher_qr_emblem.png"
                     alt="Absher"
@@ -178,10 +183,11 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
 
               {/* 4-Line Official Arabic Disclaimer with Noto Kufi Arabic Black typography */}
               <div
-                className="text-right text-[#2b2b2b] font-black flex-1 pr-1.5 py-0.5 flex flex-col justify-between h-full select-none font-[family-name:var(--font-kufi)]"
+                className="text-right text-[#2B2B2B] font-black flex-1 pr-[0.4cqw] py-[0.25cqw] flex flex-col justify-between h-full select-none font-[family-name:var(--font-kufi)]"
                 style={{
-                  fontSize: '4.8px',
-                  lineHeight: '5.6px',
+                  fontSize: '1.33cqw',
+                  lineHeight: '1.55cqw',
+                  fontFamily: 'var(--font-kufi), "Noto Kufi Arabic", sans-serif',
                 }}
                 dir="rtl"
               >
@@ -196,18 +202,30 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
             <div
               className="absolute flex flex-col items-end text-right"
               style={{
-                right: '5.0%',
-                top: '27.2%',
-                maxWidth: '65%',
+                left: '32.5%',
+                top: '24.0%',
+                width: '64.0%',
               }}
             >
               <div
-                className="font-bold text-[#222222] leading-tight truncate text-[14.5px] font-sans"
+                className="font-bold text-[#222222] leading-tight truncate font-sans w-full"
+                style={{
+                  fontSize: '3.94cqw',
+                  lineHeight: '4.4cqw',
+                }}
+                dir="rtl"
               >
                 {user.fullNameAr || ''}
               </div>
+              <div style={{ height: '0.4cqw' }} />
               <div
-                className="font-semibold tracking-wide text-[#222222] uppercase mt-0.5 truncate text-[10.5px] font-sans"
+                className="font-semibold tracking-wide text-[#222222] uppercase truncate font-sans w-full"
+                style={{
+                  fontSize: '2.83cqw',
+                  lineHeight: '3.2cqw',
+                  letterSpacing: '0.08cqw',
+                }}
+                dir="ltr"
               >
                 {user.fullNameEn?.toUpperCase() || ''}
               </div>
@@ -217,24 +235,42 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
             <div
               className="absolute flex flex-col justify-between"
               style={{
-                left: '33.2%',
-                top: '44.0%',
-                width: '62.0%',
-                height: '49.0%',
+                left: '32.5%',
+                top: '42.2%',
+                width: '64.0%',
+                height: '52.0%',
               }}
             >
               {fields.map((f, i) => (
-                <div key={i} className="flex items-center justify-between text-black font-black text-[9.0px] leading-tight">
+                <div key={i} className="flex items-center justify-between w-full">
                   {/* English Column (Left): Pre-printed Label (SansSerif) + Much Bolder Dynamic English Value (SansSerif Black) */}
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold tracking-tight select-none" style={labelStrokeStyleEn}>{f.labelEn}</span>
-                    <span className="font-black text-black text-[9.5px] font-sans">{f.valueEn}</span>
+                  <div className="flex-[0.53] flex items-center gap-[0.6cqw]">
+                    <span className="font-bold tracking-tight select-none shrink-0" style={labelStrokeStyleEn}>{f.labelEn}</span>
+                    <span
+                      className="font-black text-black font-sans truncate flex-1"
+                      style={{
+                        fontSize: '2.72cqw',
+                        lineHeight: '3.1cqw',
+                      }}
+                    >
+                      {f.valueEn}
+                    </span>
                   </div>
 
+                  <div style={{ width: '0.55cqw' }} />
+
                   {/* Arabic Column (Right): Pre-printed Label (Tajawal) + Much Bolder Dynamic Arabic Value (SansSerif Black) */}
-                  <div className="flex items-center gap-1.5" dir="rtl">
-                    <span className="font-bold tracking-tight select-none" style={labelStrokeStyleAr}>{f.labelAr}</span>
-                    <span className="font-black text-black text-[9.5px] font-sans">{f.valueAr}</span>
+                  <div className="flex-[0.47] flex items-center gap-[0.6cqw]" dir="rtl">
+                    <span className="font-extrabold tracking-tight select-none shrink-0" style={labelStrokeStyleAr}>{f.labelAr}</span>
+                    <span
+                      className="font-black text-black font-sans truncate flex-1 text-right"
+                      style={{
+                        fontSize: '2.72cqw',
+                        lineHeight: '3.1cqw',
+                      }}
+                    >
+                      {f.valueAr}
+                    </span>
                   </div>
                 </div>
               ))}

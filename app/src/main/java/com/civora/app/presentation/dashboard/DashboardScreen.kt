@@ -30,6 +30,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -80,6 +83,7 @@ import com.civora.app.core.designsystem.LanguageState
 import com.civora.app.core.designsystem.AppThemeMode
 import com.civora.app.core.designsystem.ThemeState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel,
@@ -94,6 +98,7 @@ fun DashboardScreen(
     onNavigateToDrivingLicense: () -> Unit = onNavigateToWallet
 ) {
     val state by viewModel.uiState.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     val systemDark = isSystemInDarkTheme()
     val isDark = when (ThemeState.currentThemeMode) {
@@ -125,20 +130,37 @@ fun DashboardScreen(
             .fillMaxSize()
             .background(bodyBg)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // 1. Top Bar with Absher Emblem, Search, Settings, and Bell
-            AbsherTopBar(
-                isDark = isDark,
-                onSearchClick = onNavigateToServices,
-                onSettingsClick = onNavigateToSettings,
-                onNotificationsClick = onNavigateToNotifications
-            )
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.refresh() },
+            modifier = Modifier.fillMaxSize(),
+            indicator = {
+                PullToRefreshDefaults.Indicator(
+                    state = it,
+                    isRefreshing = isRefreshing,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .statusBarsPadding()
+                        .padding(top = 8.dp),
+                    containerColor = if (isDark) AbsherCardBg else Color.White,
+                    color = if (isDark) AbsherMint else AbsherGreenHeader
+                )
+            }
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // 1. Top Bar with Absher Emblem, Search, Settings, and Bell
+                AbsherTopBar(
+                    isDark = isDark,
+                    onSearchClick = onNavigateToServices,
+                    onSettingsClick = onNavigateToSettings,
+                    onNotificationsClick = onNavigateToNotifications
+                )
 
-            // Scrollable Home Screen Body
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 120.dp)
-            ) {
+                // Scrollable Home Screen Body
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 120.dp)
+                ) {
                 // 2. Profile Card + "My Digital Documents" Section
                 item {
                     Column(
@@ -377,8 +399,9 @@ fun DashboardScreen(
                 }
             }
         }
+    }
 
-        // 4. Floating Assistant Action Button (Sparkles Chat Bubble)
+    // 4. Floating Assistant Action Button (Sparkles Chat Bubble)
         FloatingActionButton(
             onClick = onNavigateToServices,
             containerColor = if (isDark) AbsherMintFAB else AbsherGreenHeader,

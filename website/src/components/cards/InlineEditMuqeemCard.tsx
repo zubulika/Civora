@@ -5,7 +5,7 @@ import { UserProfile } from '@/types';
 import { buildOfficialQrPayload, getQrCodeFallbackUrls, BARCODE_PATTERN } from '@/lib/officialQr';
 import {
   RefreshCw, CheckCircle2, ShieldCheck, Camera, ScanLine,
-  Loader2, Sparkles, UploadCloud, X
+  Loader2, Sparkles, UploadCloud, X, Languages
 } from 'lucide-react';
 
 export const toArabicNumerals = (str: string): string => {
@@ -43,24 +43,29 @@ interface InlineEditMuqeemCardProps {
 
 // ─── Inline editable value on the card ─────────────────────────────────────
 interface RowFieldProps {
-  label: string;          // Arabic label (hard-coded, read-only)
+  label: string;          // Label text
   value: string;
-  placeholder: string;    // English placeholder
+  placeholder: string;    // Placeholder
   onChange: (v: string) => void;
   mono?: boolean;
   dir?: 'ltr' | 'rtl';
+  isEnglish?: boolean;
 }
 
-function RowField({ label, value, placeholder, onChange, mono, dir = 'ltr' }: RowFieldProps) {
+function RowField({ label, value, placeholder, onChange, mono, dir = 'ltr', isEnglish }: RowFieldProps) {
   const [editing, setEditing] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
   const open = () => { setEditing(true); setTimeout(() => ref.current?.focus(), 10); };
 
   return (
-    <div className="flex items-baseline gap-1.5">
+    <div className="flex items-center gap-[0.40cqw] min-w-0">
       <span
-        className="text-[#5a5850] font-bold select-none shrink-0"
-        style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}
+        className={`select-none shrink-0 ${isEnglish ? 'text-[#828072] font-medium font-sans' : 'text-[#828072] font-semibold'}`}
+        style={{
+          fontFamily: isEnglish ? 'var(--font-sans), "Inter", sans-serif' : 'var(--font-tajawal), "Tajawal", sans-serif',
+          fontSize: isEnglish ? '1.95cqw' : '2.15cqw',
+          lineHeight: isEnglish ? '2.15cqw' : '2.35cqw',
+        }}
       >
         {label}
       </span>
@@ -72,17 +77,26 @@ function RowField({ label, value, placeholder, onChange, mono, dir = 'ltr' }: Ro
           onBlur={() => setEditing(false)}
           placeholder={placeholder}
           dir={dir}
-          className={`bg-white/95 border-2 border-emerald-500 rounded-md px-2 py-0.5 outline-none text-[11px] font-bold text-[#3e3d3b] shadow-lg font-sans ${mono ? 'font-mono tracking-wider' : ''}`}
-          style={{ minWidth: 80, maxWidth: 140 }}
+          className={`bg-white/95 border-2 border-emerald-500 rounded px-1 py-0 outline-none font-bold text-[#1E1E1E] shadow-lg font-sans ${mono ? 'font-mono tracking-wider' : ''}`}
+          style={{
+            fontSize: isEnglish ? '2.10cqw' : '2.35cqw',
+            lineHeight: isEnglish ? '2.30cqw' : '2.55cqw',
+            minWidth: '12cqw',
+            maxWidth: '32cqw',
+          }}
         />
       ) : (
         <button
           type="button"
           onClick={open}
           title={`Click to edit — ${placeholder}`}
-          className={`font-bold text-[#3e3d3b] font-sans hover:bg-white/60 hover:text-emerald-800 px-1 py-0.5 rounded-md cursor-pointer border border-transparent hover:border-emerald-400 transition-colors ${mono ? 'font-mono tracking-wider' : ''}`}
+          className={`font-bold text-[#1E1E1E] font-sans hover:bg-white/60 hover:text-emerald-800 px-0.5 py-0 rounded cursor-pointer border border-transparent hover:border-emerald-400 transition-colors truncate min-w-0 ${mono ? 'font-mono tracking-wider' : ''}`}
+          style={{
+            fontSize: isEnglish ? '2.10cqw' : '2.35cqw',
+            lineHeight: isEnglish ? '2.30cqw' : '2.55cqw',
+          }}
         >
-          {value || <span className="text-[#999590] italic font-medium font-sans">{placeholder}</span>}
+          {value || <span className="text-[#999590] italic font-medium font-sans opacity-75">{placeholder}</span>}
         </button>
       )}
     </div>
@@ -95,10 +109,11 @@ interface NameFieldProps {
   onChange: (v: string) => void;
   placeholder: string;
   className: string;
+  style?: React.CSSProperties;
   dir?: 'ltr' | 'rtl';
 }
 
-function NameField({ value, onChange, placeholder, className, dir = 'ltr' }: NameFieldProps) {
+function NameField({ value, onChange, placeholder, className, style, dir = 'ltr' }: NameFieldProps) {
   const [editing, setEditing] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
   const open = () => { setEditing(true); setTimeout(() => ref.current?.focus(), 10); };
@@ -112,8 +127,8 @@ function NameField({ value, onChange, placeholder, className, dir = 'ltr' }: Nam
         onBlur={() => setEditing(false)}
         placeholder={placeholder}
         dir={dir}
-        className={`bg-white/95 border-2 border-emerald-500 rounded-md px-2 py-0.5 outline-none shadow-lg text-[#343436] font-sans w-full ${className}`}
-        style={{ fontSize: 'inherit' }}
+        className={`bg-white/95 border-2 border-emerald-500 rounded-md px-1 py-0 outline-none shadow-lg text-[#1E1E1E] font-sans w-full ${className}`}
+        style={style}
       />
     );
   }
@@ -123,9 +138,10 @@ function NameField({ value, onChange, placeholder, className, dir = 'ltr' }: Nam
       type="button"
       onClick={open}
       title={`Click to edit — ${placeholder}`}
-      className={`${className} font-sans hover:bg-white/50 rounded-md px-1 py-0.5 cursor-pointer border border-transparent hover:border-emerald-400 transition-colors text-right w-full`}
+      className={`${className} font-sans hover:bg-white/50 rounded px-1 py-0 cursor-pointer border border-transparent hover:border-emerald-400 transition-colors w-full truncate`}
+      style={style}
     >
-      {value || <span className="text-[#a0ac9e] italic font-medium font-sans" style={{ fontSize: '12px' }}>{placeholder}</span>}
+      {value || <span className="text-[#a0ac9e] italic font-medium font-sans opacity-70">{placeholder}</span>}
     </button>
   );
 }
@@ -138,6 +154,7 @@ export default function InlineEditMuqeemCard({
   className = '',
 }: InlineEditMuqeemCardProps) {
   const [showQrBack, setShowQrBack] = useState(false);
+  const [lang, setLang] = useState<'ar' | 'en'>('en');
   const [qrSrcIndex, setQrSrcIndex] = useState(0);
   const [ocrStatus, setOcrStatus] = useState<OcrStatus>('idle');
   const [ocrMessage, setOcrMessage] = useState('');
@@ -250,6 +267,35 @@ export default function InlineEditMuqeemCard({
           Click any field on card to edit
         </span>
         <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Segmented Toggle: English (Edit) vs Arabic Preview */}
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setLang('en')}
+              className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                lang === 'en'
+                  ? 'bg-white text-emerald-800 shadow-2xs font-bold border border-emerald-300/60'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Edit card with clear English field labels"
+            >
+              <Languages className="w-3.5 h-3.5 text-emerald-600" />
+              <span>English (Edit)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLang('ar')}
+              className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                lang === 'ar'
+                  ? 'bg-white text-emerald-800 shadow-2xs font-bold border border-emerald-300/60'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Preview official Arabic layout"
+            >
+              <span>Arabic Preview (العربية)</span>
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => setShowOcrPanel(v => !v)}
@@ -314,25 +360,34 @@ export default function InlineEditMuqeemCard({
 
       {/* Card */}
       <div
-        className="w-full aspect-[1.586/1] rounded-2xl shadow-xl border border-amber-900/15 overflow-hidden relative"
+        className="w-full aspect-[1.586/1] rounded-2xl shadow-xl border border-amber-900/15 overflow-hidden relative @container"
         style={{
           backgroundColor: '#FCFBF7',
           backgroundImage: 'url(/bg_resident_card.webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           boxShadow: '0 12px 32px -4px rgba(12,61,46,0.18), 0 4px 12px -2px rgba(0,0,0,0.08)',
+          containerType: 'inline-size',
         }}
       >
         {!showQrBack ? (
           <div className="absolute inset-0">
             {/* Version number */}
-            <div className="absolute font-serif font-black text-[#8c6d23]" style={{ left: '9.8%', top: '15.5%', fontSize: '3.6%', lineHeight: 1 }}>
-              {user.versionNumber || '٢'}
+            <div
+              className="absolute font-sans font-extrabold text-[#1E1E1E]"
+              style={{
+                left: '9.8%',
+                top: '15.5%',
+                fontSize: '4.30cqw',
+                lineHeight: 1,
+              }}
+            >
+              {user.versionNumber ? (lang === 'en' ? user.versionNumber : toArabicNumerals(user.versionNumber)) : (lang === 'en' ? '1' : '١')}
             </div>
 
             {/* Photo — click to upload */}
             <div
-              className="absolute overflow-hidden rounded-[4px] bg-[#E8EEF4] border border-[#dcd6c8] cursor-pointer group"
+              className="absolute overflow-hidden rounded-[0.55cqw] bg-[#E8EEF4] border border-[#dcd6c8] cursor-pointer group"
               style={{ left: '5.8%', top: '28.2%', width: '25.4%', height: '46.1%' }}
               onClick={() => photoInputRef.current?.click()}
               title="Click to upload photo"
@@ -357,36 +412,38 @@ export default function InlineEditMuqeemCard({
                 </>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 group-hover:bg-slate-200 transition-colors">
-                  <Camera className="w-7 h-7 text-gray-400 group-hover:text-emerald-600 transition-colors" />
-                  <span className="text-[8px] text-gray-400 mt-1 text-center px-1">Tap to upload photo</span>
+                  <Camera className="w-6 h-6 text-gray-400 group-hover:text-emerald-600 transition-colors" />
+                  <span className="text-[1.8cqw] text-gray-400 mt-1 text-center px-1">Tap to upload photo</span>
                 </div>
               )}
             </div>
 
             {/* QR + disclaimer box */}
-            <div className="absolute bg-white rounded-[4px] border border-[#DCD6C8] pr-1 pl-0.5 py-0.5 flex items-center justify-between" style={{ left: '4.6%', top: '75.8%', width: '27.0%', height: '16.5%' }}>
+            <div
+              className="absolute bg-white rounded-[0.83cqw] border border-[#D0CAC0] pr-[0.4cqw] pl-[0.2cqw] py-0 flex items-center justify-between"
+              style={{ left: '4.6%', top: '75.5%', width: '27.0%', height: '16.8%' }}
+            >
               <div className="relative flex items-center justify-start h-full aspect-square">
                 <img src={qrImageUrl} alt="QR" onError={() => setQrSrcIndex(p => p + 1)} className="w-full h-full object-contain" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[28%] h-[28%] bg-white rounded-2xs p-0.5 shadow-2xs flex items-center justify-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[28%] h-[28%] bg-white rounded-[0.25cqw] p-[0.15cqw] shadow-xs flex items-center justify-center">
                   <img src="/ic_absher_qr_emblem.png" alt="Absher" className="w-full h-full object-contain" />
                 </div>
               </div>
               {/* Editable disclaimer text */}
-              <div className="flex-1 pr-1 h-full flex items-center justify-end">
+              <div className="flex-1 pr-[0.4cqw] h-full flex items-center justify-end">
                 {editingDisclaimer ? (
                   <textarea
                     autoFocus
                     value={disclaimerEnglish}
                     onChange={e => setDisclaimerEnglish(e.target.value)}
                     onBlur={() => {
-                      // Keep Arabic lines synced: each line of English maps to a line displayed on card
                       const lines = disclaimerEnglish.split('\n').slice(0, 4);
                       while (lines.length < 4) lines.push('');
                       setDisclaimerLines(lines);
                       setEditingDisclaimer(false);
                     }}
                     rows={4}
-                    className="w-full h-full text-[8px] text-slate-700 bg-yellow-50 border border-emerald-400 rounded outline-none resize-none p-0.5 leading-tight"
+                    className="w-full h-full text-[1.2cqw] text-slate-700 bg-yellow-50 border border-emerald-400 rounded outline-none resize-none p-0.5 leading-tight"
                     placeholder="4 lines of text"
                     title="Type in English — displayed on card"
                   />
@@ -395,10 +452,10 @@ export default function InlineEditMuqeemCard({
                     type="button"
                     onClick={() => setEditingDisclaimer(true)}
                     title="Click to edit disclaimer text (English → shown as Arabic on card)"
-                    className="text-right text-[#2b2b2b] font-black w-full h-full flex flex-col justify-between py-0.5 cursor-pointer hover:bg-emerald-50/60 rounded transition-colors font-[family-name:var(--font-kufi)]"
+                    className="text-right text-[#2B2B2B] font-black w-full h-full flex flex-col justify-between py-[0.35cqw] cursor-pointer hover:bg-emerald-50/60 rounded transition-colors font-[family-name:var(--font-kufi)] select-none"
                     style={{
-                      fontSize: '7.5px',
-                      lineHeight: '9px',
+                      fontSize: '1.33cqw',
+                      lineHeight: '1.55cqw',
                       fontFamily: 'var(--font-kufi), "Noto Kufi Arabic", sans-serif',
                     }}
                     dir="rtl"
@@ -423,109 +480,328 @@ export default function InlineEditMuqeemCard({
               </svg>
             </div>
 
-            {/* Data fields — names anchored to divider line, rows packed tight */}
-            <div className="absolute flex flex-col" style={{ left: '31.5%', top: '28.5%', width: '65.0%', height: '69%', gap: '2.5%' }} dir="rtl">
-              {/* Names — right-aligned, hugging the horizontal divider */}
-              <div className="flex flex-col text-right items-end w-full">
-                <NameField value={user.fullNameAr || ''} onChange={v => onChange({ fullNameAr: v })} placeholder="الاسم الكامل بالعربية" className="font-black text-[#343436] leading-tight text-[18px] truncate text-right" dir="rtl" />
-                <NameField value={user.fullNameEn || ''} onChange={v => onChange({ fullNameEn: v.toUpperCase() })} placeholder="ENGLISH NAME" className="font-bold text-[#32322a] uppercase tracking-wide text-[13px] truncate text-right" dir="ltr" />
-              </div>
+            {/* Dynamic Data fields — Perfectly aligned to prevent text cropping and overlapping */}
+            {lang === 'ar' ? (
+              /* ARABIC DATA LAYOUT */
+              <div
+                className="absolute flex flex-col justify-between"
+                style={{
+                  left: '32.0%',
+                  top: '25.5%',
+                  width: '64.5%',
+                  height: '70.5%',
+                }}
+                dir="rtl"
+              >
+                {/* Names Header */}
+                <div className="flex flex-col text-right items-end w-full">
+                  <NameField
+                    value={user.fullNameAr || ''}
+                    onChange={v => onChange({ fullNameAr: v })}
+                    placeholder="الاسم الكامل بالعربية"
+                    className="font-bold text-[#1E1E1E] text-right leading-none"
+                    style={{
+                      fontSize: '3.80cqw',
+                      lineHeight: '4.10cqw',
+                    }}
+                    dir="rtl"
+                  />
+                  <NameField
+                    value={user.fullNameEn || ''}
+                    onChange={v => onChange({ fullNameEn: v.toUpperCase() })}
+                    placeholder="ENGLISH NAME"
+                    className="font-medium text-[#222222] uppercase text-right leading-none"
+                    style={{
+                      fontSize: '2.70cqw',
+                      lineHeight: '2.90cqw',
+                      letterSpacing: '0.04cqw',
+                      marginTop: '0.05cqw',
+                    }}
+                    dir="ltr"
+                  />
+                </div>
 
-              {/* Row 1: ID | Expiry */}
-              <div className="flex items-baseline justify-between text-[13.5px] leading-tight">
-                <RowField label="رقم الهوية:" value={user.nationalId || ''} onChange={v => onChange({ nationalId: v.replace(/\D/g, '') })} placeholder="10-digit ID" mono />
-                <RowField
-                  label="تاريخ الانتهاء:"
-                  value={user.expiryDateEn || ''}
-                  onChange={v => {
-                    const ar = toArabicNumerals(v);
-                    const digits = extractDateDigits(v);
-                    onChange({
-                      expiryDateEn: v,
-                      expiryDateAr: ar,
-                      expiryDateDigits: digits || user.expiryDateDigits || '081026',
-                    });
-                  }}
-                  placeholder="YYYY/MM/DD"
-                  mono
-                />
-              </div>
+                {/* Row 1: Expiry Date | National ID */}
+                <div className="flex items-center justify-between w-full min-w-0">
+                  <div className="flex-[1.12] min-w-0">
+                    <RowField
+                      label="رقم الهوية:"
+                      value={user.nationalId ? toArabicNumerals(user.nationalId) : ''}
+                      onChange={v => onChange({ nationalId: v.replace(/\D/g, '') })}
+                      placeholder="10-digit ID"
+                      mono
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <RowField
+                      label="تاريخ الانتهاء:"
+                      value={user.expiryDateAr || (user.expiryDateEn ? toArabicNumerals(user.expiryDateEn) : '')}
+                      onChange={v => {
+                        const ar = toArabicNumerals(v);
+                        const digits = extractDateDigits(v);
+                        onChange({
+                          expiryDateEn: v,
+                          expiryDateAr: ar,
+                          expiryDateDigits: digits || user.expiryDateDigits || '081026',
+                        });
+                      }}
+                      placeholder="YYYY/MM/DD"
+                      mono
+                    />
+                  </div>
+                </div>
 
-              {/* Row 2: DOB | Place of Birth */}
-              <div className="flex items-baseline justify-between text-[13.5px] leading-tight">
-                <RowField
-                  label="تاريخ الميلاد:"
-                  value={user.dateOfBirth || ''}
-                  onChange={v => {
-                    const ar = toArabicNumerals(v);
-                    onChange({
-                      dateOfBirth: v,
-                      dateOfBirthAr: ar,
-                    });
-                  }}
-                  placeholder="YYYY/MM/DD"
-                  mono
-                />
-                <RowField label="مكان الميلاد:" value={user.placeOfBirthEn || ''} onChange={v => onChange({ placeOfBirthEn: v, placeOfBirthAr: v })} placeholder="City, Country" />
-              </div>
+                {/* Row 2: DOB | Place of Birth */}
+                <div className="flex items-center justify-between w-full min-w-0">
+                  <div className="flex-[1.12] min-w-0">
+                    <RowField
+                      label="تاريخ الميلاد:"
+                      value={user.dateOfBirthAr || (user.dateOfBirth ? toArabicNumerals(user.dateOfBirth) : '')}
+                      onChange={v => {
+                        const ar = toArabicNumerals(v);
+                        onChange({
+                          dateOfBirth: v,
+                          dateOfBirthAr: ar,
+                        });
+                      }}
+                      placeholder="YYYY/MM/DD"
+                      mono
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <RowField
+                      label="مكان الميلاد:"
+                      value={user.placeOfBirthAr || user.placeOfBirthEn || ''}
+                      onChange={v => onChange({ placeOfBirthEn: v, placeOfBirthAr: v })}
+                      placeholder="City, Country"
+                    />
+                  </div>
+                </div>
 
-              {/* Row 3: Nationality | Religion */}
-              <div className="flex items-baseline justify-between text-[13.5px] leading-tight">
-                <RowField label="الجنسية:" value={user.nationality || ''} onChange={v => onChange({ nationality: v })} placeholder="e.g. Bangladesh" />
-                <RowField label="الديانة:" value={user.religionEn || ''} onChange={v => onChange({ religionEn: v, religionAr: v === 'Islam' ? 'مسلم' : v })} placeholder="Islam / Christian" />
-              </div>
+                {/* Row 3: Nationality | Religion */}
+                <div className="flex items-center justify-between w-full min-w-0">
+                  <div className="flex-[1.12] min-w-0">
+                    <RowField
+                      label="الجنسية:"
+                      value={user.nationalityAr || user.nationality || ''}
+                      onChange={v => onChange({ nationality: v, nationalityAr: v })}
+                      placeholder="e.g. Bangladesh"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <RowField
+                      label="الديانة:"
+                      value={user.religionAr || (user.religionEn === 'Islam' ? 'مسلم' : user.religionEn) || ''}
+                      onChange={v => onChange({ religionEn: v, religionAr: v === 'Islam' ? 'مسلم' : v })}
+                      placeholder="Islam / مسلم"
+                    />
+                  </div>
+                </div>
 
-              {/* Row 4: Profession — المهنة */}
-              <div className="flex items-baseline gap-1.5 text-[13.5px] leading-tight">
+                {/* Row 4: Profession */}
                 <RowField
                   label="المهنة:"
-                  value={user.professionEn || ''}
+                  value={user.professionAr || user.professionEn || ''}
                   onChange={v => onChange({ professionEn: v, professionAr: v })}
                   placeholder="e.g. Driver / سائق"
                 />
-              </div>
 
-              {/* Row 5: Sponsor ID — هوية صاحب العمل */}
-              <div className="flex items-baseline gap-1.5 text-[13.5px] leading-tight">
+                {/* Row 5: Employer / Sponsor ID */}
                 <RowField
                   label="هوية صاحب العمل:"
-                  value={user.sponsorId || ''}
+                  value={user.sponsorId ? toArabicNumerals(user.sponsorId) : ''}
                   onChange={v => onChange({ sponsorId: v })}
-                  placeholder="e.g. 7001234567 / هوية المنشأة"
+                  placeholder="e.g. 7001234567"
                   mono
                 />
-              </div>
 
-              {/* Row 6: Place of Issue — مكان الإصدار */}
-              <div className="flex items-baseline gap-1.5 text-[13.5px] leading-tight">
+                {/* Row 6: Place of Issue */}
                 <RowField
                   label="مكان الإصدار:"
-                  value={user.issuePlaceEn || ''}
+                  value={user.issuePlace || user.issuePlaceEn || 'شركة العلم لامن المعلومات'}
                   onChange={v => onChange({ issuePlaceEn: v, issuePlace: v })}
                   placeholder="e.g. Riyadh / الرياض"
                 />
-              </div>
 
-              {/* Row 7: Workplace — مكان العمل */}
-              <div className="flex items-baseline gap-1.5 text-[13.5px] leading-tight">
+                {/* Row 7: Place of Work */}
                 <RowField
                   label="مكان العمل:"
-                  value={user.workPlaceAr || ''}
+                  value={user.workPlaceAr || 'منطقة الرياض'}
                   onChange={v => onChange({ workPlaceAr: v })}
                   placeholder="e.g. Riyadh Region / منطقة الرياض"
                 />
-              </div>
 
-              {/* Row 8: Employer/Sponsor Name — اسم صاحب العمل (matches Android app) */}
-              <div className="flex items-baseline gap-1.5 text-[13.5px] leading-tight">
+                {/* Row 8: Sponsor Name */}
                 <RowField
                   label="اسم صاحب العمل:"
-                  value={user.sponsorNameEn || user.sponsorName || ''}
+                  value={user.sponsorName || user.sponsorNameEn || ''}
                   onChange={v => onChange({ sponsorNameEn: v, sponsorName: v })}
                   placeholder="e.g. Saudi Aramco / اسم المنشأة"
                 />
               </div>
-            </div>
+            ) : (
+              /* ENGLISH DATA LAYOUT */
+              <div
+                className="absolute flex flex-col justify-between"
+                style={{
+                  left: '32.0%',
+                  top: '25.5%',
+                  width: '64.5%',
+                  height: '70.5%',
+                }}
+                dir="ltr"
+              >
+                {/* Names Header */}
+                <div className="flex flex-col text-left items-start w-full">
+                  <NameField
+                    value={user.fullNameAr || ''}
+                    onChange={v => onChange({ fullNameAr: v })}
+                    placeholder="FULL ARABIC NAME"
+                    className="font-bold text-[#1E1E1E] text-left leading-none"
+                    style={{
+                      fontSize: '3.40cqw',
+                      lineHeight: '3.70cqw',
+                    }}
+                    dir="rtl"
+                  />
+                  <NameField
+                    value={user.fullNameEn || ''}
+                    onChange={v => onChange({ fullNameEn: v.toUpperCase() })}
+                    placeholder="FULL ENGLISH NAME"
+                    className="font-medium text-[#222222] uppercase text-left leading-none"
+                    style={{
+                      fontSize: '2.65cqw',
+                      lineHeight: '2.85cqw',
+                      letterSpacing: '0.04cqw',
+                      marginTop: '0.05cqw',
+                    }}
+                    dir="ltr"
+                  />
+                </div>
+
+                {/* Row 1: Iqama Number & Expiry Date */}
+                <div className="flex items-center justify-between w-full min-w-0">
+                  <div className="flex-[1.25] min-w-0">
+                    <RowField
+                      label="Iqama Number:"
+                      value={user.nationalId || ''}
+                      onChange={v => onChange({ nationalId: v.replace(/\D/g, '') })}
+                      placeholder="10-digit ID"
+                      mono
+                      isEnglish
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <RowField
+                      label="Expiry Date:"
+                      value={user.expiryDateEn || (user.expiryDateAr ? toArabicNumerals(user.expiryDateAr) : '')}
+                      onChange={v => {
+                        const digits = extractDateDigits(v);
+                        onChange({
+                          expiryDateEn: v,
+                          expiryDateAr: toArabicNumerals(v),
+                          expiryDateDigits: digits || user.expiryDateDigits || '081026',
+                        });
+                      }}
+                      placeholder="YYYY/MM/DD"
+                      mono
+                      isEnglish
+                    />
+                  </div>
+                </div>
+
+                {/* Row 2: Date of Birth & Place of Birth */}
+                <div className="flex items-center justify-between w-full min-w-0">
+                  <div className="flex-[1.25] min-w-0">
+                    <RowField
+                      label="Date of Birth :"
+                      value={user.dateOfBirth || (user.dateOfBirthAr ? toArabicNumerals(user.dateOfBirthAr) : '')}
+                      onChange={v => onChange({ dateOfBirth: v, dateOfBirthAr: toArabicNumerals(v) })}
+                      placeholder="YYYY/MM/DD"
+                      mono
+                      isEnglish
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <RowField
+                      label="Place of Birth :"
+                      value={user.placeOfBirthEn || user.placeOfBirthAr || ''}
+                      onChange={v => onChange({ placeOfBirthEn: v })}
+                      placeholder="Birth Place"
+                      isEnglish
+                    />
+                  </div>
+                </div>
+
+                {/* Row 3: Nationality & Religion */}
+                <div className="flex items-center justify-between w-full min-w-0">
+                  <div className="flex-[1.25] min-w-0">
+                    <RowField
+                      label="Nationality:"
+                      value={user.nationality || user.nationalityAr || ''}
+                      onChange={v => onChange({ nationality: v })}
+                      placeholder="Nationality"
+                      isEnglish
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <RowField
+                      label="Religion:"
+                      value={user.religionEn || (user.religionAr === 'مسلم' ? 'Islam' : user.religionAr) || ''}
+                      onChange={v => onChange({ religionEn: v, religionAr: v === 'Islam' ? 'مسلم' : v })}
+                      placeholder="Islam / etc."
+                      isEnglish
+                    />
+                  </div>
+                </div>
+
+                {/* Row 4: Occupation */}
+                <RowField
+                  label="Occupation :"
+                  value={user.professionEn || user.professionAr || ''}
+                  onChange={v => onChange({ professionEn: v })}
+                  placeholder="e.g. Software Engineer"
+                  isEnglish
+                />
+
+                {/* Row 5: Sponsor ID */}
+                <RowField
+                  label="Sponsor ID:"
+                  value={user.sponsorId || ''}
+                  onChange={v => onChange({ sponsorId: v.replace(/\D/g, '') })}
+                  placeholder="700xxxxxxx"
+                  mono
+                  isEnglish
+                />
+
+                {/* Row 6: Issuing Place */}
+                <RowField
+                  label="Issuing Place:"
+                  value={user.issuePlaceEn || user.issuePlace || 'Elm Information Security'}
+                  onChange={v => onChange({ issuePlaceEn: v })}
+                  placeholder="e.g. Riyadh"
+                  isEnglish
+                />
+
+                {/* Row 7: Work Place */}
+                <RowField
+                  label="Work Place:"
+                  value={user.workPlaceAr ? (user.workPlaceAr === 'منطقة الرياض' ? 'Riyadh Region' : user.workPlaceAr) : 'Riyadh Region'}
+                  onChange={v => onChange({ workPlaceAr: v })}
+                  placeholder="e.g. Riyadh Region"
+                  isEnglish
+                />
+
+                {/* Row 8: Sponsor Name */}
+                <RowField
+                  label="Sponsor Name:"
+                  value={user.sponsorNameEn || user.sponsorName || ''}
+                  onChange={v => onChange({ sponsorNameEn: v })}
+                  placeholder="Sponsor / Company Name"
+                  isEnglish
+                />
+              </div>
+            )}
           </div>
         ) : (
           <div className="w-full h-full p-5 flex flex-col items-center justify-between text-center bg-white/95 backdrop-blur-xs">

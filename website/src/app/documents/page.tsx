@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import MuqeemCardPreview from '@/components/cards/MuqeemCardPreview';
 import DrivingLicensePreview from '@/components/cards/DrivingLicensePreview';
+import DocumentExportMenu from '@/components/common/DocumentExportMenu';
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<DigitalDocument[]>([]);
@@ -159,21 +160,28 @@ export default function DocumentsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 mt-2">
+                <div className="flex items-center justify-between pt-4 mt-2 border-t border-gray-100">
                   <button
                     onClick={() => setPreviewCitizen({user: citizen, doc: document})}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer"
                   >
                     <QrCode className="w-3.5 h-3.5" />
                     <span>Preview Card & QR</span>
                   </button>
-                  <Link
-                    href={`/users/${citizen.id}`}
-                    className="p-1.5 text-gray-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
-                    title="Edit Information"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <DocumentExportMenu
+                      user={citizen}
+                      docType={document.type === 'DRIVING_LICENSE' ? 'DRIVING_LICENSE' : 'RESIDENT_ID'}
+                      size="sm"
+                    />
+                    <Link
+                      href={`/users/${citizen.id}`}
+                      className="p-1.5 text-gray-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+                      title="Edit Information"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
               </div>
               );
@@ -192,7 +200,7 @@ export default function DocumentsPage() {
                 </div>
                 <button
                   onClick={() => setPreviewCitizen(null)}
-                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-bold"
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-bold cursor-pointer"
                 >
                   ✕
                 </button>
@@ -206,10 +214,16 @@ export default function DocumentsPage() {
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+              <div className="flex justify-between items-center gap-3 mt-6 pt-4 border-t border-gray-100">
+                <DocumentExportMenu
+                  user={previewCitizen.user}
+                  docType={previewCitizen.doc.type === 'DRIVING_LICENSE' ? 'DRIVING_LICENSE' : 'RESIDENT_ID'}
+                  size="md"
+                  placement="top"
+                />
                 <button
                   onClick={() => setPreviewCitizen(null)}
-                  className="px-5 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200"
+                  className="px-5 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 cursor-pointer"
                 >
                   Close
                 </button>

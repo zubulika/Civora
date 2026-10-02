@@ -1,22 +1,23 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Sidebar from '@/components/layout/Sidebar';
 import TopHeader from '@/components/layout/TopHeader';
 import CitizenForm from '@/components/forms/CitizenForm';
 import InlineEditDrivingLicense from '@/components/cards/InlineEditDrivingLicense';
 import InlineEditMuqeemCard from '@/components/cards/InlineEditMuqeemCard';
+import DocumentExportMenu from '@/components/common/DocumentExportMenu';
 import { fetchCitizenById, saveCitizen } from '@/lib/firestoreService';
 import { UserProfile } from '@/types';
+import { toast } from '@/lib/toast';
 import {
-  ArrowLeft, CheckCircle2, AlertCircle, Car, CreditCard, Save
+  ArrowLeft, Car, CreditCard, Save, Download, AlertCircle
 } from 'lucide-react';
 
 export default function EditCitizenPage() {
   const params = useParams();
-  const router = useRouter();
   const citizenId = params.id as string;
 
   const [activeDocTab, setActiveDocTab] = useState<'resident' | 'license'>('resident');
@@ -24,7 +25,6 @@ export default function EditCitizenPage() {
   const [formData, setFormData] = useState<Partial<UserProfile>>({});
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   // Stable serialized snapshot to avoid re-render loops when syncing form ↔ card
   const formDataJsonRef = React.useRef<string>('');
 
@@ -46,7 +46,6 @@ export default function EditCitizenPage() {
   }, [citizenId]);
 
   // Merge updates from either the personal form or the inline card editors
-  // Guard with JSON comparison so CitizenForm's sync effect doesn't loop back
   const handleFormChange = (updated: UserProfile) => {
     const json = JSON.stringify(updated);
     if (json === formDataJsonRef.current) return;
@@ -68,11 +67,11 @@ export default function EditCitizenPage() {
     try {
       const merged = { ...citizen, ...formData } as UserProfile;
       await saveCitizen(merged);
-      setSuccessMessage(`Changes saved for ${merged.fullNameEn || 'user'}!`);
-      setTimeout(() => router.push('/users'), 1500);
+      setCitizen(merged);
+      toast.success(`Changes saved successfully for ${merged.fullNameEn || merged.fullNameAr || merged.nationalId}!`);
     } catch (err) {
       console.error(err);
-      alert('Error saving changes.');
+      toast.error('Error saving changes. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -123,23 +122,15 @@ export default function EditCitizenPage() {
               <span>Back to Users</span>
             </Link>
 
-            <div className="flex items-center gap-3">
-              {successMessage && (
-                <div className="flex items-center gap-2 bg-emerald-100 text-emerald-800 border border-emerald-300 px-4 py-2 rounded-xl text-xs font-bold">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>{successMessage}</span>
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSubmitting}
-                className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer active:scale-98"
-              >
-                <Save className="w-4 h-4" />
-                <span>{isSubmitting ? 'Saving…' : 'Save & Issue'}</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer active:scale-98"
+            >
+              <Save className="w-4 h-4" />
+              <span>{isSubmitting ? 'Saving…' : 'Save & Issue'}</span>
+            </button>
           </div>
 
           {/* Main two-column layout */}
@@ -154,10 +145,13 @@ export default function EditCitizenPage() {
                   setIsSubmitting(true);
                   try {
                     await saveCitizen(data);
-                    setSuccessMessage(`Changes saved for ${data.fullNameEn}!`);
-                    setTimeout(() => router.push('/users'), 1500);
-                  } catch { alert('Error saving.'); }
-                  finally { setIsSubmitting(false); }
+                    setCitizen(data);
+                    toast.success(`Changes saved for ${data.fullNameEn}!`);
+                  } catch {
+                    toast.error('Error saving changes.');
+                  } finally {
+                    setIsSubmitting(false);
+                  }
                 }}
                 isSubmitting={isSubmitting}
               />
@@ -166,12 +160,14 @@ export default function EditCitizenPage() {
             {/* RIGHT: Inline-editable document cards */}
             <div className="sticky top-6 space-y-4">
               {/* Section header */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-100">
-                  <h3 className="font-bold text-slate-900 text-sm">Document Card Editor</h3>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Click any field directly on the card template to edit. Use <span className="font-semibold text-violet-700">Scan Doc</span> to auto-fill from a photo.
-                  </p>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs">
+                <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">Document Card Editor</h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Click any field directly on the card template to edit. Use <span className="font-semibold text-violet-700">Scan Doc</span> to auto-fill from a photo.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Tab switcher */}
@@ -200,17 +196,32 @@ export default function EditCitizenPage() {
                 <div className="p-5 space-y-6">
                   {activeDocTab === 'resident' && (
                     <InlineEditMuqeemCard
-                      user={formData}
+                      user={{ ...citizen, ...formData }}
                       onChange={handleCardChange}
                     />
                   )}
 
                   {activeDocTab === 'license' && (
                     <InlineEditDrivingLicense
-                      user={formData}
+                      user={{ ...citizen, ...formData }}
                       onChange={handleCardChange}
                     />
                   )}
+                </div>
+
+                {/* Bottom Card Action Bar with Full Export Options */}
+                <div className="px-5 py-3.5 bg-slate-50/90 border-t border-slate-200 rounded-b-2xl flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs text-slate-600 font-semibold">
+                    <Download className="w-4 h-4 text-emerald-700" />
+                    <span>Download Official Document:</span>
+                  </div>
+                  <DocumentExportMenu
+                    user={{ ...citizen, ...formData }}
+                    docType={activeDocTab === 'resident' ? 'RESIDENT_ID' : 'DRIVING_LICENSE'}
+                    showDocSelector
+                    size="md"
+                    placement="top"
+                  />
                 </div>
               </div>
 

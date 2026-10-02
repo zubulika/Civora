@@ -4,8 +4,8 @@ import React, { useState, useRef, useCallback } from 'react';
 import { UserProfile } from '@/types';
 import { buildOfficialQrPayload, getQrCodeFallbackUrls } from '@/lib/officialQr';
 import {
-  RefreshCw, CheckCircle2, ShieldCheck, User, ScanLine,
-  Loader2, Sparkles, UploadCloud, X
+  RefreshCw, CheckCircle2, ShieldCheck, ScanLine,
+  Loader2, Sparkles, UploadCloud, X, Camera
 } from 'lucide-react';
 
 interface InlineEditDrivingLicenseProps {
@@ -126,6 +126,7 @@ export default function InlineEditDrivingLicense({
   const [ocrMessage, setOcrMessage] = useState('');
   const [showOcrPanel, setShowOcrPanel] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const qrPayload = buildOfficialQrPayload(user);
   const qrUrls = getQrCodeFallbackUrls(qrPayload, 240);
@@ -137,6 +138,16 @@ export default function InlineEditDrivingLicense({
     textShadow:
       '-0.8px -0.8px 0 #111, 0.8px -0.8px 0 #111, -0.8px 0.8px 0 #111, 0.8px 0.8px 0 #111, -0.8px 0 0 #111, 0.8px 0 0 #111, 0 -0.8px 0 #111, 0 0.8px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.45)',
   };
+
+  // Direct photo upload handler
+  const handlePhotoUpload = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      onChange({ photoUrl: dataUrl });
+    };
+    reader.readAsDataURL(file);
+  }, [onChange]);
 
   const runOcr = useCallback(async (file: File) => {
     setOcrStatus('loading');
@@ -200,12 +211,12 @@ export default function InlineEditDrivingLicense({
   return (
     <div className={`flex flex-col items-center w-full ${className}`}>
       {/* Top bar */}
-      <div className="w-full flex items-center justify-between mb-2 px-1">
-        <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2.5 py-1 rounded-full">
+      <div className="w-full flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2.5 py-1 rounded-full">
           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-          Driving License — Click any field to edit
+          Click any field on card to edit
         </span>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <button
             type="button"
             onClick={() => setShowOcrPanel(v => !v)}
@@ -273,7 +284,7 @@ export default function InlineEditDrivingLicense({
         className="w-full aspect-[1.586/1] rounded-2xl shadow-xl border-2 border-white overflow-hidden relative"
         style={{
           backgroundImage: 'url(/bg_driving_license.webp)',
-          backgroundSize: '105% 105%',
+          backgroundSize: '100% 100%',
           backgroundPosition: 'center',
           boxShadow: '0 12px 32px -4px rgba(12,61,46,0.18), 0 4px 12px -2px rgba(0,0,0,0.08)',
         }}
@@ -289,20 +300,41 @@ export default function InlineEditDrivingLicense({
         )}
         {!showQrBack ? (
           <div className="absolute inset-0">
-            {/* Photo */}
-            <div className="absolute overflow-hidden rounded-[5px] bg-[#E8EEF4] border border-gray-300" style={{ left: '6.5%', top: '25.9%', width: '24.2%', height: '44.6%' }}>
+            {/* Photo (Positioned precisely to completely cover the template's pre-printed photo frame cutout) */}
+            <div
+              className="absolute overflow-hidden rounded-[12px] bg-[#E8EEF4] border border-gray-300 shadow-2xs cursor-pointer group"
+              style={{ left: '4.0%', top: '23.5%', width: '27.4%', height: '48.2%' }}
+              onClick={() => photoInputRef.current?.click()}
+              title="Click to upload photo"
+            >
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => {
+                  const f = e.target.files?.[0];
+                  if (f) handlePhotoUpload(f);
+                  e.target.value = '';
+                }}
+              />
               {user.photoUrl ? (
-                <img src={user.photoUrl} alt="Holder" className="w-full h-full object-cover" />
+                <>
+                  <img src={user.photoUrl} alt="Holder" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <Camera className="w-6 h-6 text-white drop-shadow-md" />
+                  </div>
+                </>
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100">
-                  <User className="w-7 h-7 text-gray-300" />
-                  <span className="text-[8px] text-gray-400 mt-1">No Photo</span>
+                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 group-hover:bg-slate-200 transition-colors">
+                  <Camera className="w-6 h-6 text-gray-400 group-hover:text-emerald-600 transition-colors" />
+                  <span className="text-[8px] text-gray-400 mt-1">Tap to upload photo</span>
                 </div>
               )}
             </div>
 
             {/* QR box */}
-            <div className="absolute bg-white/95 rounded-[4px] border border-gray-300 px-1 py-0.5 flex items-center justify-between" style={{ left: '6.5%', top: '72.5%', width: '24.2%', height: '15.5%' }}>
+            <div className="absolute bg-white/95 rounded-[4px] border border-gray-300 px-1 py-0.5 flex items-center justify-between" style={{ left: '4.0%', top: '72.8%', width: '27.4%', height: '15.8%' }}>
               <div className="relative flex items-center justify-center" style={{ width: '44%', height: '90%' }}>
                 <img src={qrImageUrl} alt="QR" onError={() => setQrSrcIndex(p => p + 1)} className="w-full h-full object-contain" />
                 <div className="absolute w-[30%] h-[30%] bg-white rounded-2xs p-0.5 shadow-2xs flex items-center justify-center">

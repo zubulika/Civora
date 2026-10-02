@@ -308,7 +308,7 @@ fun DynamicDrivingLicenseCard(
             val scale = min(widthScale, heightScale).coerceIn(0.46f, 1.75f)
             val fieldTextScale = scale.coerceIn(0.50f, 1.25f)
 
-            // 1. Template Background: Scaled slightly and clipped to eliminate any scan outline and outer artifacts
+            // 1. Template Background: Scaled slightly (1.03x) and clipped to cleanly eliminate raw scan borders
             Image(
                 painter = painterResource(id = R.drawable.bg_driving_license),
                 contentDescription = "Saudi Driving License Background",
@@ -316,23 +316,23 @@ fun DynamicDrivingLicenseCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        scaleX = 1.05f
-                        scaleY = 1.05f
+                        scaleX = 1.03f
+                        scaleY = 1.03f
                     }
             )
 
-            // 2. Holder Photo (Positioned precisely within the template's photo frame cutout)
+            // 2. Holder Photo (Positioned precisely to completely cover the template's pre-printed photo frame cutout)
             Box(
                 modifier = Modifier
                     .offset(
-                        x = cardWidth * 0.065f,
-                        y = cardHeight * 0.259f
+                        x = cardWidth * 0.026f,
+                        y = cardHeight * 0.227f
                     )
                     .size(
-                        width = cardWidth * 0.242f,
-                        height = cardHeight * 0.446f
+                        width = cardWidth * 0.282f,
+                        height = cardHeight * 0.496f
                     )
-                    .clip(RoundedCornerShape(6.dp * scale))
+                    .clip(RoundedCornerShape(10.dp * scale))
                     .background(Color(0xFFE2E8F0))
             ) {
                 UserAvatarImage(
@@ -354,12 +354,12 @@ fun DynamicDrivingLicenseCard(
             Box(
                 modifier = Modifier
                     .offset(
-                        x = cardWidth * 0.065f,
-                        y = cardHeight * 0.725f
+                        x = cardWidth * 0.026f,
+                        y = cardHeight * 0.735f
                     )
                     .size(
-                        width = cardWidth * 0.242f,
-                        height = cardHeight * 0.155f
+                        width = cardWidth * 0.282f,
+                        height = cardHeight * 0.163f
                     )
                     .padding(horizontal = 1.dp * scale, vertical = 0.dp),
                 contentAlignment = Alignment.Center
@@ -422,10 +422,10 @@ fun DynamicDrivingLicenseCard(
             Column(
                 modifier = Modifier
                     .offset(
-                        x = cardWidth * 0.326f,
-                        y = cardHeight * 0.246f
+                        x = cardWidth * 0.325f,
+                        y = cardHeight * 0.240f
                     )
-                    .width(cardWidth * 0.635f),
+                    .width(cardWidth * 0.640f),
                 horizontalAlignment = Alignment.End
             ) {
                 ResponsiveSingleLineText(
@@ -503,11 +503,11 @@ fun DynamicDrivingLicenseCard(
             Column(
                 modifier = Modifier
                     .offset(
-                        x = cardWidth * 0.326f,
-                        y = cardHeight * 0.425f
+                        x = cardWidth * 0.325f,
+                        y = cardHeight * 0.422f
                     )
-                    .width(cardWidth * 0.635f)
-                    .height(cardHeight * 0.512f),
+                    .width(cardWidth * 0.640f)
+                    .height(cardHeight * 0.520f),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 fields.forEach { field ->

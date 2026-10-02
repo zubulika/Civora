@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { UserProfile } from '@/types';
 import { buildOfficialQrPayload, getQrCodeFallbackUrls } from '@/lib/officialQr';
 import { RefreshCw, CheckCircle2, ShieldCheck, User } from 'lucide-react';
+import DocumentExportMenu from '@/components/common/DocumentExportMenu';
 
 interface DrivingLicensePreviewProps {
   user: Partial<UserProfile>;
@@ -84,14 +85,21 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
             Official Driving License Template
           </span>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowQrBack(!showQrBack)}
-          className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-emerald-700 bg-white hover:bg-emerald-50 border border-gray-300 px-3 py-1 rounded-lg shadow-2xs transition-all cursor-pointer"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${showQrBack ? 'rotate-180 transition-transform' : ''}`} />
-          <span>{showQrBack ? 'Show License Front' : 'Show Digital QR'}</span>
-        </button>
+        <div className="flex items-center gap-1.5">
+          <DocumentExportMenu
+            user={user}
+            docType="DRIVING_LICENSE"
+            size="sm"
+          />
+          <button
+            type="button"
+            onClick={() => setShowQrBack(!showQrBack)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-emerald-700 bg-white hover:bg-emerald-50 border border-gray-300 px-3 py-1 rounded-lg shadow-2xs transition-all cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${showQrBack ? 'rotate-180 transition-transform' : ''}`} />
+            <span>{showQrBack ? 'Front' : 'QR'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Card Container (Aspect Ratio 1.586 standard ID card matching Android) */}
@@ -100,7 +108,7 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
         style={{
           backgroundColor: '#FFFFFF',
           backgroundImage: 'url(/bg_driving_license.webp)',
-          backgroundSize: '105% 105%',
+          backgroundSize: '100% 100%',
           backgroundPosition: 'center',
           boxShadow: '0 12px 32px -4px rgba(12, 61, 46, 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.08)',
         }}
@@ -108,14 +116,14 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
         {!showQrBack ? (
           /* FRONT SIDE: 1:1 Match with Android DynamicDrivingLicenseCard.kt */
           <div className="absolute inset-0">
-            {/* 1. Holder Photo */}
+            {/* 1. Holder Photo (Positioned precisely to cover the template's pre-printed photo frame cutout) */}
             <div
-              className="absolute overflow-hidden rounded-[5px] bg-[#E8EEF4] border border-gray-300 shadow-xs"
+              className="absolute overflow-hidden rounded-[12px] bg-[#E8EEF4] border border-gray-300 shadow-2xs"
               style={{
-                left: '6.5%',
-                top: '25.9%',
-                width: '24.2%',
-                height: '44.6%',
+                left: '4.0%',
+                top: '23.5%',
+                width: '27.4%',
+                height: '48.2%',
               }}
             >
               {user.photoUrl ? (
@@ -136,10 +144,10 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
             <div
               className="absolute bg-white/95 rounded-[4px] border border-gray-300 px-1 py-0.5 flex items-center justify-between"
               style={{
-                left: '6.5%',
-                top: '72.5%',
-                width: '24.2%',
-                height: '15.5%',
+                left: '4.0%',
+                top: '72.8%',
+                width: '27.4%',
+                height: '15.8%',
               }}
             >
               {/* QR Container with Centered Absher Logo */}

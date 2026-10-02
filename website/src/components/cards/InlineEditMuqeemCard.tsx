@@ -239,12 +239,12 @@ export default function InlineEditMuqeemCard({
   return (
     <div className={`flex flex-col items-center w-full ${className}`}>
       {/* Top bar */}
-      <div className="w-full flex items-center justify-between mb-2 px-1">
-        <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2.5 py-1 rounded-full">
+      <div className="w-full flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2.5 py-1 rounded-full">
           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-          Digital Document / E-CAMA Card — Click any field to edit
+          Click any field on card to edit
         </span>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <button
             type="button"
             onClick={() => setShowOcrPanel(v => !v)}

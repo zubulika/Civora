@@ -1,90 +1,112 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Sidebar from '@/components/layout/Sidebar';
 import TopHeader from '@/components/layout/TopHeader';
 import CitizenForm from '@/components/forms/CitizenForm';
-import MuqeemCardPreview from '@/components/cards/MuqeemCardPreview';
-import DrivingLicensePreview from '@/components/cards/DrivingLicensePreview';
+import InlineEditMuqeemCard from '@/components/cards/InlineEditMuqeemCard';
+import InlineEditDrivingLicense from '@/components/cards/InlineEditDrivingLicense';
+import DocumentExportMenu from '@/components/common/DocumentExportMenu';
 import { saveCitizen } from '@/lib/firestoreService';
 import { UserProfile } from '@/types';
-import { ArrowLeft, CheckCircle2, Sparkles, CreditCard, Car } from 'lucide-react';
-import Link from 'next/link';
+import { toast } from '@/lib/toast';
+import {
+  ArrowLeft, Car, CreditCard, Save, Download
+} from 'lucide-react';
 
 export default function NewCitizenPage() {
   const router = useRouter();
   const [activeCardTab, setActiveCardTab] = useState<'resident' | 'license'>('resident');
-  const [livePreviewData, setLivePreviewData] = useState<Partial<UserProfile>>({
+  const [formData, setFormData] = useState<Partial<UserProfile>>({
     nationalId: '',
     fullNameEn: '',
     fullNameAr: '',
     dateOfBirth: '',
     dateOfBirthAr: '',
     dateOfBirthHijri: '',
-    nationality: '',
-    nationalityAr: '',
+    nationality: 'Bangladesh',
+    nationalityAr: 'بنجلاديش',
     placeOfBirthEn: '',
     placeOfBirthAr: '',
     birthCity: '',
     birthCountry: '',
-    maritalStatus: '',
-    sponsorshipTransfers: '',
-    religionEn: '',
-    religionAr: '',
-    workPermit: '',
-    biometricsCollected: '',
-    travelStatus: '',
+    maritalStatus: 'SINGLE (أعزب)',
+    sponsorshipTransfers: '0',
+    religionEn: 'Islam',
+    religionAr: 'مسلم',
+    workPermit: 'REGULAR',
+    biometricsCollected: 'Enrolled (بصمة مسجلة)',
+    travelStatus: 'INSIDE_KINGDOM',
     professionEn: '',
     professionAr: '',
-    sponsorId: '',
+    sponsorId: '7000000000',
     sponsorNameEn: '',
     sponsorName: '',
-    establishmentStatus: '',
-    issuePlaceEn: '',
-    issuePlace: '',
-    workPlaceAr: '',
-    insuranceIssuingDate: '',
-    insuranceExpiry: '',
-    bloodType: '',
-    insuranceCompany: '',
-    insurancePolicyNo: '',
-    insuranceStatus: '',
-    hajjEligibility: '',
-    lastHajjYear: '',
+    establishmentStatus: 'High Green (النطاق البلاتيني)',
+    issuePlaceEn: 'Riyadh',
+    issuePlace: 'الرياض',
+    workPlaceAr: 'منطقة الرياض',
+    insuranceIssuingDate: '2026/01/01',
+    insuranceExpiry: '2027/01/01',
+    bloodType: 'A+',
+    insuranceCompany: 'Tawuniya (التعاونية للتأمين)',
+    insurancePolicyNo: 'POL-2026-9901',
+    insuranceStatus: 'ACTIVE (ساري)',
+    hajjEligibility: 'ELIGIBLE (مؤهل للحج)',
+    lastHajjYear: 'None',
     expiryDateEn: '',
     expiryDateAr: '',
     versionNumber: '٢',
-    expiryDateDigits: '',
-    issueDateDigits: '',
+    expiryDateDigits: '081026',
+    issueDateDigits: '010126',
     photoUrl: '',
-    licenseTypeEn: '',
-    licenseTypeAr: '',
-    licenseIssueDateEn: '',
-    licenseIssueDateAr: '',
-    licenseExpiryDateEn: '',
-    licenseExpiryDateAr: '',
-    residentIdIssuingDate: '',
+    licenseTypeEn: 'Private',
+    licenseTypeAr: 'خصوصي',
+    licenseIssueDateEn: '10/03/2026',
+    licenseIssueDateAr: '١٠/٠٣/٢٠٢٦',
+    licenseExpiryDateEn: '21/11/2035',
+    licenseExpiryDateAr: '٢١/١١/٢٠٣٥',
+    residentIdIssuingDate: '2026/01/01',
     visaNumber: '',
-    visaType: '',
+    visaType: 'Work Visa (تأشيرة عمل)',
     visaExitDate: '',
     verificationLevel: 'TIER_3_VERIFIED',
     digitalIdActive: true,
+    hasDrivingLicense: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const formDataJsonRef = useRef<string>('');
+
+  const handleFormChange = (updated: UserProfile) => {
+    const json = JSON.stringify(updated);
+    if (json === formDataJsonRef.current) return;
+    formDataJsonRef.current = json;
+    setFormData(updated);
+  };
+
+  const handleCardChange = (changes: Partial<UserProfile>) => {
+    setFormData(prev => {
+      const next = { ...prev, ...changes };
+      formDataJsonRef.current = JSON.stringify(next);
+      return next;
+    });
+  };
 
   const handleSubmit = async (data: UserProfile) => {
     setIsSubmitting(true);
     try {
-      await saveCitizen(data);
-      setSuccessMessage(`Document issued successfully for ${data.fullNameEn || data.fullNameAr || data.nationalId}!`);
-      setTimeout(() => {
-        router.push('/users');
-      }, 1500);
+      const merged = { ...formData, ...data } as UserProfile;
+      await saveCitizen(merged);
+      toast.success(`User & Document created successfully for ${merged.fullNameEn || merged.nationalId}!`);
+      // Transition URL to edit page without full reload so user is not bounced back
+      if (merged.id || merged.nationalId) {
+        router.replace(`/users/${merged.id || merged.nationalId}`);
+      }
     } catch (err) {
       console.error(err);
-      alert('Error saving citizen. Check console.');
+      toast.error('Error creating user. Check console or try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -100,94 +122,117 @@ export default function NewCitizenPage() {
           subtitle="Create a user profile and issue their digital ID card"
         />
 
-        <div className="p-8 space-y-6 max-w-7xl">
-          {/* Back link & Success Alert */}
+        <div className="p-6 space-y-6 max-w-[1600px]">
+          {/* Nav + Save bar */}
           <div className="flex items-center justify-between">
             <Link
               href="/users"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-emerald-700 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Citizen Directory</span>
+              <span>Back to Users</span>
             </Link>
 
-            {successMessage && (
-              <div className="flex items-center gap-2 bg-emerald-100 text-emerald-800 border border-emerald-300 px-4 py-2 rounded-xl text-xs font-bold animate-fade-in">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>{successMessage}</span>
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                if (!formData.nationalId) {
+                  toast.error('Please enter a National ID / Iqama number.');
+                  return;
+                }
+                handleSubmit(formData as UserProfile);
+              }}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer active:scale-98"
+            >
+              <Save className="w-4 h-4" />
+              <span>{isSubmitting ? 'Issuing…' : 'Save & Issue'}</span>
+            </button>
           </div>
 
-          {/* 2-Column Responsive Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left 7 Cols: Input Form */}
-            <div className="lg:col-span-7">
+          {/* Main two-column layout matching Edit page */}
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_740px] gap-8 items-start">
+            {/* LEFT: Personal + general form */}
+            <div className="min-w-0">
               <CitizenForm
-                initialData={livePreviewData}
-                onChange={(updated) => setLivePreviewData(updated)}
+                initialData={formData as UserProfile}
+                onChange={handleFormChange}
                 onSubmit={handleSubmit}
                 isSubmitting={isSubmitting}
               />
             </div>
 
-            {/* Right 5 Cols: Live Real-Time Card Preview */}
-            <div className="lg:col-span-5 sticky top-28 space-y-4">
-              <div className="bg-white p-6 rounded-2xl border border-gray-200/90 shadow-xs">
-                <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
+            {/* RIGHT: Inline-editable document cards */}
+            <div className="sticky top-6 space-y-4">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs">
+                <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                   <div>
-                    <h3 className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
-                      <span>Real-Time Card Preview</span>
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                    </h3>
-                    <p className="text-[11px] text-gray-500">Live preview matching mobile application rendering</p>
+                    <h3 className="font-bold text-slate-900 text-sm">Document Card Editor</h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Click any field directly on the card template to edit. Use <span className="font-semibold text-violet-700">Scan Doc</span> to auto-fill from a photo.
+                    </p>
                   </div>
                 </div>
 
-                {/* Card Template Switcher */}
-                <div className="flex bg-slate-100 p-1 rounded-xl mb-4 border border-slate-200">
-                  <button
-                    type="button"
-                    onClick={() => setActiveCardTab('resident')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      activeCardTab === 'resident'
-                        ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
-                        : 'text-slate-500 hover:text-slate-900'
-                    }`}
-                  >
-                    <CreditCard className="w-3.5 h-3.5" />
-                    <span>Digital Document / E-CAMA Card</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveCardTab('license')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      activeCardTab === 'license'
-                        ? 'bg-white text-emerald-800 shadow-2xs border border-slate-200/80'
-                        : 'text-slate-500 hover:text-slate-900'
-                    }`}
-                  >
-                    <Car className="w-3.5 h-3.5" />
-                    <span>Driving License (رخصة القيادة)</span>
-                  </button>
+                {/* Tab switcher */}
+                <div className="flex bg-slate-50 border-b border-slate-200">
+                  {([
+                    { key: 'resident', label: 'Digital Document / E-CAMA Card', icon: CreditCard },
+                    { key: 'license', label: 'Driving License', icon: Car },
+                  ] as const).map(({ key, label, icon: Icon }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setActiveCardTab(key)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-bold transition-all cursor-pointer border-b-2 ${
+                        activeCardTab === key
+                          ? 'text-emerald-800 border-emerald-600 bg-white'
+                          : 'text-slate-500 hover:text-slate-800 border-transparent hover:bg-white/60'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
                 </div>
 
-                {/* Interactive Card Preview */}
-                {activeCardTab === 'resident' && (
-                  <MuqeemCardPreview user={livePreviewData} />
-                )}
-                {activeCardTab === 'license' && (
-                  <DrivingLicensePreview user={livePreviewData} />
-                )}
+                {/* Card content */}
+                <div className="p-5 space-y-6">
+                  {activeCardTab === 'resident' && (
+                    <InlineEditMuqeemCard
+                      user={formData}
+                      onChange={handleCardChange}
+                    />
+                  )}
 
-                <div className="mt-4 p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-[11px] text-emerald-900 leading-relaxed">
-                  <strong>Notice:</strong> Once issued, this digital document will immediately sync to Firebase Firestore collection{' '}
-                  <code className="font-mono text-[10px] bg-emerald-100 px-1 py-0.5 rounded">
-                    users/{livePreviewData.nationalId || '[National-ID]'}
-                  </code>{' '}
-                  and become viewable on the citizen&apos;s mobile device upon login.
+                  {activeCardTab === 'license' && (
+                    <InlineEditDrivingLicense
+                      user={formData}
+                      onChange={handleCardChange}
+                    />
+                  )}
+                </div>
+
+                {/* Bottom Card Action Bar with Full Export Options */}
+                <div className="px-5 py-3.5 bg-slate-50/90 border-t border-slate-200 rounded-b-2xl flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs text-slate-600 font-semibold">
+                    <Download className="w-4 h-4 text-emerald-700" />
+                    <span>Download Official Document:</span>
+                  </div>
+                  <DocumentExportMenu
+                    user={formData}
+                    docType={activeCardTab === 'resident' ? 'RESIDENT_ID' : 'DRIVING_LICENSE'}
+                    showDocSelector
+                    size="md"
+                    placement="top"
+                  />
                 </div>
               </div>
+
+              {/* Save hint */}
+              <p className="text-[11px] text-slate-400 text-center">
+                Changes on the card are reflected live. Hit <strong className="text-slate-600">Save & Issue</strong> when done.
+              </p>
             </div>
           </div>
         </div>

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import MuqeemCardPreview from '@/components/cards/MuqeemCardPreview';
 import DrivingLicensePreview from '@/components/cards/DrivingLicensePreview';
+import DocumentExportMenu from '@/components/common/DocumentExportMenu';
 
 export default function UsersDirectoryPage() {
   const [citizens, setCitizens] = useState<UserProfile[]>([]);
@@ -213,10 +214,16 @@ export default function UsersDirectoryPage() {
                         {/* Actions */}
                         <td className="py-4 px-5 text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <DocumentExportMenu
+                              user={c}
+                              docType="RESIDENT_ID"
+                              showDocSelector
+                              size="sm"
+                            />
                             <button
                               onClick={() => setPreviewCitizen(c)}
                               title="Live Card Preview"
-                              className="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-100/50 rounded-lg transition-colors"
+                              className="p-1.5 text-gray-500 hover:text-emerald-700 hover:bg-emerald-100/50 rounded-lg transition-colors cursor-pointer"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
@@ -230,7 +237,7 @@ export default function UsersDirectoryPage() {
                             <button
                               onClick={() => handleDelete(c.id, c.fullNameEn)}
                               title="Remove Citizen"
-                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -256,7 +263,7 @@ export default function UsersDirectoryPage() {
                 </div>
                 <button
                   onClick={() => setPreviewCitizen(null)}
-                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-bold"
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-bold cursor-pointer"
                 >
                   ✕
                 </button>
@@ -298,19 +305,28 @@ export default function UsersDirectoryPage() {
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
-                <Link
-                  href={`/users/${previewCitizen.id}`}
-                  className="px-5 py-2 bg-emerald-700 text-white text-xs font-semibold rounded-xl hover:bg-emerald-800"
-                >
-                  Edit Information
-                </Link>
-                <button
-                  onClick={() => setPreviewCitizen(null)}
-                  className="px-5 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200"
-                >
-                  Close
-                </button>
+              <div className="flex justify-between items-center gap-3 mt-6 pt-4 border-t border-gray-100">
+                <DocumentExportMenu
+                  user={previewCitizen}
+                  docType={modalCardTab === 'resident' ? 'RESIDENT_ID' : 'DRIVING_LICENSE'}
+                  showDocSelector
+                  size="md"
+                  placement="top"
+                />
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/users/${previewCitizen.id}`}
+                    className="px-5 py-2 bg-emerald-700 text-white text-xs font-semibold rounded-xl hover:bg-emerald-800"
+                  >
+                    Edit Information
+                  </Link>
+                  <button
+                    onClick={() => setPreviewCitizen(null)}
+                    className="px-5 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-200 cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>

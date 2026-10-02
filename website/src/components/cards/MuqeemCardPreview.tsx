@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { UserProfile } from '@/types';
 import { buildOfficialQrPayload, getQrCodeFallbackUrls, BARCODE_PATTERN } from '@/lib/officialQr';
 import { RefreshCw, CheckCircle2, ShieldCheck, User } from 'lucide-react';
+import DocumentExportMenu from '@/components/common/DocumentExportMenu';
 
 const toArabicNumerals = (str: string): string => {
   if (!str) return '';
@@ -37,14 +38,21 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
             Official MOI Digital Template
           </span>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowQrBack(!showQrBack)}
-          className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-emerald-700 bg-white hover:bg-emerald-50 border border-gray-300 px-3 py-1 rounded-lg shadow-2xs transition-all cursor-pointer"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${showQrBack ? 'rotate-180 transition-transform' : ''}`} />
-          <span>{showQrBack ? 'Show ID Front' : 'Show Digital QR'}</span>
-        </button>
+        <div className="flex items-center gap-1.5">
+          <DocumentExportMenu
+            user={user}
+            docType="RESIDENT_ID"
+            size="sm"
+          />
+          <button
+            type="button"
+            onClick={() => setShowQrBack(!showQrBack)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-emerald-700 bg-white hover:bg-emerald-50 border border-gray-300 px-3 py-1 rounded-lg shadow-2xs transition-all cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${showQrBack ? 'rotate-180 transition-transform' : ''}`} />
+            <span>{showQrBack ? 'Front' : 'QR'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Card Container (Aspect Ratio 1.586 matching Android ISO/IEC 7810 ID-1 standard) */}

@@ -8,6 +8,33 @@ import {
   Loader2, Sparkles, UploadCloud, X
 } from 'lucide-react';
 
+export const toArabicNumerals = (str: string): string => {
+  if (!str) return '';
+  const eastern = '٠١٢٣٤٥٦٧٨٩';
+  return str.replace(/\d/g, d => eastern[parseInt(d, 10)] || d);
+};
+
+export const extractDateDigits = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const clean = dateStr.trim();
+  const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+  if (ymd) {
+    const y = ymd[1].slice(-2);
+    const m = ymd[2].padStart(2, '0');
+    const d = ymd[3].padStart(2, '0');
+    return `${d}${m}${y}`;
+  }
+  const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmy) {
+    const d = dmy[1].padStart(2, '0');
+    const m = dmy[2].padStart(2, '0');
+    const y = dmy[3].slice(-2);
+    return `${d}${m}${y}`;
+  }
+  const digitsOnly = clean.replace(/\D/g, '');
+  return digitsOnly.slice(0, 6);
+};
+
 interface InlineEditMuqeemCardProps {
   user: Partial<UserProfile>;
   onChange: (changes: Partial<UserProfile>) => void;
@@ -166,10 +193,15 @@ export default function InlineEditMuqeemCard({
         const dateMatches = [...line.matchAll(/\b(\d{1,4}[\/\-]\d{1,2}[\/\-]\d{1,4})\b/g)];
         const lLower = line.toLowerCase();
 
-        if ((lLower.includes('expir') || lLower.includes('انتهاء')) && dateMatches[0] && !extracted.expiryDateEn)
+        if ((lLower.includes('expir') || lLower.includes('انتهاء')) && dateMatches[0] && !extracted.expiryDateEn) {
           extracted.expiryDateEn = dateMatches[0][1];
-        if ((lLower.includes('birth') || lLower.includes('ميلاد')) && dateMatches[0] && !extracted.dateOfBirth)
+          extracted.expiryDateAr = toArabicNumerals(dateMatches[0][1]);
+          extracted.expiryDateDigits = extractDateDigits(dateMatches[0][1]);
+        }
+        if ((lLower.includes('birth') || lLower.includes('ميلاد')) && dateMatches[0] && !extracted.dateOfBirth) {
           extracted.dateOfBirth = dateMatches[0][1];
+          extracted.dateOfBirthAr = toArabicNumerals(dateMatches[0][1]);
+        }
 
         // English name: all-caps multi-word
         if (!extracted.fullNameEn && /^[A-Z][A-Z\s]{8,}$/.test(line) && line.split(' ').length >= 2)
@@ -393,12 +425,38 @@ export default function InlineEditMuqeemCard({
               {/* Row 1: ID | Expiry */}
               <div className="flex items-baseline justify-between text-[13.5px] leading-tight">
                 <RowField label="رقم الهوية:" value={user.nationalId || ''} onChange={v => onChange({ nationalId: v.replace(/\D/g, '') })} placeholder="10-digit ID" mono />
-                <RowField label="تاريخ الانتهاء:" value={user.expiryDateEn || ''} onChange={v => onChange({ expiryDateEn: v })} placeholder="YYYY/MM/DD" mono />
+                <RowField
+                  label="تاريخ الانتهاء:"
+                  value={user.expiryDateEn || ''}
+                  onChange={v => {
+                    const ar = toArabicNumerals(v);
+                    const digits = extractDateDigits(v);
+                    onChange({
+                      expiryDateEn: v,
+                      expiryDateAr: ar,
+                      expiryDateDigits: digits || user.expiryDateDigits || '081026',
+                    });
+                  }}
+                  placeholder="YYYY/MM/DD"
+                  mono
+                />
               </div>
 
               {/* Row 2: DOB | Place of Birth */}
               <div className="flex items-baseline justify-between text-[13.5px] leading-tight">
-                <RowField label="تاريخ الميلاد:" value={user.dateOfBirth || ''} onChange={v => onChange({ dateOfBirth: v })} placeholder="YYYY/MM/DD" mono />
+                <RowField
+                  label="تاريخ الميلاد:"
+                  value={user.dateOfBirth || ''}
+                  onChange={v => {
+                    const ar = toArabicNumerals(v);
+                    onChange({
+                      dateOfBirth: v,
+                      dateOfBirthAr: ar,
+                    });
+                  }}
+                  placeholder="YYYY/MM/DD"
+                  mono
+                />
                 <RowField label="مكان الميلاد:" value={user.placeOfBirthEn || ''} onChange={v => onChange({ placeOfBirthEn: v, placeOfBirthAr: v })} placeholder="City, Country" />
               </div>
 

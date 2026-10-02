@@ -1,5 +1,6 @@
 package com.civora.app.data.firebase
 
+import com.civora.app.core.components.toEasternArabicDigits
 import com.civora.app.core.model.DigitalDocument
 import com.civora.app.core.model.DocumentStatus
 import com.civora.app.core.model.DocumentType
@@ -18,6 +19,11 @@ object FirestoreMappers {
 
     fun toUserProfile(doc: DocumentSnapshot): UserProfile? {
         return try {
+            val dob = doc.getString("dateOfBirth") ?: "1988/02/03"
+            val expEn = doc.getString("expiryDateEn") ?: "2026/10/08"
+            val licIssueEn = doc.getString("licenseIssueDateEn") ?: "10/03/2026"
+            val licExpEn = doc.getString("licenseExpiryDateEn") ?: "21/11/2035"
+
             UserProfile(
                 id = doc.getString("id") ?: doc.id,
                 nationalId = doc.getString("nationalId") ?: "",
@@ -25,8 +31,8 @@ object FirestoreMappers {
                 accountStatus = doc.getString("accountStatus") ?: "ACTIVE",
                 fullNameEn = doc.getString("fullNameEn") ?: "",
                 fullNameAr = doc.getString("fullNameAr") ?: "",
-                dateOfBirth = doc.getString("dateOfBirth") ?: "1988/02/03",
-                dateOfBirthAr = doc.getString("dateOfBirthAr") ?: "١٩٨٨/٠٢/٠٣",
+                dateOfBirth = dob,
+                dateOfBirthAr = doc.getString("dateOfBirthAr") ?: dob.toEasternArabicDigits(),
                 dateOfBirthHijri = doc.getString("dateOfBirthHijri") ?: "1408/10/18",
                 nationality = doc.getString("nationality") ?: "Bangladesh",
                 nationalityAr = doc.getString("nationalityAr") ?: "بنجلاديش",
@@ -42,8 +48,8 @@ object FirestoreMappers {
                 issuePlaceEn = doc.getString("issuePlaceEn") ?: "Elm Information Security",
                 issuePlace = doc.getString("issuePlace") ?: "شركة العلم لامن المعلومات",
                 workPlaceAr = doc.getString("workPlaceAr") ?: "منطقة الرياض",
-                expiryDateEn = doc.getString("expiryDateEn") ?: "2026/10/08",
-                expiryDateAr = doc.getString("expiryDateAr") ?: "٢٠٢٦/١٠/٠٨",
+                expiryDateEn = expEn,
+                expiryDateAr = doc.getString("expiryDateAr") ?: expEn.toEasternArabicDigits(),
                 versionNumber = doc.getString("versionNumber") ?: "٢",
                 expiryDateDigits = doc.getString("expiryDateDigits") ?: "081026",
                 issueDateDigits = doc.getString("issueDateDigits") ?: "070926",
@@ -85,10 +91,10 @@ object FirestoreMappers {
                 hasDrivingLicense = doc.getBoolean("hasDrivingLicense") ?: true,
                 licenseTypeEn = doc.getString("licenseTypeEn") ?: "Private",
                 licenseTypeAr = doc.getString("licenseTypeAr") ?: "خصوصي",
-                licenseIssueDateEn = doc.getString("licenseIssueDateEn") ?: "10/03/2026",
-                licenseIssueDateAr = doc.getString("licenseIssueDateAr") ?: "٢٠٢٦/٠٣/١٠",
-                licenseExpiryDateEn = doc.getString("licenseExpiryDateEn") ?: "21/11/2035",
-                licenseExpiryDateAr = doc.getString("licenseExpiryDateAr") ?: "٢٠٣٥/١١/٢١",
+                licenseIssueDateEn = licIssueEn,
+                licenseIssueDateAr = doc.getString("licenseIssueDateAr") ?: licIssueEn.toEasternArabicDigits(),
+                licenseExpiryDateEn = licExpEn,
+                licenseExpiryDateAr = doc.getString("licenseExpiryDateAr") ?: licExpEn.toEasternArabicDigits(),
                 bloodType = doc.getString("bloodType") ?: "A+"
             )
         } catch (e: Exception) {

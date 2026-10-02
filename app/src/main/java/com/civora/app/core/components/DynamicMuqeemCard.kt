@@ -391,14 +391,14 @@ private fun ArabicDataLayout(user: UserProfile, scale: Float) {
                 rightLabel = "رقم الهوية:",
                 rightValue = user.nationalId.toEasternArabicDigits(),
                 leftLabel = "تاريخ الانتهاء:",
-                leftValue = user.expiryDateAr.ifEmpty { user.expiryDateEn.toEasternArabicDigits() },
+                leftValue = if (user.expiryDateEn.isNotBlank()) user.expiryDateEn.toEasternArabicDigits() else user.expiryDateAr,
                 scale = scale
             )
 
             // Row 2: Place of Birth (Left col) | Date of Birth (Right col)
             TwoColumnArabicRow(
                 rightLabel = "تاريخ الميلاد:",
-                rightValue = user.dateOfBirthAr.ifEmpty { user.dateOfBirth.toEasternArabicDigits() },
+                rightValue = if (user.dateOfBirth.isNotBlank()) user.dateOfBirth.toEasternArabicDigits() else user.dateOfBirthAr,
                 leftLabel = "مكان الميلاد:",
                 leftValue = user.placeOfBirthAr,
                 scale = scale

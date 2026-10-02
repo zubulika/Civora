@@ -21,6 +21,33 @@ import {
   Filter
 } from 'lucide-react';
 
+const toArabicNumerals = (str: string): string => {
+  if (!str) return '';
+  const eastern = '٠١٢٣٤٥٦٧٨٩';
+  return str.replace(/\d/g, d => eastern[parseInt(d, 10)] || d);
+};
+
+const extractDateDigits = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const clean = dateStr.trim();
+  const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+  if (ymd) {
+    const y = ymd[1].slice(-2);
+    const m = ymd[2].padStart(2, '0');
+    const d = ymd[3].padStart(2, '0');
+    return `${d}${m}${y}`;
+  }
+  const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmy) {
+    const d = dmy[1].padStart(2, '0');
+    const m = dmy[2].padStart(2, '0');
+    const y = dmy[3].slice(-2);
+    return `${d}${m}${y}`;
+  }
+  const digitsOnly = clean.replace(/\D/g, '');
+  return digitsOnly.slice(0, 6);
+};
+
 interface CitizenFormProps {
   initialData?: Partial<UserProfile>;
   onSubmit: (data: UserProfile) => Promise<void>;
@@ -400,7 +427,16 @@ export default function CitizenForm({
               <input
                 type="text"
                 value={formData.dateOfBirth}
-                onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const updated = {
+                    ...formData,
+                    dateOfBirth: val,
+                    dateOfBirthAr: toArabicNumerals(val)
+                  };
+                  setFormData(updated);
+                  onChange?.(updated);
+                }}
                 placeholder="Gregorian: YYYY/MM/DD"
                 className={`${INPUT_CLASSES} font-mono`}
               />
@@ -750,7 +786,17 @@ export default function CitizenForm({
             <input
               type="text"
               value={formData.residentIdIssuingDate || ''}
-              onChange={(e) => handleChange('residentIdIssuingDate', e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                const digits = extractDateDigits(val);
+                const updated = {
+                  ...formData,
+                  residentIdIssuingDate: val,
+                  ...(digits ? { issueDateDigits: digits } : {})
+                };
+                setFormData(updated);
+                onChange?.(updated);
+              }}
               placeholder="DD/MM/YYYY (e.g. 28/03/2021)"
               className={`${INPUT_CLASSES} font-mono`}
             />
@@ -762,7 +808,18 @@ export default function CitizenForm({
             <input
               type="text"
               value={formData.expiryDateEn || ''}
-              onChange={(e) => handleChange('expiryDateEn', e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                const digits = extractDateDigits(val);
+                const updated = {
+                  ...formData,
+                  expiryDateEn: val,
+                  expiryDateAr: toArabicNumerals(val),
+                  ...(digits ? { expiryDateDigits: digits } : {})
+                };
+                setFormData(updated);
+                onChange?.(updated);
+              }}
               placeholder="YYYY/MM/DD (e.g. 2026/10/08)"
               className={`${INPUT_CLASSES} font-mono`}
             />
@@ -881,7 +938,16 @@ export default function CitizenForm({
               <input
                 type="text"
                 value={formData.licenseIssueDateEn || ''}
-                onChange={(e) => handleChange('licenseIssueDateEn', e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const updated = {
+                    ...formData,
+                    licenseIssueDateEn: val,
+                    licenseIssueDateAr: toArabicNumerals(val)
+                  };
+                  setFormData(updated);
+                  onChange?.(updated);
+                }}
                 placeholder="DD/MM/YYYY  (e.g. 10/03/2026)"
                 className={`${INPUT_CLASSES} font-mono`}
               />
@@ -904,7 +970,16 @@ export default function CitizenForm({
               <input
                 type="text"
                 value={formData.licenseExpiryDateEn || ''}
-                onChange={(e) => handleChange('licenseExpiryDateEn', e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const updated = {
+                    ...formData,
+                    licenseExpiryDateEn: val,
+                    licenseExpiryDateAr: toArabicNumerals(val)
+                  };
+                  setFormData(updated);
+                  onChange?.(updated);
+                }}
                 placeholder="DD/MM/YYYY  (e.g. 21/11/2035)"
                 className={`${INPUT_CLASSES} font-mono`}
               />

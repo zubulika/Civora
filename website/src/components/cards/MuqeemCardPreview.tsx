@@ -5,6 +5,12 @@ import { UserProfile } from '@/types';
 import { buildOfficialQrPayload, getQrCodeFallbackUrls, BARCODE_PATTERN } from '@/lib/officialQr';
 import { RefreshCw, CheckCircle2, ShieldCheck, User } from 'lucide-react';
 
+const toArabicNumerals = (str: string): string => {
+  if (!str) return '';
+  const eastern = '٠١٢٣٤٥٦٧٨٩';
+  return str.replace(/\d/g, d => eastern[parseInt(d, 10)] || d);
+};
+
 interface MuqeemCardPreviewProps {
   user: Partial<UserProfile>;
   className?: string;
@@ -192,7 +198,9 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-[#817f70] font-semibold">تاريخ الانتهاء:</span>
-                  <span className="font-bold text-[#3e3d3b]">{user.expiryDateAr || user.expiryDateEn || ''}</span>
+                  <span className="font-bold text-[#3e3d3b]">
+                    {user.expiryDateAr || (user.expiryDateEn ? toArabicNumerals(user.expiryDateEn) : '')}
+                  </span>
                 </div>
               </div>
 
@@ -200,7 +208,9 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
               <div className="flex items-baseline justify-between text-[9.0px] leading-tight">
                 <div className="flex items-baseline gap-1">
                   <span className="text-[#817f70] font-semibold">تاريخ الميلاد:</span>
-                  <span className="font-bold text-[#3e3d3b]">{user.dateOfBirthAr || user.dateOfBirth || ''}</span>
+                  <span className="font-bold text-[#3e3d3b]">
+                    {user.dateOfBirthAr || (user.dateOfBirth ? toArabicNumerals(user.dateOfBirth) : '')}
+                  </span>
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-[#817f70] font-semibold">مكان الميلاد:</span>

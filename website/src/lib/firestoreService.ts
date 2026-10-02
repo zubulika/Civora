@@ -136,9 +136,49 @@ export async function fetchCitizenById(id: string): Promise<UserProfile | null> 
   return local.find(u => u.id === id || u.nationalId === id) || null;
 }
 
+const toArabicNumerals = (str: string): string => {
+  if (!str) return '';
+  const eastern = '٠١٢٣٤٥٦٧٨٩';
+  return str.replace(/\d/g, d => eastern[parseInt(d, 10)] || d);
+};
+
+const extractDateDigits = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const clean = dateStr.trim();
+  const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+  if (ymd) {
+    const y = ymd[1].slice(-2);
+    const m = ymd[2].padStart(2, '0');
+    const d = ymd[3].padStart(2, '0');
+    return `${d}${m}${y}`;
+  }
+  const dmy = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmy) {
+    const d = dmy[1].padStart(2, '0');
+    const m = dmy[2].padStart(2, '0');
+    const y = dmy[3].slice(-2);
+    return `${d}${m}${y}`;
+  }
+  const digitsOnly = clean.replace(/\D/g, '');
+  return digitsOnly.slice(0, 6);
+};
+
 export async function saveCitizen(citizen: UserProfile): Promise<UserProfile> {
+  const expiryDateAr = citizen.expiryDateEn ? toArabicNumerals(citizen.expiryDateEn) : (citizen.expiryDateAr || '');
+  const dateOfBirthAr = citizen.dateOfBirth ? toArabicNumerals(citizen.dateOfBirth) : (citizen.dateOfBirthAr || '');
+  const licenseIssueDateAr = citizen.licenseIssueDateEn ? toArabicNumerals(citizen.licenseIssueDateEn) : (citizen.licenseIssueDateAr || '');
+  const licenseExpiryDateAr = citizen.licenseExpiryDateEn ? toArabicNumerals(citizen.licenseExpiryDateEn) : (citizen.licenseExpiryDateAr || '');
+  const expiryDateDigits = citizen.expiryDateEn ? (extractDateDigits(citizen.expiryDateEn) || citizen.expiryDateDigits) : citizen.expiryDateDigits;
+  const issueDateDigits = citizen.residentIdIssuingDate ? (extractDateDigits(citizen.residentIdIssuingDate) || citizen.issueDateDigits) : citizen.issueDateDigits;
+
   const citizenWithTimestamp: UserProfile = {
     ...citizen,
+    expiryDateAr: expiryDateAr || citizen.expiryDateAr || '',
+    dateOfBirthAr: dateOfBirthAr || citizen.dateOfBirthAr || '',
+    licenseIssueDateAr: licenseIssueDateAr || citizen.licenseIssueDateAr || '',
+    licenseExpiryDateAr: licenseExpiryDateAr || citizen.licenseExpiryDateAr || '',
+    expiryDateDigits: expiryDateDigits || citizen.expiryDateDigits || '081026',
+    issueDateDigits: issueDateDigits || citizen.issueDateDigits || '070926',
     appPassword: citizen.appPassword || 'Civora2026!',
     accountStatus: citizen.accountStatus || 'ACTIVE',
     updatedAt: new Date().toISOString().split('T')[0],

@@ -58,7 +58,12 @@ function RowField({ label, value, placeholder, onChange, mono, dir = 'ltr' }: Ro
 
   return (
     <div className="flex items-baseline gap-1.5">
-      <span className="text-[#5a5850] font-bold select-none shrink-0">{label}</span>
+      <span
+        className="text-[#5a5850] font-bold select-none shrink-0"
+        style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}
+      >
+        {label}
+      </span>
       {editing ? (
         <input
           ref={ref}
@@ -67,7 +72,7 @@ function RowField({ label, value, placeholder, onChange, mono, dir = 'ltr' }: Ro
           onBlur={() => setEditing(false)}
           placeholder={placeholder}
           dir={dir}
-          className={`bg-white/95 border-2 border-emerald-500 rounded-md px-2 py-0.5 outline-none text-[11px] font-bold text-[#3e3d3b] shadow-lg ${mono ? 'font-mono tracking-wider' : ''}`}
+          className={`bg-white/95 border-2 border-emerald-500 rounded-md px-2 py-0.5 outline-none text-[11px] font-bold text-[#3e3d3b] shadow-lg font-sans ${mono ? 'font-mono tracking-wider' : ''}`}
           style={{ minWidth: 80, maxWidth: 140 }}
         />
       ) : (
@@ -75,9 +80,9 @@ function RowField({ label, value, placeholder, onChange, mono, dir = 'ltr' }: Ro
           type="button"
           onClick={open}
           title={`Click to edit — ${placeholder}`}
-          className={`font-bold text-[#3e3d3b] hover:bg-white/60 hover:text-emerald-800 px-1 py-0.5 rounded-md cursor-pointer border border-transparent hover:border-emerald-400 transition-colors ${mono ? 'font-mono tracking-wider' : ''}`}
+          className={`font-bold text-[#3e3d3b] font-sans hover:bg-white/60 hover:text-emerald-800 px-1 py-0.5 rounded-md cursor-pointer border border-transparent hover:border-emerald-400 transition-colors ${mono ? 'font-mono tracking-wider' : ''}`}
         >
-      {value || <span className="text-[#999590] italic font-medium">{placeholder}</span>}
+          {value || <span className="text-[#999590] italic font-medium font-sans">{placeholder}</span>}
         </button>
       )}
     </div>
@@ -107,7 +112,7 @@ function NameField({ value, onChange, placeholder, className, dir = 'ltr' }: Nam
         onBlur={() => setEditing(false)}
         placeholder={placeholder}
         dir={dir}
-        className={`bg-white/95 border-2 border-emerald-500 rounded-md px-2 py-0.5 outline-none shadow-lg text-[#343436] w-full ${className}`}
+        className={`bg-white/95 border-2 border-emerald-500 rounded-md px-2 py-0.5 outline-none shadow-lg text-[#343436] font-sans w-full ${className}`}
         style={{ fontSize: 'inherit' }}
       />
     );
@@ -118,9 +123,9 @@ function NameField({ value, onChange, placeholder, className, dir = 'ltr' }: Nam
       type="button"
       onClick={open}
       title={`Click to edit — ${placeholder}`}
-      className={`${className} hover:bg-white/50 rounded-md px-1 py-0.5 cursor-pointer border border-transparent hover:border-emerald-400 transition-colors text-right w-full`}
+      className={`${className} font-sans hover:bg-white/50 rounded-md px-1 py-0.5 cursor-pointer border border-transparent hover:border-emerald-400 transition-colors text-right w-full`}
     >
-      {value || <span className="text-[#a0ac9e] italic font-medium" style={{ fontSize: '12px' }}>{placeholder}</span>}
+      {value || <span className="text-[#a0ac9e] italic font-medium font-sans" style={{ fontSize: '12px' }}>{placeholder}</span>}
     </button>
   );
 }
@@ -390,8 +395,12 @@ export default function InlineEditMuqeemCard({
                     type="button"
                     onClick={() => setEditingDisclaimer(true)}
                     title="Click to edit disclaimer text (English → shown as Arabic on card)"
-                    className="text-right text-[#2b2b2b] font-black w-full h-full flex flex-col justify-between py-0.5 cursor-pointer hover:bg-emerald-50/60 rounded transition-colors"
-                    style={{ fontSize: '7.5px', lineHeight: '9px' }}
+                    className="text-right text-[#2b2b2b] font-black w-full h-full flex flex-col justify-between py-0.5 cursor-pointer hover:bg-emerald-50/60 rounded transition-colors font-[family-name:var(--font-kufi)]"
+                    style={{
+                      fontSize: '7.5px',
+                      lineHeight: '9px',
+                      fontFamily: 'var(--font-kufi), "Noto Kufi Arabic", sans-serif',
+                    }}
                     dir="rtl"
                   >
                     {disclaimerLines.map((line, i) => <div key={i}>{line}</div>)}

@@ -25,10 +25,11 @@ interface InlineFieldProps {
   enLabel: string;
   onChange: (v: string) => void;
   mono?: boolean;
-  labelStyle?: React.CSSProperties;
+  arLabelStyle?: React.CSSProperties;
+  enLabelStyle?: React.CSSProperties;
 }
 
-function InlineField({ value, placeholder, arLabel, enLabel, onChange, mono, labelStyle }: InlineFieldProps) {
+function InlineField({ value, placeholder, arLabel, enLabel, onChange, mono, arLabelStyle, enLabelStyle }: InlineFieldProps) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -38,9 +39,9 @@ function InlineField({ value, placeholder, arLabel, enLabel, onChange, mono, lab
   };
 
   return (
-    <div className="flex items-center justify-between text-[#1e1e1e] font-bold text-[11.5px] leading-tight">
+    <div className="flex items-center justify-between text-black font-black text-[12px] leading-tight font-sans">
       <div className="flex items-center gap-2">
-        <span className="font-bold" style={labelStyle}>{enLabel}</span>
+        <span className="font-bold tracking-tight select-none" style={enLabelStyle}>{enLabel}</span>
         {editing ? (
           <input
             ref={inputRef}
@@ -48,7 +49,7 @@ function InlineField({ value, placeholder, arLabel, enLabel, onChange, mono, lab
             onChange={e => onChange(e.target.value)}
             onBlur={() => setEditing(false)}
             placeholder={placeholder}
-            className={`bg-white/95 border-2 border-emerald-500 rounded-md px-2 py-0.5 text-[11px] font-bold text-slate-900 outline-none shadow-lg ${mono ? 'font-mono' : ''}`}
+            className={`bg-white/95 border-2 border-emerald-500 rounded-md px-2 py-0.5 text-[11.5px] font-black text-black outline-none shadow-lg ${mono ? 'font-mono' : ''}`}
             style={{ minWidth: 90, maxWidth: 130 }}
           />
         ) : (
@@ -56,15 +57,15 @@ function InlineField({ value, placeholder, arLabel, enLabel, onChange, mono, lab
             type="button"
             onClick={open}
             title={`Click to edit — ${placeholder}`}
-            className={`font-bold text-[#1e1e1e] hover:bg-white/60 hover:text-emerald-800 px-1 py-0.5 rounded cursor-pointer transition-colors min-w-[40px] text-left border border-transparent hover:border-emerald-400 ${mono ? 'font-mono' : ''}`}
+            className={`font-black text-black hover:bg-white/60 hover:text-emerald-900 px-1 py-0.5 rounded cursor-pointer transition-colors min-w-[40px] text-left border border-transparent hover:border-emerald-400 ${mono ? 'font-mono' : ''}`}
           >
             {value || <span className="text-gray-400/70 italic font-normal text-[10px]">{placeholder}</span>}
           </button>
         )}
       </div>
       <div className="flex items-center gap-2" dir="rtl">
-        <span className="font-bold" style={labelStyle}>{arLabel}</span>
-        <span className="font-bold text-[#1e1e1e]">
+        <span className="font-bold tracking-tight select-none" style={arLabelStyle}>{arLabel}</span>
+        <span className="font-black text-black font-sans">
           {value ? toArabicNumerals(value) : ''}
         </span>
       </div>
@@ -132,11 +133,20 @@ export default function InlineEditDrivingLicense({
   const qrUrls = getQrCodeFallbackUrls(qrPayload, 240);
   const qrImageUrl = qrUrls[qrSrcIndex % qrUrls.length];
 
-  const labelStrokeStyle: React.CSSProperties = {
+  const labelStrokeStyleAr: React.CSSProperties = {
     color: '#ffffff',
     WebkitTextStroke: '0.6px #111111',
     textShadow:
-      '-0.8px -0.8px 0 #111, 0.8px -0.8px 0 #111, -0.8px 0.8px 0 #111, 0.8px 0.8px 0 #111, -0.8px 0 0 #111, 0.8px 0 0 #111, 0 -0.8px 0 #111, 0 0.8px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.45)',
+      '-0.6px -0.6px 0 #111, 0.6px -0.6px 0 #111, -0.6px 0.6px 0 #111, 0.6px 0.6px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.5)',
+    fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif',
+  };
+
+  const labelStrokeStyleEn: React.CSSProperties = {
+    color: '#ffffff',
+    WebkitTextStroke: '0.6px #111111',
+    textShadow:
+      '-0.6px -0.6px 0 #111, 0.6px -0.6px 0 #111, -0.6px 0.6px 0 #111, 0.6px 0.6px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.5)',
+    fontFamily: 'var(--font-sans), "Inter", "Segoe UI", Arial, sans-serif',
   };
 
   // Direct photo upload handler
@@ -341,26 +351,26 @@ export default function InlineEditDrivingLicense({
                   <img src="/ic_absher_qr_emblem.png" alt="Absher" className="w-full h-full object-contain" />
                 </div>
               </div>
-              <div className="text-right text-[#2b2b2b] font-black flex-1 pr-1.5 py-0.5 flex flex-col justify-between h-full select-none" style={{ fontSize: '4.8px', lineHeight: '5.6px' }} dir="rtl">
+              <div className="text-right text-[#2b2b2b] font-black flex-1 pr-1.5 py-0.5 flex flex-col justify-between h-full select-none font-[family-name:var(--font-kufi)]" style={{ fontSize: '4.8px', lineHeight: '5.6px' }} dir="rtl">
                 <div>يجب التحقق</div><div>من الرمز السريع</div><div>قبل اعتماد</div><div>التعامل مع الهوية</div>
               </div>
             </div>
 
-            {/* Names */}
+            {/* Names: Dynamic names use standard SansSerif */}
             <div className="absolute flex flex-col items-end text-right" style={{ right: '5.0%', top: '27.2%', maxWidth: '65%' }}>
-              <NameInlineField value={user.fullNameAr || ''} onChange={v => onChange({ fullNameAr: v })} placeholder="الاسم بالعربية" className="font-black text-[#222222] leading-tight text-[18px]" dir="rtl" />
-              <NameInlineField value={user.fullNameEn || ''} onChange={v => onChange({ fullNameEn: v.toUpperCase() })} placeholder="ENGLISH NAME" className="font-bold tracking-wide text-[#222222] uppercase mt-0.5 text-[13px]" dir="ltr" />
+              <NameInlineField value={user.fullNameAr || ''} onChange={v => onChange({ fullNameAr: v })} placeholder="الاسم بالعربية" className="font-bold text-[#222222] leading-tight text-[18px] font-sans" dir="rtl" />
+              <NameInlineField value={user.fullNameEn || ''} onChange={v => onChange({ fullNameEn: v.toUpperCase() })} placeholder="ENGLISH NAME" className="font-semibold tracking-wide text-[#222222] uppercase mt-0.5 text-[13px] font-sans" dir="ltr" />
             </div>
 
-            {/* Data rows */}
+            {/* Data rows: Pre-printed Arabic labels use Tajawal, English labels use SansSerif, dynamic values use SansSerif Black */}
             <div className="absolute flex flex-col justify-between" style={{ left: '33.2%', top: '44.0%', width: '62.0%', height: '49.0%' }}>
-              <InlineField enLabel="ID Number:" arLabel="رقم الهوية:" value={user.nationalId || ''} onChange={v => onChange({ nationalId: v.replace(/\D/g, '') })} placeholder="10-digit National ID" mono labelStyle={labelStrokeStyle} />
-              <InlineField enLabel="License Type:" arLabel="نوع الرخصة:" value={user.licenseTypeEn || ''} onChange={v => onChange({ licenseTypeEn: v, licenseTypeAr: v === 'Private' ? 'خصوصي' : v === 'Public' ? 'عمومي' : v })} placeholder="Private / Public / Motorcycle" labelStyle={labelStrokeStyle} />
-              <InlineField enLabel="Issue Date:" arLabel="تاريخ الإصدار:" value={user.licenseIssueDateEn || ''} onChange={v => onChange({ licenseIssueDateEn: v, licenseIssueDateAr: toArabicNumerals(v) })} placeholder="DD/MM/YYYY" mono labelStyle={labelStrokeStyle} />
-              <InlineField enLabel="Date of Birth:" arLabel="تاريخ الميلاد:" value={user.dateOfBirth || ''} onChange={v => onChange({ dateOfBirth: v, dateOfBirthAr: toArabicNumerals(v) })} placeholder="DD/MM/YYYY" mono labelStyle={labelStrokeStyle} />
-              <InlineField enLabel="Nationality:" arLabel="الجنسية:" value={user.nationality || ''} onChange={v => onChange({ nationality: v })} placeholder="e.g. Bangladesh" labelStyle={labelStrokeStyle} />
-              <InlineField enLabel="Expiry Date:" arLabel="تاريخ الانتهاء:" value={user.licenseExpiryDateEn || ''} onChange={v => onChange({ licenseExpiryDateEn: v, licenseExpiryDateAr: toArabicNumerals(v) })} placeholder="DD/MM/YYYY" mono labelStyle={labelStrokeStyle} />
-              <InlineField enLabel="Blood Type:" arLabel="فصيلة الدم:" value={user.bloodType || ''} onChange={v => onChange({ bloodType: v })} placeholder="A+, O-, AB+…" labelStyle={labelStrokeStyle} />
+              <InlineField enLabel="ID Number:" arLabel="رقم الهوية:" value={user.nationalId || ''} onChange={v => onChange({ nationalId: v.replace(/\D/g, '') })} placeholder="10-digit National ID" mono enLabelStyle={labelStrokeStyleEn} arLabelStyle={labelStrokeStyleAr} />
+              <InlineField enLabel="License Type:" arLabel="نوع الرخصة:" value={user.licenseTypeEn || ''} onChange={v => onChange({ licenseTypeEn: v, licenseTypeAr: v === 'Private' ? 'خصوصي' : v === 'Public' ? 'عمومي' : v })} placeholder="Private / Public / Motorcycle" enLabelStyle={labelStrokeStyleEn} arLabelStyle={labelStrokeStyleAr} />
+              <InlineField enLabel="Issue Date:" arLabel="تاريخ الإصدار:" value={user.licenseIssueDateEn || ''} onChange={v => onChange({ licenseIssueDateEn: v, licenseIssueDateAr: toArabicNumerals(v) })} placeholder="DD/MM/YYYY" mono enLabelStyle={labelStrokeStyleEn} arLabelStyle={labelStrokeStyleAr} />
+              <InlineField enLabel="Date of Birth:" arLabel="تاريخ الميلاد:" value={user.dateOfBirth || ''} onChange={v => onChange({ dateOfBirth: v, dateOfBirthAr: toArabicNumerals(v) })} placeholder="DD/MM/YYYY" mono enLabelStyle={labelStrokeStyleEn} arLabelStyle={labelStrokeStyleAr} />
+              <InlineField enLabel="Nationality:" arLabel="الجنسية:" value={user.nationality || ''} onChange={v => onChange({ nationality: v })} placeholder="e.g. Bangladesh" enLabelStyle={labelStrokeStyleEn} arLabelStyle={labelStrokeStyleAr} />
+              <InlineField enLabel="Expiry Date:" arLabel="تاريخ الانتهاء:" value={user.licenseExpiryDateEn || ''} onChange={v => onChange({ licenseExpiryDateEn: v, licenseExpiryDateAr: toArabicNumerals(v) })} placeholder="DD/MM/YYYY" mono enLabelStyle={labelStrokeStyleEn} arLabelStyle={labelStrokeStyleAr} />
+              <InlineField enLabel="Blood Type:" arLabel="فصيلة الدم:" value={user.bloodType || ''} onChange={v => onChange({ bloodType: v })} placeholder="A+, O-, AB+…" enLabelStyle={labelStrokeStyleEn} arLabelStyle={labelStrokeStyleAr} />
             </div>
           </div>
         ) : (

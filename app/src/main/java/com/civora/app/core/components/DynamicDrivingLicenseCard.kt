@@ -185,9 +185,9 @@ private fun FeatheredStrokeLabel(
     lineHeight: TextUnit = TextUnit.Unspecified
 ) {
     val density = LocalDensity.current
-    val strokeWidthPx = with(density) { (2.0.dp * scale).toPx() }
-    val shadowBlurPx = with(density) { (3.0.dp * scale).toPx() }
-    val offsetDp = 0.85.dp * scale
+    val strokeWidthPx = with(density) { (1.3.dp * scale).toPx() }
+    val shadowBlurPx = with(density) { (1.6.dp * scale).toPx() }
+    val offsetDp = 0.45.dp * scale
 
     Box(modifier = modifier) {
         // 1. Soft feathered dark shadow halo
@@ -205,8 +205,8 @@ private fun FeatheredStrokeLabel(
             style = TextStyle(
                 platformStyle = PlatformTextStyle(includeFontPadding = false),
                 shadow = Shadow(
-                    color = strokeColor.copy(alpha = 0.50f),
-                    offset = Offset(0.5f * scale, 0.5f * scale),
+                    color = strokeColor.copy(alpha = 0.45f),
+                    offset = Offset(0.3f * scale, 0.3f * scale),
                     blurRadius = shadowBlurPx
                 )
             )
@@ -531,10 +531,10 @@ fun DynamicDrivingLicenseCard(
                             Spacer(modifier = Modifier.width(2.2.dp * fieldTextScale))
                             ResponsiveSingleLineText(
                                 text = field.valueEn,
-                                color = CardValueColor,
-                                baseFontSize = (9.35f * fieldTextScale).sp,
-                                minFontSize = (6.6f * fieldTextScale).sp,
-                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.Black,
+                                baseFontSize = (9.8f * fieldTextScale).sp,
+                                minFontSize = (7.0f * fieldTextScale).sp,
+                                fontWeight = FontWeight.Black,
                                 fontFamily = CardTextFont,
                                 modifier = Modifier.weight(1f)
                             )
@@ -563,9 +563,9 @@ fun DynamicDrivingLicenseCard(
                                     Spacer(modifier = Modifier.width(2.2.dp * fieldTextScale))
                                     ResponsiveSingleLineText(
                                         text = field.valueAr,
-                                        color = CardValueColor,
-                                        baseFontSize = (9.45f * fieldTextScale).sp,
-                                        minFontSize = (6.8f * fieldTextScale).sp,
+                                        color = Color.Black,
+                                        baseFontSize = (9.8f * fieldTextScale).sp,
+                                        minFontSize = (7.0f * fieldTextScale).sp,
                                         fontWeight = FontWeight.Black,
                                         fontFamily = CardTextFont,
                                         modifier = Modifier.weight(1f),

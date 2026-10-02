@@ -10,6 +10,26 @@ export const toArabicNumerals = (str: string): string => {
 export type ExportFormat = 'png' | 'jpg' | 'pdf';
 
 /**
+ * Ensures web fonts (Tajawal, Cairo, Noto Kufi Arabic, Inter) are fully loaded before rendering to canvas.
+ */
+async function ensureFontsLoaded(): Promise<void> {
+  if (typeof document !== 'undefined' && document.fonts) {
+    try {
+      await Promise.allSettled([
+        document.fonts.load('600 27px "Tajawal"'),
+        document.fonts.load('bold 27px "Tajawal"'),
+        document.fonts.load('900 21px "Noto Kufi Arabic"'),
+        document.fonts.load('bold 34px "Inter"'),
+        document.fonts.load('900 30px "Inter"'),
+        document.fonts.ready,
+      ]);
+    } catch {
+      // Proceed even if document.fonts.ready rejects
+    }
+  }
+}
+
+/**
  * Loads an image URL into an HTMLImageElement with crossOrigin support.
  */
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -55,6 +75,7 @@ function roundRect(
 /**
  * Draws the FeatheredStrokeLabel used for Saudi Driving License headers/labels.
  * Matches FeatheredStrokeLabel in DynamicDrivingLicenseCard.kt.
+ * Uses Tajawal for Arabic pre-printed labels and Sans-Serif (Inter/Segoe UI) for English labels.
  */
 function drawFeatheredStrokeLabel(
   ctx: CanvasRenderingContext2D,
@@ -65,13 +86,15 @@ function drawFeatheredStrokeLabel(
   align: CanvasTextAlign = 'left'
 ) {
   ctx.save();
-  ctx.font = `bold ${fontSize}px "Tajawal", "Segoe UI", Arial, sans-serif`;
+  const isArabic = /[\u0600-\u06FF]/.test(text);
+  const fontFam = isArabic ? '"Tajawal", sans-serif' : '"Inter", "Segoe UI", Arial, sans-serif';
+  ctx.font = `bold ${fontSize}px ${fontFam}`;
   ctx.textAlign = align;
   ctx.textBaseline = 'middle';
 
-  // 1. Black outline stroke
+  // 1. Crisp Black outline stroke
   ctx.strokeStyle = '#111111';
-  ctx.lineWidth = Math.max(2, fontSize * 0.22);
+  ctx.lineWidth = Math.max(1.8, fontSize * 0.16);
   ctx.lineJoin = 'round';
   ctx.miterLimit = 2;
   ctx.strokeText(text, x, y);
@@ -87,6 +110,7 @@ function drawFeatheredStrokeLabel(
  * 1:1 Pixel-perfect match with Android DynamicMuqeemCard.kt.
  */
 async function renderMuqeemCardCanvas(user: Partial<UserProfile>): Promise<HTMLCanvasElement> {
+  await ensureFontsLoaded();
   const canvas = document.createElement('canvas');
   const W = 1586;
   const H = 1000;
@@ -111,9 +135,10 @@ async function renderMuqeemCardCanvas(user: Partial<UserProfile>): Promise<HTMLC
   // 2. Version Indicator (aligned to top-left near version mark)
   const ver = toArabicNumerals(user.versionNumber || '1');
   ctx.fillStyle = '#222222';
-  ctx.font = '800 48px "Tajawal", "Segoe UI", Arial, sans-serif';
+  ctx.font = '800 48px Georgia, serif';
   ctx.textAlign = 'center';
   ctx.fillText(ver, W * 0.106, H * 0.185);
+
 
   // 3. Citizen Portrait Photo
   const photoX = W * 0.058;
@@ -182,9 +207,9 @@ async function renderMuqeemCardCanvas(user: Partial<UserProfile>): Promise<HTMLC
     }
   }
 
-  // 4-Line Arabic Security Disclaimer
+  // 4-Line Arabic Security Disclaimer (Uses Noto Kufi Arabic Black)
   ctx.fillStyle = '#2B2B2B';
-  ctx.font = '900 21px "Tajawal", "Noto Kufi Arabic", "Segoe UI", Arial, sans-serif';
+  ctx.font = '900 21px "Noto Kufi Arabic", sans-serif';
   ctx.textAlign = 'right';
   ctx.direction = 'rtl';
   const discX = boxX + boxW - 14;
@@ -224,24 +249,24 @@ async function renderMuqeemCardCanvas(user: Partial<UserProfile>): Promise<HTMLC
   ctx.save();
   ctx.direction = 'rtl';
 
-  // Names Header: Arabic bold on top, English uppercase below
+  // Names Header: Dynamic Citizen Names using standard Sans-Serif (Inter/Segoe UI)
   ctx.fillStyle = '#343436';
-  ctx.font = 'bold 50px "Tajawal", "Segoe UI", Arial, sans-serif';
+  ctx.font = 'bold 50px "Inter", "Segoe UI", Arial, sans-serif';
   ctx.textAlign = 'right';
   ctx.fillText(user.fullNameAr || '', dataLeft + dataW, dataTop + 38);
 
   ctx.fillStyle = '#32322A';
-  ctx.font = 'bold 34px "Segoe UI", Arial, sans-serif';
+  ctx.font = 'bold 34px "Inter", "Segoe UI", Arial, sans-serif';
   ctx.textAlign = 'right';
   ctx.direction = 'ltr';
   ctx.fillText((user.fullNameEn || '').toUpperCase(), dataLeft + dataW, dataTop + 82);
 
-  // 8 Dynamic Arabic Rows
+  // 8 Dynamic Arabic Rows: Pre-printed Arabic labels use Tajawal, dynamic values use SansSerif
   const startRowY = dataTop + 145;
   const rowSpacing = (dataH - 145) / 7.2;
 
-  const labelFont = '600 27px "Tajawal", "Segoe UI", Arial, sans-serif';
-  const valFont = 'bold 31px "Tajawal", "Segoe UI", Arial, sans-serif';
+  const labelFont = '600 27px "Tajawal", sans-serif';
+  const valFont = 'bold 31px "Inter", "Segoe UI", Arial, sans-serif';
   const labelColor = '#7A786E';
   const valColor = '#242424';
 
@@ -328,6 +353,7 @@ async function renderMuqeemCardCanvas(user: Partial<UserProfile>): Promise<HTMLC
  * 1:1 Pixel-perfect match with Android DynamicDrivingLicenseCard.kt.
  */
 async function renderDrivingLicenseCanvas(user: Partial<UserProfile>): Promise<HTMLCanvasElement> {
+  await ensureFontsLoaded();
   const canvas = document.createElement('canvas');
   const W = 1586;
   const H = 1000;
@@ -413,9 +439,9 @@ async function renderDrivingLicenseCanvas(user: Partial<UserProfile>): Promise<H
     }
   }
 
-  // 4-Line Arabic Disclaimer
+  // 4-Line Arabic Security Disclaimer (Uses Noto Kufi Arabic Black)
   ctx.fillStyle = '#2B2B2B';
-  ctx.font = '900 20px "Tajawal", "Noto Kufi Arabic", "Segoe UI", Arial, sans-serif';
+  ctx.font = '900 21px "Noto Kufi Arabic", sans-serif';
   ctx.textAlign = 'right';
   ctx.direction = 'rtl';
   const discX = boxX + boxW - 12;
@@ -425,19 +451,19 @@ async function renderDrivingLicenseCanvas(user: Partial<UserProfile>): Promise<H
   ctx.fillText('التعامل مع الهوية', discX, boxY + boxH * 0.92);
   ctx.restore();
 
-  // 4. Holder Names Header (Right-aligned)
+  // 4. Holder Names Header: Standard Sans-Serif (Inter/Segoe UI)
   const nameRight = W * 0.961;
   const nameTop = H * 0.275;
 
   ctx.save();
   ctx.fillStyle = '#222222';
-  ctx.font = 'bold 46px "Tajawal", "Segoe UI", Arial, sans-serif';
+  ctx.font = 'bold 46px "Inter", "Segoe UI", Arial, sans-serif';
   ctx.textAlign = 'right';
   ctx.direction = 'rtl';
   ctx.fillText(user.fullNameAr || '', nameRight, nameTop);
 
   ctx.fillStyle = '#222222';
-  ctx.font = '600 32px "Segoe UI", Arial, sans-serif';
+  ctx.font = '600 32px "Inter", "Segoe UI", Arial, sans-serif';
   ctx.textAlign = 'right';
   ctx.direction = 'ltr';
   ctx.fillText((user.fullNameEn || '').toUpperCase(), nameRight, nameTop + 42);
@@ -497,20 +523,20 @@ async function renderDrivingLicenseCanvas(user: Partial<UserProfile>): Promise<H
   fields.forEach((field, i) => {
     const y = rowStartY + i * rowH;
 
-    // English sub-column (Left side): Label + Value
+    // English sub-column (Left side): Pre-printed Label (SansSerif) + Much Bolder Dynamic English Value (SansSerif Black)
     drawFeatheredStrokeLabel(ctx, field.labelEn, colLeftX, y, 26, 'left');
     ctx.save();
-    ctx.font = 'bold 28px "Segoe UI", Arial, sans-serif';
-    ctx.fillStyle = '#1E1E1E';
+    ctx.font = '900 30px "Inter", "Segoe UI", Arial, sans-serif';
+    ctx.fillStyle = '#000000';
     ctx.textAlign = 'left';
     ctx.fillText(field.valEn, colLeftX + 175, y);
     ctx.restore();
 
-    // Arabic sub-column (Right side): Value + Label
+    // Arabic sub-column (Right side): Pre-printed Label (Tajawal) + Much Bolder Dynamic Arabic Value (SansSerif Black)
     drawFeatheredStrokeLabel(ctx, field.labelAr, colRightX, y, 26, 'right');
     ctx.save();
-    ctx.font = 'bold 28px "Tajawal", "Segoe UI", Arial, sans-serif';
-    ctx.fillStyle = '#1E1E1E';
+    ctx.font = '900 30px "Inter", "Segoe UI", Arial, sans-serif';
+    ctx.fillStyle = '#000000';
     ctx.textAlign = 'right';
     ctx.fillText(field.valAr, colRightX - 165, y);
     ctx.restore();

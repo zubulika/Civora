@@ -67,12 +67,21 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
     },
   ];
 
-  // White font fill with crisp black outline stroke and subtle drop shadow for placeholder permanent labels
-  const labelStrokeStyle: React.CSSProperties = {
+  // Pre-printed permanent labels: Tajawal for Arabic, SansSerif for English
+  const labelStrokeStyleAr: React.CSSProperties = {
     color: '#ffffff',
     WebkitTextStroke: '0.6px #111111',
     textShadow:
-      '-0.8px -0.8px 0 #111, 0.8px -0.8px 0 #111, -0.8px 0.8px 0 #111, 0.8px 0.8px 0 #111, -0.8px 0 0 #111, 0.8px 0 0 #111, 0 -0.8px 0 #111, 0 0.8px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.45)',
+      '-0.6px -0.6px 0 #111, 0.6px -0.6px 0 #111, -0.6px 0.6px 0 #111, 0.6px 0.6px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.5)',
+    fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif',
+  };
+
+  const labelStrokeStyleEn: React.CSSProperties = {
+    color: '#ffffff',
+    WebkitTextStroke: '0.6px #111111',
+    textShadow:
+      '-0.6px -0.6px 0 #111, 0.6px -0.6px 0 #111, -0.6px 0.6px 0 #111, 0.6px 0.6px 0 #111, 0 1px 2px rgba(0, 0, 0, 0.5)',
+    fontFamily: 'var(--font-sans), "Inter", "Segoe UI", Arial, sans-serif',
   };
 
   return (
@@ -167,9 +176,9 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
                 </div>
               </div>
 
-              {/* 4-Line Official Arabic Disclaimer (Identical typography to primary document) */}
+              {/* 4-Line Official Arabic Disclaimer with Noto Kufi Arabic Black typography */}
               <div
-                className="text-right text-[#2b2b2b] font-black flex-1 pr-1.5 py-0.5 flex flex-col justify-between h-full select-none"
+                className="text-right text-[#2b2b2b] font-black flex-1 pr-1.5 py-0.5 flex flex-col justify-between h-full select-none font-[family-name:var(--font-kufi)]"
                 style={{
                   fontSize: '4.8px',
                   lineHeight: '5.6px',
@@ -183,7 +192,7 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
               </div>
             </div>
 
-            {/* 3. Holder Name Section (Crisp bold dark text matching reference image) */}
+            {/* 3. Holder Name Section: Dynamic names use standard SansSerif */}
             <div
               className="absolute flex flex-col items-end text-right"
               style={{
@@ -193,12 +202,12 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
               }}
             >
               <div
-                className="font-black text-[#222222] leading-tight truncate text-[14.5px]"
+                className="font-bold text-[#222222] leading-tight truncate text-[14.5px] font-sans"
               >
                 {user.fullNameAr || ''}
               </div>
               <div
-                className="font-bold tracking-wide text-[#222222] uppercase mt-0.5 truncate text-[10.5px]"
+                className="font-semibold tracking-wide text-[#222222] uppercase mt-0.5 truncate text-[10.5px] font-sans"
               >
                 {user.fullNameEn?.toUpperCase() || ''}
               </div>
@@ -215,17 +224,17 @@ export default function DrivingLicensePreview({ user, className = '' }: DrivingL
               }}
             >
               {fields.map((f, i) => (
-                <div key={i} className="flex items-center justify-between text-[#1e1e1e] font-bold text-[8.8px] leading-tight">
-                  {/* English Column (Left): White text with black outline stroke + crisp solid black value */}
+                <div key={i} className="flex items-center justify-between text-black font-black text-[9.0px] leading-tight">
+                  {/* English Column (Left): Pre-printed Label (SansSerif) + Much Bolder Dynamic English Value (SansSerif Black) */}
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold" style={labelStrokeStyle}>{f.labelEn}</span>
-                    <span className="font-bold text-[#1e1e1e]">{f.valueEn}</span>
+                    <span className="font-bold tracking-tight select-none" style={labelStrokeStyleEn}>{f.labelEn}</span>
+                    <span className="font-black text-black text-[9.5px] font-sans">{f.valueEn}</span>
                   </div>
 
-                  {/* Arabic Column (Right): White text with black outline stroke + crisp solid black value */}
+                  {/* Arabic Column (Right): Pre-printed Label (Tajawal) + Much Bolder Dynamic Arabic Value (SansSerif Black) */}
                   <div className="flex items-center gap-1.5" dir="rtl">
-                    <span className="font-bold" style={labelStrokeStyle}>{f.labelAr}</span>
-                    <span className="font-bold text-[#1e1e1e]">{f.valueAr}</span>
+                    <span className="font-bold tracking-tight select-none" style={labelStrokeStyleAr}>{f.labelAr}</span>
+                    <span className="font-black text-black text-[9.5px] font-sans">{f.valueAr}</span>
                   </div>
                 </div>
               ))}

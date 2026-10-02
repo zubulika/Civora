@@ -135,10 +135,11 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
 
               {/* 4-Line Official Arabic Disclaimer with Extra Bold Typography (Zero Cropping) */}
               <div
-                className="text-right text-[#2b2b2b] font-black flex-1 pr-1.5 py-0.5 flex flex-col justify-between h-full"
+                className="text-right text-[#2b2b2b] font-black flex-1 pr-1.5 py-0.5 flex flex-col justify-between h-full select-none font-[family-name:var(--font-kufi)]"
                 style={{
                   fontSize: '5.0px',
                   lineHeight: '5.8px',
+                  fontFamily: 'var(--font-kufi), "Noto Kufi Arabic", sans-serif',
                 }}
                 dir="rtl"
               >
@@ -187,11 +188,11 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
             >
               {/* Names Header */}
               <div className="flex flex-col text-right">
-                <div className="font-black text-[#343436] leading-tight text-[14.5px] truncate">
+                <div className="font-black text-[#343436] leading-tight text-[14.5px] truncate font-sans">
                   {user.fullNameAr || ''}
                 </div>
                 <div
-                  className="font-bold text-[#32322a] uppercase tracking-wide text-[10.5px] truncate"
+                  className="font-bold text-[#32322a] uppercase tracking-wide text-[10.5px] truncate font-sans"
                   dir="ltr"
                 >
                   {user.fullNameEn?.toUpperCase() || ''}
@@ -201,12 +202,12 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
               {/* Row 1: Expiry Date (Left) | National ID (Right) */}
               <div className="flex items-baseline justify-between text-[9.0px] leading-tight">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#817f70] font-semibold">رقم الهوية:</span>
+                  <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>رقم الهوية:</span>
                   <span className="font-bold text-[#3e3d3b] font-mono tracking-wider">{user.nationalId || ''}</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#817f70] font-semibold">تاريخ الانتهاء:</span>
-                  <span className="font-bold text-[#3e3d3b]">
+                  <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>تاريخ الانتهاء:</span>
+                  <span className="font-bold text-[#3e3d3b] font-sans">
                     {user.expiryDateAr || (user.expiryDateEn ? toArabicNumerals(user.expiryDateEn) : '')}
                   </span>
                 </div>
@@ -215,58 +216,58 @@ export default function MuqeemCardPreview({ user, className = '' }: MuqeemCardPr
               {/* Row 2: Place of Birth (Left) | Date of Birth (Right) */}
               <div className="flex items-baseline justify-between text-[9.0px] leading-tight">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#817f70] font-semibold">تاريخ الميلاد:</span>
-                  <span className="font-bold text-[#3e3d3b]">
+                  <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>تاريخ الميلاد:</span>
+                  <span className="font-bold text-[#3e3d3b] font-sans">
                     {user.dateOfBirthAr || (user.dateOfBirth ? toArabicNumerals(user.dateOfBirth) : '')}
                   </span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#817f70] font-semibold">مكان الميلاد:</span>
-                  <span className="font-bold text-[#3e3d3b] truncate max-w-[110px]">{user.placeOfBirthAr || ''}</span>
+                  <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>مكان الميلاد:</span>
+                  <span className="font-bold text-[#3e3d3b] truncate max-w-[110px] font-sans">{user.placeOfBirthAr || ''}</span>
                 </div>
               </div>
 
               {/* Row 3: Religion (Left) | Nationality (Right) */}
               <div className="flex items-baseline justify-between text-[9.0px] leading-tight">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#817f70] font-semibold">الجنسية:</span>
-                  <span className="font-bold text-[#3e3d3b]">{user.nationalityAr || ''}</span>
+                  <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>الجنسية:</span>
+                  <span className="font-bold text-[#3e3d3b] font-sans">{user.nationalityAr || ''}</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[#817f70] font-semibold">الديانة:</span>
-                  <span className="font-bold text-[#3e3d3b]">{user.religionAr || ''}</span>
+                  <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>الديانة:</span>
+                  <span className="font-bold text-[#3e3d3b] font-sans">{user.religionAr || ''}</span>
                 </div>
               </div>
 
               {/* Row 4: Profession */}
               <div className="flex items-baseline gap-1 text-[9.0px] leading-tight">
-                <span className="text-[#817f70] font-semibold">المهنة:</span>
-                <span className="font-bold text-[#3e3d3b] truncate">{user.professionAr || ''}</span>
+                <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>المهنة:</span>
+                <span className="font-bold text-[#3e3d3b] truncate font-sans">{user.professionAr || ''}</span>
               </div>
 
               {/* Row 5: Employer / Sponsor ID */}
               <div className="flex items-baseline gap-1 text-[9.0px] leading-tight">
-                <span className="text-[#817f70] font-semibold">هوية صاحب العمل:</span>
+                <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>هوية صاحب العمل:</span>
                 <span className="font-mono text-[#3e3d3b] font-bold">{user.sponsorId || ''}</span>
               </div>
 
               {/* Row 6: Place of Issue */}
               <div className="flex items-baseline gap-1 text-[9.0px] leading-tight">
-                <span className="text-[#817f70] font-semibold">مكان الإصدار:</span>
-                <span className="font-medium text-[#3e3d3b] truncate">{user.issuePlace || ''}</span>
+                <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>مكان الإصدار:</span>
+                <span className="font-medium text-[#3e3d3b] truncate font-sans">{user.issuePlace || ''}</span>
               </div>
 
               {/* Row 7: Place of Work (مكان العمل) */}
               <div className="flex items-baseline gap-1 text-[9.0px] leading-tight">
-                <span className="text-[#817f70] font-semibold">مكان العمل:</span>
-                <span className="font-medium text-[#3e3d3b] truncate">{user.workPlaceAr || 'منطقة الرياض'}</span>
+                <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>مكان العمل:</span>
+                <span className="font-medium text-[#3e3d3b] truncate font-sans">{user.workPlaceAr || 'منطقة الرياض'}</span>
               </div>
 
               {/* Row 8: Employer / Sponsor Name */}
               {user.sponsorName && (
                 <div className="flex items-baseline gap-1 text-[9.0px] leading-tight pb-0.5">
-                  <span className="text-[#817f70] font-semibold">اسم صاحب العمل:</span>
-                  <span className="font-bold text-[#3e3d3b] truncate">{user.sponsorName}</span>
+                  <span className="text-[#817f70] font-semibold" style={{ fontFamily: 'var(--font-tajawal), "Tajawal", sans-serif' }}>اسم صاحب العمل:</span>
+                  <span className="font-bold text-[#3e3d3b] truncate font-sans">{user.sponsorName}</span>
                 </div>
               )}
             </div>

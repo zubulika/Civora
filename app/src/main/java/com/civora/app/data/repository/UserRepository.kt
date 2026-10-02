@@ -94,7 +94,7 @@ class UserRepository(
                             }
                     }
                 }
-        }
+        } catch (_: Exception) {}
     }
 
     suspend fun refresh(): Boolean = kotlinx.coroutines.suspendCancellableCoroutine { continuation ->

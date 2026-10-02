@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -99,6 +100,7 @@ fun DashboardScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val pullToRefreshState = rememberPullToRefreshState()
 
     val systemDark = isSystemInDarkTheme()
     val isDark = when (ThemeState.currentThemeMode) {
@@ -133,10 +135,11 @@ fun DashboardScreen(
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = { viewModel.refresh() },
+            state = pullToRefreshState,
             modifier = Modifier.fillMaxSize(),
             indicator = {
                 PullToRefreshDefaults.Indicator(
-                    state = it,
+                    state = pullToRefreshState,
                     isRefreshing = isRefreshing,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
